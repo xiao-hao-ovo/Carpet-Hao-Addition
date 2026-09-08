@@ -20,8 +20,8 @@ public final class ZoneguardState {
 			return false;
 		}
 
-		// Rule gate: /haoaddition zoneguard true|false
-		if (!ZoneguardSettings.zoneguard) {
+		// Rule gate: /carpet zoneguard true|false (authoritative Carpet rule value)
+		if (!ZoneguardSettings.isEnabled()) {
 			return false;
 		}
 

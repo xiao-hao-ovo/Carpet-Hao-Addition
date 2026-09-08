@@ -1,5 +1,7 @@
 package carpet_hao_addition.zoneguard.command;
 
+import carpet.utils.Translations;
+
 import carpet_hao_addition.zoneguard.region.DetectorRegion;
 import carpet_hao_addition.zoneguard.region.RegionObserverRefresh;
 import carpet_hao_addition.zoneguard.region.ZoneguardSavedData;
@@ -26,8 +28,10 @@ import static net.minecraft.server.command.CommandManager.literal;
 /**
  * /zoneguard 命令树(功能与参考实现等价,适配 1.21.8 yarn API)。
  * <p>
- * 所有用户可见文案都走 Minecraft 翻译键(assets/carpet-hao-addition/lang/{en_us,zh_cn}.json),
- * 代码中不硬编码语言文本;命令参数名使用英文 token。
+ * 文案在 assets/carpet-hao-addition/lang/{en_us,zh_cn}.json 中维护,由
+ * canHasTranslations 并入 carpet 的翻译表。消息在<b>服务端</b>按 carpet 语言渲染成
+ * 纯文本后再发送(见 {@link #msg(String, String...)}),因此客户端不装本 mod 也能
+ * 正常显示,不会出现裸键名或“发送不了”的编码问题。
  * <p>
  * /zoneguard set &lt;id&gt; &lt;from&gt; &lt;to&gt;  - 设置立方禁用区域
  * /zoneguard view                       - 列出区域
@@ -77,22 +81,21 @@ public final class ZoneguardCommands {
 		BlockPos to = BlockPosArgumentType.getBlockPos(context, "to");
 
 		DetectorRegion region = ZoneguardSavedData.get(source.getServer()).setRegion(id, world, from, to);
-		source.sendFeedback(() -> Text.translatable(MSG + "set.success",
-				id, region.dimension().getValue(), formatPos(region.min()), formatPos(region.max())), true);
+		source.sendFeedback(() -> msg("set.success",
+				String.valueOf(id), regionDimension(region), formatPos(region.min()), formatPos(region.max())), true);
 		return 1;
 	}
 
 	private static int view(CommandContext<ServerCommandSource> context) {
 		ZoneguardSavedData data = ZoneguardSavedData.get(context.getSource().getServer());
 		if (data.regions().isEmpty()) {
-			context.getSource().sendFeedback(() -> Text.translatable(MSG + "view.empty"), false);
+			context.getSource().sendFeedback(() -> msg("view.empty"), false);
 			return 0;
 		}
 
-		context.getSource().sendFeedback(() -> Text.translatable(MSG + "view.header"), false);
+		context.getSource().sendFeedback(() -> msg("view.header"), false);
 		data.regions().forEach((id, region) -> context.getSource().sendFeedback(
-				() -> Text.translatable(MSG + "view.item",
-						id, region.dimension().getValue(), formatPos(region.min()), formatPos(region.max())),
+				() -> msg("view.item", id, regionDimension(region), formatPos(region.min()), formatPos(region.max())),
 				false
 		));
 		return data.regions().size();
@@ -105,11 +108,12 @@ public final class ZoneguardCommands {
 		return data.removeRegion(id).map(region -> {
 			ServerWorld world = source.getServer().getWorld(region.dimension());
 			int startedPairs = world == null ? 0 : RegionObserverRefresh.startLoadedFaceToFacePairs(world, region);
-			source.sendFeedback(() -> Text.translatable(MSG + "clear.success",
-					id, region.dimension().getValue(), formatPos(region.min()), formatPos(region.max()), startedPairs), true);
+			source.sendFeedback(() -> msg("clear.success",
+					String.valueOf(id), regionDimension(region), formatPos(region.min()), formatPos(region.max()),
+					String.valueOf(startedPairs)), true);
 			return 1;
 		}).orElseGet(() -> {
-			source.sendError(Text.translatable(MSG + "clear.notFound", id));
+			source.sendError(msg("clear.notFound", String.valueOf(id)));
 			return 0;
 		});
 	}
@@ -123,9 +127,9 @@ public final class ZoneguardCommands {
 		for (GameProfile profile : profiles) {
 			if (data.addOperator(profile)) {
 				added++;
-				source.sendFeedback(() -> Text.translatable(MSG + "op.add.success", profile.getName()), true);
+				source.sendFeedback(() -> msg("op.add.success", profile.getName()), true);
 			} else {
-				source.sendFeedback(() -> Text.translatable(MSG + "op.add.exists", profile.getName()), false);
+				source.sendFeedback(() -> msg("op.add.exists", profile.getName()), false);
 			}
 		}
 
@@ -142,9 +146,9 @@ public final class ZoneguardCommands {
 			OptionalName removedName = removeOperator(data, profile);
 			if (removedName.found()) {
 				removed++;
-				source.sendFeedback(() -> Text.translatable(MSG + "op.remove.success", removedName.name()), true);
+				source.sendFeedback(() -> msg("op.remove.success", removedName.name()), true);
 			} else {
-				source.sendError(Text.translatable(MSG + "op.remove.notFound", profile.getName()));
+				source.sendError(msg("op.remove.notFound", profile.getName()));
 			}
 		}
 
@@ -161,14 +165,27 @@ public final class ZoneguardCommands {
 	private static int listOperators(CommandContext<ServerCommandSource> context) {
 		ZoneguardSavedData data = ZoneguardSavedData.get(context.getSource().getServer());
 		if (data.operators().isEmpty()) {
-			context.getSource().sendFeedback(() -> Text.translatable(MSG + "op.list.empty"), false);
+			context.getSource().sendFeedback(() -> msg("op.list.empty"), false);
 			return 0;
 		}
 
 		StringJoiner joiner = new StringJoiner(", ");
 		data.operators().values().forEach(joiner::add);
-		context.getSource().sendFeedback(() -> Text.translatable(MSG + "op.list", joiner), false);
+		context.getSource().sendFeedback(() -> msg("op.list", joiner.toString()), false);
 		return data.operators().size();
+	}
+
+	/**
+	 * 服务端渲染翻译键(语言由 carpet 翻译表 / carpet language 决定),
+	 * 结果转成纯文本组件,不依赖客户端语言文件。
+	 */
+	private static Text msg(String key, String... args) {
+		String pattern = Translations.tr(MSG + key);
+		return Text.literal(args.length == 0 ? pattern : pattern.formatted((Object[]) args));
+	}
+
+	private static String regionDimension(DetectorRegion region) {
+		return String.valueOf(region.dimension().getValue());
 	}
 
 	private static String formatPos(BlockPos pos) {

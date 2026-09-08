@@ -20,7 +20,8 @@ public final class ZoneguardPermissions {
 
 	public static boolean canUse(ServerCommandSource source) {
 		// The whole /zoneguard tree is hidden unless the zoneguard rule is enabled.
-		if (!ZoneguardSettings.zoneguard) {
+		// Read the authoritative Carpet rule value (not the static field).
+		if (!ZoneguardSettings.isEnabled()) {
 			return false;
 		}
 

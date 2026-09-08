@@ -3,6 +3,14 @@
   "carpet.rule.zoneguard.name": "zoneguard",
   "carpet.rule.zoneguard.desc": "Disables observers inside the cubic regions configured with /zoneguard. Turning the rule off restores observers in those regions.",
 
+  "haoaddition.category.haoaddition": "Carpet-Hao-Addition",
+  "haoaddition.rule.exampleBoolean.name": "Example Boolean",
+  "haoaddition.rule.exampleBoolean.desc": "An example boolean rule of this extension.",
+  "haoaddition.rule.exampleString.name": "Example String",
+  "haoaddition.rule.exampleString.desc": "An example string rule with a few preset options.",
+  "haoaddition.command.hao.header": "Current rules of Carpet-Hao-Addition:",
+  "haoaddition.command.hao.manage": "Manage them with /haoaddition <rule> <value>",
+
   "zoneguard.commands.set.success": "Set region %s: %s [%s] -> [%s]",
   "zoneguard.commands.view.empty": "There are no configured detector-disabled regions yet.",
   "zoneguard.commands.view.header": "Detector-disabled regions:",
