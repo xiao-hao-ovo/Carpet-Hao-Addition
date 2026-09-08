@@ -4,6 +4,8 @@
   "carpet.rule.zoneguard.desc": "Disables observers inside the cubic regions configured with /zoneguard. Turning the rule off restores observers in those regions.",
   "carpet.rule.goldenCarrotCompost.name": "Golden Carrot Composting",
   "carpet.rule.goldenCarrotCompost.desc": "While enabled, right-clicking a composter while holding a golden carrot composts it with 100% chance, exactly like a regular compostable item.",
+  "carpet.rule.snowyCalcite.name": "Snowy Calcite",
+  "carpet.rule.snowyCalcite.desc": "While enabled, stone/cobblestone produced by lava+water generators in snowy (snow-precipitating) biomes becomes calcite.",
 
   "haoaddition.category.haoaddition": "Carpet-Hao-Addition",
   "haoaddition.rule.exampleBoolean.name": "Example Boolean",
