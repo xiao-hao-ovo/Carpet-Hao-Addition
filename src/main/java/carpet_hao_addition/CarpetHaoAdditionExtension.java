@@ -68,6 +68,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         // parser always finds the required "carpet.rule.zoneguard.desc" key.
         settingsManager.parseSettingsClass(CarpetHaoAdditionSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(ZoneguardSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(GoldenCarrotCompostSettings.class);
 
         registerZoneguardRuleObserver();
     }
