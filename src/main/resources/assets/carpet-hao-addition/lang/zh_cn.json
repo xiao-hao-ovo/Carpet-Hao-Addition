@@ -2,6 +2,8 @@
   "carpet.category.Hao": "昊",
   "carpet.rule.zoneguard.name": "zoneguard",
   "carpet.rule.zoneguard.desc": "在 /zoneguard 配置的立方区域内禁用侦测器(观察者)行为。关闭规则会恢复区域内侦测器。",
+  "carpet.rule.goldenCarrotCompost.name": "金胡萝卜堆肥",
+  "carpet.rule.goldenCarrotCompost.desc": "开启后,手持金胡萝卜对堆肥桶右键可 100% 堆肥(消耗与效果同普通可堆肥物品,满桶流程一致)。",
 
   "haoaddition.category.haoaddition": "Carpet-Hao-Addition",
   "haoaddition.rule.exampleBoolean.name": "Example Boolean",

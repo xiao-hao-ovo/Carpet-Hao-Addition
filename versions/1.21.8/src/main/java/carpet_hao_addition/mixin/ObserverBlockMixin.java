@@ -1,4 +1,4 @@
-package carpet_hao_addition.zoneguard.mixin;
+package carpet_hao_addition.mixin;
 
 import carpet_hao_addition.zoneguard.region.ZoneguardState;
 

@@ -24,7 +24,7 @@
   },
 
   "mixins": [
-    "zoneguard.mixins.json"
+    "carpet-hao-addition.mixins.json"
   ],
 
   "depends": {
