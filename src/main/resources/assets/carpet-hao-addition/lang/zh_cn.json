@@ -4,6 +4,8 @@
   "carpet.rule.zoneguard.desc": "在 /zoneguard 配置的立方区域内禁用侦测器(观察者)行为。关闭规则会恢复区域内侦测器。",
   "carpet.rule.goldenCarrotCompost.name": "金胡萝卜堆肥",
   "carpet.rule.goldenCarrotCompost.desc": "开启后,手持金胡萝卜对堆肥桶右键可 100% 堆肥(消耗与效果同普通可堆肥物品,满桶流程一致)。",
+  "carpet.rule.snowyCalcite.name": "雪地方解石",
+  "carpet.rule.snowyCalcite.desc": "开启后,在降雪(雪地)生物群系中,岩浆与水的刷石机产物(石头/圆石)将变为方解石。",
 
   "haoaddition.category.haoaddition": "Carpet-Hao-Addition",
   "haoaddition.rule.exampleBoolean.name": "Example Boolean",

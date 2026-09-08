@@ -69,6 +69,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         settingsManager.parseSettingsClass(CarpetHaoAdditionSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(ZoneguardSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(GoldenCarrotCompostSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(SnowyCalciteSettings.class);
 
         registerZoneguardRuleObserver();
     }

@@ -4,7 +4,9 @@
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
 		"ObserverBlockMixin",
-		"ComposterBlockMixin"
+		"ComposterBlockMixin",
+		"LavaFluid_snowyCalciteMixin",
+		"FluidBlock_snowyCalciteMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
