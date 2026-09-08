@@ -15,8 +15,6 @@ import carpet_hao_addition.zoneguard.ZoneguardHooks;
 import carpet_hao_addition.zoneguard.ZoneguardSettings;
 import carpet_hao_addition.zoneguard.command.ZoneguardCommands;
 
-import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 import static net.minecraft.server.command.CommandManager.literal;
@@ -88,17 +86,16 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         }
         this.zoneguardObserverRegistered = true;
 
-        // Toggling the zoneguard rule OFF must restore observers that were frozen while
-        // the rule was ON (e.g. face-to-face pairs), otherwise they never update again.
+        // Toggling the zoneguard rule must take effect immediately for online players:
+        // turning it OFF also restores observers that were frozen while it was ON.
         CarpetServer.settingsManager.registerRuleObserver((source, changedRule, userInput) ->
         {
             if (!ZONEGUARD_RULE.equals(changedRule.name()))
             {
                 return;
             }
-            if (!(changedRule.value() instanceof Boolean enabled) || enabled)
+            if (!(changedRule.value() instanceof Boolean enabled))
             {
-                // Only react when the rule is turned OFF.
                 return;
             }
 
@@ -107,10 +104,18 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
             {
                 srv = this.server;
             }
-            if (srv != null)
+            if (srv == null)
+            {
+                return;
+            }
+
+            if (!enabled)
             {
                 ZoneguardHooks.refreshAllRegions(srv);
             }
+            // Clients cache the command tree at login; re-send it so /zoneguard
+            // disappears (rule off) or appears (rule on) without relogging.
+            ZoneguardHooks.refreshCommandTree(srv);
         });
     }
 
@@ -148,37 +153,21 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
     @Override
     public Map<String, String> canHasTranslations(String lang)
     {
-        boolean zh = lang != null && lang.toLowerCase(Locale.ROOT).startsWith("zh");
-        Map<String, String> translations = new HashMap<>();
-        String rulePrefix = MANAGER_ID + ".rule.";
-        String commandPrefix = MANAGER_ID + ".command.";
-
-        translations.put(rulePrefix + "exampleBoolean.name", "Example Boolean");
-        translations.put(rulePrefix + "exampleBoolean.desc", zh
-                ? "本扩展的一个示例布尔规则。"
-                : "An example boolean rule of this extension.");
-        translations.put(rulePrefix + "exampleString.name", "Example String");
-        translations.put(rulePrefix + "exampleString.desc", zh
-                ? "一个带几个预设选项的示例字符串规则。"
-                : "An example string rule with a few preset options.");
-        translations.put(MANAGER_ID + ".category." + MANAGER_ID, MOD_NAME);
-
-        // /hao command example texts (Carpet-rendered, so served from this table).
-        translations.put(commandPrefix + "hao.header", zh
-                ? "扩展 " + MOD_NAME + " 的当前规则："
-                : "Current rules of " + MOD_NAME + ":");
-        translations.put(commandPrefix + "hao.manage", zh
-                ? "使用 /" + MANAGER_ID + " <规则> <值> 管理它们"
-                : "Manage them with /" + MANAGER_ID + " <rule> <value>");
-
-        // zoneguard rule lives in Carpet's DEFAULT settings manager ("/carpet"),
-        // under the "Hao" category, so its keys use the "carpet." namespace.
-        translations.put("carpet.category.Hao", "Hao");
-        translations.put("carpet.rule." + ZONEGUARD_RULE + ".name", ZONEGUARD_RULE);
-        translations.put("carpet.rule." + ZONEGUARD_RULE + ".desc", zh
-                ? "在 /zoneguard 配置的立方区域内禁用侦测器(观察者)行为。关闭规则会恢复区域内侦测器。"
-                : "Disables observers inside the cubic regions configured with /zoneguard. Turning the rule off restores observers in those regions.");
-
+        // All user-visible texts live in the language files under
+        // assets/carpet-hao-addition/lang/{en_us,zh_cn}.json — nothing is hardcoded
+        // here. Carpet merges the returned map into its translation table (used for
+        // rule names/descriptions and the /hao command), and the same keys are also
+        // shipped as regular Minecraft lang files for client-side rendering.
+        String language = lang == null ? "en_us" : lang;
+        Map<String, String> translations = Translations.getTranslationFromResourcePath(
+                "assets/" + MOD_ID + "/lang/" + language + ".json");
+        if (translations.isEmpty() && !"en_us".equals(language))
+        {
+            // Fall back to English when the requested language file is missing, so
+            // Carpet's rule parser always finds the required name/desc keys.
+            translations = Translations.getTranslationFromResourcePath(
+                    "assets/" + MOD_ID + "/lang/en_us.json");
+        }
         return translations;
     }
 }

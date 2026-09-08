@@ -5,6 +5,8 @@ import carpet_hao_addition.zoneguard.region.RegionObserverRefresh;
 import carpet_hao_addition.zoneguard.region.ZoneguardSavedData;
 
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 
 /**
@@ -32,5 +34,19 @@ public final class ZoneguardHooks {
 			refreshed += RegionObserverRefresh.startLoadedFaceToFacePairs(world, region);
 		}
 		return refreshed;
+	}
+
+	/**
+	 * 向所有在线玩家重新下发命令树。
+	 * <p>
+	 * 客户端登录时缓存命令树,之后 requires 不再满足的节点(例如 zoneguard
+	 * 规则被关闭)不会自动从补全里消失;重推后按玩家权限过滤,未开启规则时
+	 * /zoneguard 会立即从客户端补全中移除(开启时则立即出现)。
+	 */
+	public static void refreshCommandTree(MinecraftServer server) {
+		CommandManager commandManager = server.getCommandManager();
+		for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+			commandManager.sendCommandTree(player);
+		}
 	}
 }

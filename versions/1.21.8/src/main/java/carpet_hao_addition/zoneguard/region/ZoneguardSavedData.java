@@ -29,8 +29,10 @@ public class ZoneguardSavedData extends PersistentState {
 			Codec.unboundedMap(Codec.STRING, Codec.STRING).optionalFieldOf("operators", Map.of()).forGetter(ZoneguardSavedData::operators)
 	).apply(instance, ZoneguardSavedData::new));
 
+	// yarn 1.21.8 的 PersistentStateType id 会直接作为数据文件名(<id>.dat)使用,
+	// 因此不能包含 ':'(26.2 参考实现用命名空间写法,此处以 1.21.8 行为为准)。
 	public static final PersistentStateType<ZoneguardSavedData> TYPE = new PersistentStateType<>(
-			"zoneguard:detector_regions",
+			"zoneguard_detector_regions",
 			ZoneguardSavedData::new,
 			CODEC,
 			DataFixTypes.LEVEL

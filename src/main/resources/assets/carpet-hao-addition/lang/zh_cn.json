@@ -1,7 +1,15 @@
 {
-  "carpet.category.Hao": "Hao",
+  "carpet.category.Hao": "昊",
   "carpet.rule.zoneguard.name": "zoneguard",
   "carpet.rule.zoneguard.desc": "在 /zoneguard 配置的立方区域内禁用侦测器(观察者)行为。关闭规则会恢复区域内侦测器。",
+
+  "haoaddition.category.haoaddition": "Carpet-Hao-Addition",
+  "haoaddition.rule.exampleBoolean.name": "Example Boolean",
+  "haoaddition.rule.exampleBoolean.desc": "本扩展的一个示例布尔规则。",
+  "haoaddition.rule.exampleString.name": "Example String",
+  "haoaddition.rule.exampleString.desc": "一个带几个预设选项的示例字符串规则。",
+  "haoaddition.command.hao.header": "扩展 Carpet-Hao-Addition 的当前规则：",
+  "haoaddition.command.hao.manage": "使用 /haoaddition <规则> <值> 管理它们",
 
   "zoneguard.commands.set.success": "已设置区域 %s：%s [%s] → [%s]",
   "zoneguard.commands.view.empty": "当前没有已设置的侦测器禁用区域。",
