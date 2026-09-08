@@ -1,0 +1,14 @@
+{
+	"required": true,
+	"package": "carpet_hao_addition.zoneguard.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"ObserverBlockMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}

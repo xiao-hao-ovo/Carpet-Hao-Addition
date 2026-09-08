@@ -1,0 +1,26 @@
+plugins {
+	id 'base'
+}
+
+def collectVersionJars = tasks.register('collectVersionJars', Copy) {
+	group = 'build'
+	description = 'Collects remapped jars from every supported Minecraft version.'
+	into layout.buildDirectory.dir('libs')
+}
+
+subprojects {
+	plugins.withId('fabric-loom') {
+		rootProject.tasks.named('clean') {
+			dependsOn tasks.named('clean')
+		}
+
+		collectVersionJars.configure {
+			dependsOn tasks.named('remapJar')
+			from tasks.named('remapJar').flatMap { it.archiveFile }
+		}
+	}
+}
+
+tasks.named('build') {
+	dependsOn collectVersionJars
+}

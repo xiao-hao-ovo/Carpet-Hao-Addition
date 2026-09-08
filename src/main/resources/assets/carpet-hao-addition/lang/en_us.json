@@ -1,0 +1,18 @@
+{
+  "carpet.category.Hao": "Hao",
+  "carpet.rule.zoneguard.name": "zoneguard",
+  "carpet.rule.zoneguard.desc": "Disables observers inside the cubic regions configured with /zoneguard. Turning the rule off restores observers in those regions.",
+
+  "zoneguard.commands.set.success": "Set region %s: %s [%s] -> [%s]",
+  "zoneguard.commands.view.empty": "There are no configured detector-disabled regions yet.",
+  "zoneguard.commands.view.header": "Detector-disabled regions:",
+  "zoneguard.commands.view.item": "%s: %s [%s] -> [%s]",
+  "zoneguard.commands.clear.success": "Cleared region %s: %s [%s] -> [%s]; restarted %s face-to-face observer pair(s).",
+  "zoneguard.commands.clear.notFound": "No region found with id %s.",
+  "zoneguard.commands.op.add.success": "Granted ZoneGuard access to %s.",
+  "zoneguard.commands.op.add.exists": "%s already has ZoneGuard access.",
+  "zoneguard.commands.op.remove.success": "Removed ZoneGuard access from %s.",
+  "zoneguard.commands.op.remove.notFound": "%s has no ZoneGuard access.",
+  "zoneguard.commands.op.list.empty": "There are no ZoneGuard operators.",
+  "zoneguard.commands.op.list": "ZoneGuard operators: %s"
+}
