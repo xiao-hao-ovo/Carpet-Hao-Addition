@@ -11,7 +11,9 @@
 		"StonecutterScreenHandlerMixin",
 		"Block_bedrockCanBeMinedMixin",
 		"ServerPlayerInteractionManager_bedrockMinesMixin",
-		"BlockState_bedrockCanBeMinedMixin"
+		"BlockState_bedrockCanBeMinedMixin",
+		"LivingEntity_witherSkeletonDropMixin",
+		"MobEntity_witherSkeletonDropMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
