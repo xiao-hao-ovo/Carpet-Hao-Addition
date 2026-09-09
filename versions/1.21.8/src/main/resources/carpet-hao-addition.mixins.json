@@ -10,7 +10,8 @@
 		"EndPortalBlockMixin",
 		"StonecutterScreenHandlerMixin",
 		"Block_bedrockCanBeMinedMixin",
-		"ServerPlayerInteractionManager_bedrockMinesMixin"
+		"ServerPlayerInteractionManager_bedrockMinesMixin",
+		"BlockState_bedrockCanBeMinedMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
