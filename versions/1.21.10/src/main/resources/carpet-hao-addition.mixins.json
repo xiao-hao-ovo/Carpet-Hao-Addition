@@ -9,8 +9,8 @@
 		"FluidBlock_snowyCalciteMixin",
 		"EndPortalBlockMixin",
 		"StonecutterScreenHandlerMixin",
-		"BlockState_bedrockCanBeMinedMixin",
-		"Block_bedrockCanBeMinedMixin"
+		"Block_bedrockCanBeMinedMixin",
+		"ServerPlayerInteractionManager_bedrockMinesMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
