@@ -55,5 +55,7 @@
   "zoneguard.commands.op.remove.success": "已移除 %s 的 ZoneGuard 权限。",
   "zoneguard.commands.op.remove.notFound": "%s 没有 ZoneGuard 权限。",
   "zoneguard.commands.op.list.empty": "当前没有 ZoneGuard 权限玩家。",
-  "zoneguard.commands.op.list": "ZoneGuard 权限玩家：%s"
+  "zoneguard.commands.op.list": "ZoneGuard 权限玩家：%s",
+  "carpet.rule.witherSkeletonDropReduction.name": "凋零骷髅掉落去除",
+  "carpet.rule.witherSkeletonDropReduction.desc": "去除凋零骷髅的指定掉落物。选项:false=原版;bone=去骨头;coal=去煤炭;skull=去凋零骷髅头颅;sword=去掉落的手持石剑;all=去除以上全部。"
 }
