@@ -30,7 +30,7 @@ public abstract class BlockState_bedrockCanBeMinedMixin {
 			return;
 		}
 		Float current = cir.getReturnValue();
-		if (current != null && current < 0f) {
+		if (current != null && current <= 0f) {
 			cir.setReturnValue(Blocks.OBSIDIAN.getDefaultState().calcBlockBreakingDelta(player, world, pos));
 		}
 	}
