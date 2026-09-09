@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "minecraft:green_terracotta"
+  },
+  "result": {
+    "id": "minecraft:terracotta",
+    "count": 1
+  }
+}

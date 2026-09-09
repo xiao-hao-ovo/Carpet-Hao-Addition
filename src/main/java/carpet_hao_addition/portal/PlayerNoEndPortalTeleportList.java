@@ -18,8 +18,11 @@ public final class PlayerNoEndPortalTeleportList {
 	private PlayerNoEndPortalTeleportList() {
 	}
 
-	/** 全局模式:true=所有玩家都不被末地传送门传送(默认,兼容“开启即全禁”的旧行为)。 */
-	public static boolean globalMode = true;
+	/**
+	 * 全局模式:默认 false(规则开启本身不禁止任何传送);
+	 * true=所有玩家都不被末地传送门传送;false=仅名单内玩家不被传送(黑名单)。
+	 */
+	public static boolean globalMode = false;
 
 	private static final Map<UUID, String> BLOCKED = new LinkedHashMap<>();
 
