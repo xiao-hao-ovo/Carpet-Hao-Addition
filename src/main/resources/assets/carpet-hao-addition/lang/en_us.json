@@ -10,6 +10,8 @@
   "carpet.rule.noEndPortalTeleport.desc": "Enables the /playerNoEndPortalTeleport list management. The rule itself does not change teleporting: only players added to the blacklist (or with globalMode enabled) are not teleported by end portals; non-player entities are unaffected.",
   "carpet.rule.terracottaUncolor.name": "Terracotta Uncolor",
   "carpet.rule.terracottaUncolor.desc": "While enabled, the stonecutter can revert all 16 dyed terracotta to plain terracotta and all 16 glazed terracotta to their dyed terracotta; while disabled, these recipes do not appear in the stonecutter at all.",
+  "carpet.rule.bedrockCanBeMined.name": "Bedrock Can Be Mined",
+  "carpet.rule.bedrockCanBeMined.desc": "While enabled, bedrock can be mined (it mines like obsidian) and drops itself as an item when broken; while disabled, vanilla behavior is restored.",
 
   "playerNoEndPortalTeleport.commands.help.header": "End portal teleport blacklist management:",
   "playerNoEndPortalTeleport.commands.help.globalMode": "globalMode [true|false] - view/set global mode (true = no player is teleported by end portals)",
