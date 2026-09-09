@@ -102,19 +102,36 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         }
         this.zoneguardObserverRegistered = true;
 
-        // Toggling rules that gate command visibility must take effect immediately for
-        // online players: /zoneguard and /playerNoEndPortalTeleport must appear/disappear.
+        // Toggling rules must take effect immediately for online players:
+        // command-gating rules refresh the command tree, and terracottaUncolor
+        // enables/disables the recipe datapack (so the UI entries appear/disappear).
         CarpetServer.settingsManager.registerRuleObserver((source, changedRule, userInput) ->
         {
             String ruleName = changedRule.name();
+            if (!(changedRule.value() instanceof Boolean enabled))
+            {
+                return;
+            }
+
+            if (TerracottaUncolorSettings.RULE_NAME.equals(ruleName))
+            {
+                MinecraftServer srv = source != null ? source.getServer() : null;
+                if (srv == null)
+                {
+                    srv = this.server;
+                }
+                if (srv != null)
+                {
+                    // Turn the recipe datapack on/off (and reload) right away.
+                    RecipeDeployHooks.ensureDeployed(srv);
+                }
+                return;
+            }
+
             boolean zoneguardRule = ZONEGUARD_RULE.equals(ruleName);
             // Rules whose ON/OFF state hides or reveals commands need a tree refresh.
             boolean commandGatingRule = zoneguardRule || NoEndPortalTeleportSettings.RULE_NAME.equals(ruleName);
             if (!commandGatingRule)
-            {
-                return;
-            }
-            if (!(changedRule.value() instanceof Boolean enabled))
             {
                 return;
             }
