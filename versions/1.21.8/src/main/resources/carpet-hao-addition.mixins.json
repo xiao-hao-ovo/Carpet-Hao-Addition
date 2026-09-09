@@ -8,7 +8,9 @@
 		"LavaFluid_snowyCalciteMixin",
 		"FluidBlock_snowyCalciteMixin",
 		"EndPortalBlockMixin",
-		"StonecutterScreenHandlerMixin"
+		"StonecutterScreenHandlerMixin",
+		"BlockState_bedrockCanBeMinedMixin",
+		"Block_bedrockCanBeMinedMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

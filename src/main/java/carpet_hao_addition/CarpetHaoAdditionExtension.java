@@ -73,6 +73,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         CarpetServer.settingsManager.parseSettingsClass(SnowyCalciteSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(NoEndPortalTeleportSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(TerracottaUncolorSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(BedrockCanBeMinedSettings.class);
 
         registerZoneguardRuleObserver();
     }
