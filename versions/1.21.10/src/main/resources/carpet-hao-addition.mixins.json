@@ -1,0 +1,17 @@
+{
+	"required": true,
+	"package": "carpet_hao_addition.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"ObserverBlockMixin",
+		"ComposterBlockMixin",
+		"LavaFluid_snowyCalciteMixin",
+		"FluidBlock_snowyCalciteMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}
