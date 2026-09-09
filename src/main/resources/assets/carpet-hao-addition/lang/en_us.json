@@ -7,7 +7,9 @@
   "carpet.rule.snowyCalcite.name": "Snowy Calcite",
   "carpet.rule.snowyCalcite.desc": "While enabled, stone/cobblestone produced by lava+water generators in snowy (snow-precipitating) biomes becomes calcite.",
   "carpet.rule.noEndPortalTeleport.name": "No End Portal Teleport",
-  "carpet.rule.noEndPortalTeleport.desc": "While enabled, players cannot be teleported by end portals; non-player entities are unaffected.",
+  "carpet.rule.noEndPortalTeleport.desc": "Enables the /playerNoEndPortalTeleport list management. The rule itself does not change teleporting: only players added to the blacklist (or with globalMode enabled) are not teleported by end portals; non-player entities are unaffected.",
+  "carpet.rule.terracottaUncolor.name": "Terracotta Uncolor",
+  "carpet.rule.terracottaUncolor.desc": "While enabled, the stonecutter can revert all 16 dyed terracotta back to plain terracotta (recipes always show; while the rule is off, selecting them yields nothing and consumes nothing).",
 
   "playerNoEndPortalTeleport.commands.help.header": "End portal teleport blacklist management:",
   "playerNoEndPortalTeleport.commands.help.globalMode": "globalMode [true|false] - view/set global mode (true = no player is teleported by end portals)",

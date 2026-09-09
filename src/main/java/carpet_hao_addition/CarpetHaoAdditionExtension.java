@@ -72,6 +72,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         CarpetServer.settingsManager.parseSettingsClass(GoldenCarrotCompostSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(SnowyCalciteSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(NoEndPortalTeleportSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(TerracottaUncolorSettings.class);
 
         registerZoneguardRuleObserver();
     }
@@ -90,11 +91,15 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         }
         this.zoneguardObserverRegistered = true;
 
-        // Toggling the zoneguard rule must take effect immediately for online players:
-        // turning it OFF also restores observers that were frozen while it was ON.
+        // Toggling rules that gate command visibility must take effect immediately for
+        // online players: /zoneguard and /playerNoEndPortalTeleport must appear/disappear.
         CarpetServer.settingsManager.registerRuleObserver((source, changedRule, userInput) ->
         {
-            if (!ZONEGUARD_RULE.equals(changedRule.name()))
+            String ruleName = changedRule.name();
+            boolean zoneguardRule = ZONEGUARD_RULE.equals(ruleName);
+            // Rules whose ON/OFF state hides or reveals commands need a tree refresh.
+            boolean commandGatingRule = zoneguardRule || NoEndPortalTeleportSettings.RULE_NAME.equals(ruleName);
+            if (!commandGatingRule)
             {
                 return;
             }
@@ -113,12 +118,13 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
                 return;
             }
 
-            if (!enabled)
+            if (!enabled && zoneguardRule)
             {
+                // Turning the zoneguard rule OFF also restores observers frozen while ON.
                 ZoneguardHooks.refreshAllRegions(srv);
             }
-            // Clients cache the command tree at login; re-send it so /zoneguard
-            // disappears (rule off) or appears (rule on) without relogging.
+            // Clients cache the command tree at login; re-send it so the gated commands
+            // appear (rule on) or disappear (rule off) without relogging.
             ZoneguardHooks.refreshCommandTree(srv);
         });
     }
