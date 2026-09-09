@@ -6,7 +6,8 @@
 		"ObserverBlockMixin",
 		"ComposterBlockMixin",
 		"LavaFluid_snowyCalciteMixin",
-		"FluidBlock_snowyCalciteMixin"
+		"FluidBlock_snowyCalciteMixin",
+		"EndPortalBlockMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
