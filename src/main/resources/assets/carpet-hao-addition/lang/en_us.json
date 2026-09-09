@@ -55,5 +55,7 @@
   "zoneguard.commands.op.remove.success": "Removed ZoneGuard access from %s.",
   "zoneguard.commands.op.remove.notFound": "%s has no ZoneGuard access.",
   "zoneguard.commands.op.list.empty": "There are no ZoneGuard operators.",
-  "zoneguard.commands.op.list": "ZoneGuard operators: %s"
+  "zoneguard.commands.op.list": "ZoneGuard operators: %s",
+  "carpet.rule.witherSkeletonDropReduction.name": "Wither Skeleton Drop Reduction",
+  "carpet.rule.witherSkeletonDropReduction.desc": "Removes selected drops from wither skeletons. Options: false=vanilla; bone=no bones; coal=no coal; skull=no wither skeleton skull; sword=no dropped stone sword; all=remove all of the above."
 }
