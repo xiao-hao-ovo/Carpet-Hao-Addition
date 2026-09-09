@@ -17,13 +17,14 @@ import java.util.function.Consumer;
 /**
  * witherSkeletonDropReduction:过滤凋零骷髅死亡掉落(loot 表:骨头/煤炭/头颅)。
  * <p>
- * 1.21.8/1.21.10 的实体死亡掉落由 LivingEntity.dropLoot 调
- * LootTable.generateLoot(context, seed, consumer) 完成;用 @ModifyArg 把该 consumer
- * 包一层(vanilla 注入,不依赖 mixinextras),命中选项时丢弃指定物品。
+ * 1.21.10 的实体死亡掉落由 dropLoot 委托到 LivingEntity.generateLoot(ServerWorld,
+ * DamageSource, boolean, RegistryKey, Consumer),其内部调
+ * LootTable.generateLoot(context, seed, consumer);用 @ModifyArg 把该 consumer 包一层
+ * (vanilla 注入,不依赖 mixinextras),命中选项时丢弃指定物品。
  */
 @Mixin(LivingEntity.class)
 public abstract class LivingEntity_witherSkeletonDropMixin {
-	@ModifyArg(method = "dropLoot",
+	@ModifyArg(method = "generateLoot",
 			at = @At(value = "INVOKE",
 					target = "Lnet/minecraft/loot/LootTable;generateLoot(Lnet/minecraft/loot/context/LootWorldContext;JLjava/util/function/Consumer;)V"),
 			index = 2)
