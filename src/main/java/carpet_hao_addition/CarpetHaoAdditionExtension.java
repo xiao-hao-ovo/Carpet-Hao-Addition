@@ -81,6 +81,17 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
     public void onServerLoaded(MinecraftServer server)
     {
         this.server = server;
+        // Deploy & enable the terracotta-uncolor datapack right after startup (deferred to
+        // the first tick so the level is fully loaded), so recipes work without /reload.
+        server.execute(() -> RecipeDeployHooks.ensureDeployed(server));
+    }
+
+    @Override
+    public void onReload(MinecraftServer server)
+    {
+        // Ensure the terracotta-uncolor stonecutter recipes are deployed to the world
+        // datapack and enabled (fabric-loader does not auto-load mod data/ as a datapack).
+        RecipeDeployHooks.ensureDeployed(server);
     }
 
     private void registerZoneguardRuleObserver()
