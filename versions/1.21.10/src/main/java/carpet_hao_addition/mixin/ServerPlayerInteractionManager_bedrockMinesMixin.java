@@ -50,9 +50,12 @@ public abstract class ServerPlayerInteractionManager_bedrockMinesMixin {
 
 	private static float hao$bedrockDelta(BlockState state, PlayerEntity player, BlockView world, BlockPos pos,
 			Operation<Float> original) {
-		if (BedrockCanBeMinedSettings.isEnabled() && state.isOf(Blocks.BEDROCK)) {
+		// 先取当前实际挖掘进度(可能已被 AMS customBlockHardness 等设置为自定义硬度)。
+		float delta = original.call(state, player, world, pos);
+		if (BedrockCanBeMinedSettings.isEnabled() && state.isOf(Blocks.BEDROCK) && delta <= 0f) {
+			// 基岩仍不可挖(无外部设置、或原版 -1)时,按黑曜石兜底,使其可被挖掘。
 			return Blocks.OBSIDIAN.getDefaultState().calcBlockBreakingDelta(player, world, pos);
 		}
-		return original.call(state, player, world, pos);
+		return delta;
 	}
 }
