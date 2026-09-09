@@ -28,7 +28,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class EndPortalBlockMixin {
 	@Inject(method = "onEntityCollision", at = @At("HEAD"), cancellable = true)
 	private void hao$noEndPortalTeleport(BlockState state, World world, BlockPos pos, Entity entity,
-			EntityCollisionHandler collisionHandler, CallbackInfo ci) {
+			EntityCollisionHandler collisionHandler, boolean flag, CallbackInfo ci) {
 		if (world.isClient() || !(entity instanceof ServerPlayerEntity player)) {
 			return;
 		}
