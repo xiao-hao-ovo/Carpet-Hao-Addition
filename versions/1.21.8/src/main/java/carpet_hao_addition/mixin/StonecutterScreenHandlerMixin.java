@@ -25,13 +25,19 @@ import java.util.Set;
 @Mixin(StonecutterScreenHandler.class)
 public abstract class StonecutterScreenHandlerMixin {
 	@Unique
-	private static final Set<Item> DYED_TERRACOTTA = Set.of(
+	private static final Set<Item> UNCOLOR_INPUTS = Set.of(
 			Items.WHITE_TERRACOTTA, Items.ORANGE_TERRACOTTA, Items.MAGENTA_TERRACOTTA,
 			Items.LIGHT_BLUE_TERRACOTTA, Items.YELLOW_TERRACOTTA, Items.LIME_TERRACOTTA,
 			Items.PINK_TERRACOTTA, Items.GRAY_TERRACOTTA, Items.LIGHT_GRAY_TERRACOTTA,
 			Items.CYAN_TERRACOTTA, Items.PURPLE_TERRACOTTA, Items.BLUE_TERRACOTTA,
 			Items.BROWN_TERRACOTTA, Items.GREEN_TERRACOTTA, Items.RED_TERRACOTTA,
-			Items.BLACK_TERRACOTTA);
+			Items.BLACK_TERRACOTTA,
+			Items.WHITE_GLAZED_TERRACOTTA, Items.ORANGE_GLAZED_TERRACOTTA, Items.MAGENTA_GLAZED_TERRACOTTA,
+			Items.LIGHT_BLUE_GLAZED_TERRACOTTA, Items.YELLOW_GLAZED_TERRACOTTA, Items.LIME_GLAZED_TERRACOTTA,
+			Items.PINK_GLAZED_TERRACOTTA, Items.GRAY_GLAZED_TERRACOTTA, Items.LIGHT_GRAY_GLAZED_TERRACOTTA,
+			Items.CYAN_GLAZED_TERRACOTTA, Items.PURPLE_GLAZED_TERRACOTTA, Items.BLUE_GLAZED_TERRACOTTA,
+			Items.BROWN_GLAZED_TERRACOTTA, Items.GREEN_GLAZED_TERRACOTTA, Items.RED_GLAZED_TERRACOTTA,
+			Items.BLACK_GLAZED_TERRACOTTA);
 
 	@Inject(method = "onButtonClick", at = @At("HEAD"), cancellable = true)
 	private void hao$gateTerracottaUncolor(net.minecraft.entity.player.PlayerEntity player, int id,
@@ -42,8 +48,8 @@ public abstract class StonecutterScreenHandlerMixin {
 
 		StonecutterScreenHandler handler = (StonecutterScreenHandler) (Object) this;
 		ItemStack input = handler.input.getStack(0);
-		if (DYED_TERRACOTTA.contains(input.getItem())) {
-			// 规则关闭:染色陶瓦的还原点击不产出、不消耗。
+		if (UNCOLOR_INPUTS.contains(input.getItem())) {
+			// 规则关闭:还原点击不产出、不消耗(配方数据包已停用,此为兜底)。
 			cir.setReturnValue(false);
 		}
 	}

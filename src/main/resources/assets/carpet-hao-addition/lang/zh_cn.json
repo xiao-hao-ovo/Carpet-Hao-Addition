@@ -8,8 +8,8 @@
   "carpet.rule.snowyCalcite.desc": "开启后,在降雪(雪地)生物群系中,岩浆与水的刷石机产物(石头/圆石)将变为方解石。",
   "carpet.rule.noEndPortalTeleport.name": "末地门不传送",
   "carpet.rule.noEndPortalTeleport.desc": "开启后提供 /playerNoEndPortalTeleport 名单管理。规则本身不改变传送:把玩家加入黑名单或开启 globalMode 后,对应玩家才不会被末地传送门传送;非玩家实体不受影响。",
-  "carpet.rule.terracottaUncolor.name": "染色陶瓦还原",
-  "carpet.rule.terracottaUncolor.desc": "开启后,切石机可把 16 种染色陶瓦还原为未染色陶瓦(配方常驻显示,规则关闭时点选还原无产出、不消耗)。",
+  "carpet.rule.terracottaUncolor.name": "陶瓦还原",
+  "carpet.rule.terracottaUncolor.desc": "开启后,切石机可把 16 种染色陶瓦还原为原色陶瓦、16 种釉陶瓦还原为同色染色陶瓦;规则关闭时切石机不出现这些还原配方。",
 
   "playerNoEndPortalTeleport.commands.help.header": "末地门不传送名单管理:",
   "playerNoEndPortalTeleport.commands.help.globalMode": "globalMode [true|false] - 查看/设置全局模式(true=所有玩家都不被末地门传送)",

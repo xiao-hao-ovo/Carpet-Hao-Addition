@@ -9,7 +9,7 @@
   "carpet.rule.noEndPortalTeleport.name": "No End Portal Teleport",
   "carpet.rule.noEndPortalTeleport.desc": "Enables the /playerNoEndPortalTeleport list management. The rule itself does not change teleporting: only players added to the blacklist (or with globalMode enabled) are not teleported by end portals; non-player entities are unaffected.",
   "carpet.rule.terracottaUncolor.name": "Terracotta Uncolor",
-  "carpet.rule.terracottaUncolor.desc": "While enabled, the stonecutter can revert all 16 dyed terracotta back to plain terracotta (recipes always show; while the rule is off, selecting them yields nothing and consumes nothing).",
+  "carpet.rule.terracottaUncolor.desc": "While enabled, the stonecutter can revert all 16 dyed terracotta to plain terracotta and all 16 glazed terracotta to their dyed terracotta; while disabled, these recipes do not appear in the stonecutter at all.",
 
   "playerNoEndPortalTeleport.commands.help.header": "End portal teleport blacklist management:",
   "playerNoEndPortalTeleport.commands.help.globalMode": "globalMode [true|false] - view/set global mode (true = no player is teleported by end portals)",

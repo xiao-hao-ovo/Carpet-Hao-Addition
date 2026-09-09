@@ -1,8 +1,0 @@
-{
-  "type": "minecraft:stonecutting",
-  "ingredient": "minecraft:red_terracotta",
-  "result": {
-    "id": "minecraft:terracotta",
-    "count": 1
-  }
-}
