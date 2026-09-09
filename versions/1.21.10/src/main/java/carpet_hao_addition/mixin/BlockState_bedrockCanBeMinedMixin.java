@@ -14,22 +14,24 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * haoBedrockMines(基准层):基岩挖掘进度按黑曜石计算。
+ * haoBedrockMines(兜底层):基岩仍不可挖(delta&lt;0,即无人设置可挖硬度)时按黑曜石。
  * <p>
- * 在 calcBlockBreakingDelta 本体 HEAD 直接处理“基岩+规则开启→黑曜石”,保证
- * 不依赖外部扩展时一定可挖;另有 ServerPlayerInteractionManager_bedrockMinesMixin
- * 在调用点兜底(与 AMS customBlockHardness 并存时仍可挖)。
+ * 用 TAIL 兜底而非 HEAD:不覆盖其它扩展(如 Carpet-AMS-Addition 的
+ * commandCustomBlockHardness set bedrock 0/其它值)对基岩硬度的设置——若外部给了
+ * 有效值(≥0)就尊重它;只有真正不可挖(原版 -1)时才按黑曜石兜底。
  */
 @Mixin(AbstractBlock.AbstractBlockState.class)
 public abstract class BlockState_bedrockCanBeMinedMixin {
-	@Inject(method = "calcBlockBreakingDelta", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "calcBlockBreakingDelta", at = @At("TAIL"), cancellable = true)
 	private void hao$bedrockMinesLikeObsidian(PlayerEntity player, BlockView world, BlockPos pos,
 			CallbackInfoReturnable<Float> cir) {
 		AbstractBlock.AbstractBlockState state = (AbstractBlock.AbstractBlockState) (Object) this;
 		if (!BedrockCanBeMinedSettings.isEnabled() || !state.isOf(Blocks.BEDROCK)) {
 			return;
 		}
-
-		cir.setReturnValue(Blocks.OBSIDIAN.getDefaultState().calcBlockBreakingDelta(player, world, pos));
+		Float current = cir.getReturnValue();
+		if (current != null && current < 0f) {
+			cir.setReturnValue(Blocks.OBSIDIAN.getDefaultState().calcBlockBreakingDelta(player, world, pos));
+		}
 	}
 }
