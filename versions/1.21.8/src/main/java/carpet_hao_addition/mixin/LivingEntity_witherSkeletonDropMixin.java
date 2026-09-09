@@ -2,9 +2,6 @@ package carpet_hao_addition.mixin;
 
 import carpet_hao_addition.WitherSkeletonDropReductionSettings;
 
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.WitherSkeletonEntity;
 import net.minecraft.item.Item;
@@ -13,37 +10,34 @@ import net.minecraft.item.Items;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * witherSkeletonDropReduction:过滤凋零骷髅从 loot 表(骨头/煤炭/头颅)掉落的物品。
+ * witherSkeletonDropReduction:过滤凋零骷髅死亡掉落(loot 表:骨头/煤炭/头颅)。
  * <p>
- * 1.21.8/1.21.10 死亡掉落经 LivingEntity.forEachGeneratedItem,最后把生成物品列表交给
- * List.forEach;用 @WrapOperation 包住该调用(而非 @Redirect,兼容旧 mixinextras 0.5.4),
- * 命中选项时改为只消费保留的物品。
+ * 1.21.8/1.21.10 的实体死亡掉落由 LivingEntity.dropLoot 调
+ * LootTable.generateLoot(context, seed, consumer) 完成;用 @ModifyArg 把该 consumer
+ * 包一层(vanilla 注入,不依赖 mixinextras),命中选项时丢弃指定物品。
  */
 @Mixin(LivingEntity.class)
 public abstract class LivingEntity_witherSkeletonDropMixin {
-	@WrapOperation(method = "forEachGeneratedItem",
-			at = @At(value = "INVOKE", target = "Ljava/util/List;forEach(Ljava/util/function/Consumer;)V"))
-	private void hao$filterWitherSkeletonLoot(List<ItemStack> stacks, Consumer<ItemStack> consumer,
-			Operation<Void> original) {
+	@ModifyArg(method = "dropLoot",
+			at = @At(value = "INVOKE",
+					target = "Lnet/minecraft/loot/LootTable;generateLoot(Lnet/minecraft/loot/context/LootWorldContext;JLjava/util/function/Consumer;)V"),
+			index = 2)
+	private Consumer<ItemStack> hao$filterWitherSkeletonLoot(Consumer<ItemStack> consumer) {
 		if (!((Object) this instanceof WitherSkeletonEntity)
 				|| WitherSkeletonDropReductionSettings.value().equals("false")) {
-			original.call(stacks, consumer);
-			return;
+			return consumer;
 		}
 
-		List<ItemStack> kept = new ArrayList<>(stacks.size());
-		for (ItemStack stack : stacks) {
+		return stack -> {
 			if (!shouldRemove(stack.getItem())) {
-				kept.add(stack);
+				consumer.accept(stack);
 			}
-		}
-		kept.forEach(consumer);
+		};
 	}
 
 	private static boolean shouldRemove(Item item) {
