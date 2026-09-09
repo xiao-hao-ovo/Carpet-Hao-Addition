@@ -6,6 +6,8 @@
   "carpet.rule.goldenCarrotCompost.desc": "开启后,手持金胡萝卜对堆肥桶右键可 100% 堆肥(消耗与效果同普通可堆肥物品,满桶流程一致)。",
   "carpet.rule.snowyCalcite.name": "雪地方解石",
   "carpet.rule.snowyCalcite.desc": "开启后,在降雪(雪地)生物群系中,岩浆与水的刷石机产物(石头/圆石)将变为方解石。",
+  "carpet.rule.noEndPortalTeleport.name": "末地门不传送",
+  "carpet.rule.noEndPortalTeleport.desc": "开启后,玩家无法被末地传送门(end portal)传送;非玩家实体不受影响。",
 
   "haoaddition.category.haoaddition": "Carpet-Hao-Addition",
   "haoaddition.rule.exampleBoolean.name": "Example Boolean",

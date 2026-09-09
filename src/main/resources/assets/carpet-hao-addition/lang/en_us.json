@@ -6,6 +6,8 @@
   "carpet.rule.goldenCarrotCompost.desc": "While enabled, right-clicking a composter while holding a golden carrot composts it with 100% chance, exactly like a regular compostable item.",
   "carpet.rule.snowyCalcite.name": "Snowy Calcite",
   "carpet.rule.snowyCalcite.desc": "While enabled, stone/cobblestone produced by lava+water generators in snowy (snow-precipitating) biomes becomes calcite.",
+  "carpet.rule.noEndPortalTeleport.name": "No End Portal Teleport",
+  "carpet.rule.noEndPortalTeleport.desc": "While enabled, players cannot be teleported by end portals; non-player entities are unaffected.",
 
   "haoaddition.category.haoaddition": "Carpet-Hao-Addition",
   "haoaddition.rule.exampleBoolean.name": "Example Boolean",
