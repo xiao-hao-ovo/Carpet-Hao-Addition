@@ -14,11 +14,11 @@ import carpet.api.settings.Rule;
  * 判断是否开启请用 {@link #isEnabled()}(读取 carpet 管理器的权威值)。
  */
 public class BedrockCanBeMinedSettings {
-	/** Carpet 规则名(注册在 carpet 默认管理器)。 */
-	public static final String RULE_NAME = "bedrockCanBeMined";
+	/** Carpet 规则名(注册在 carpet 默认管理器)。与 Carpet-CuO-Addition 的同名规则区分,故不用 bedrockCanBeMined。 */
+	public static final String RULE_NAME = "haoBedrockMines";
 
 	@Rule(categories = {"Hao"})
-	public static boolean bedrockCanBeMined = false;
+	public static boolean haoBedrockMines = false;
 
 	/** 权威读取:carpet 默认管理器中该规则当前是否为 true。 */
 	public static boolean isEnabled() {

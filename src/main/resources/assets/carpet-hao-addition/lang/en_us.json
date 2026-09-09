@@ -10,9 +10,8 @@
   "carpet.rule.noEndPortalTeleport.desc": "Enables the /playerNoEndPortalTeleport list management. The rule itself does not change teleporting: only players added to the blacklist (or with globalMode enabled) are not teleported by end portals; non-player entities are unaffected.",
   "carpet.rule.terracottaUncolor.name": "Terracotta Uncolor",
   "carpet.rule.terracottaUncolor.desc": "While enabled, the stonecutter can revert all 16 dyed terracotta to plain terracotta and all 16 glazed terracotta to their dyed terracotta; while disabled, these recipes do not appear in the stonecutter at all.",
-  "carpet.rule.bedrockCanBeMined.name": "Bedrock Can Be Mined",
-  "carpet.rule.bedrockCanBeMined.desc": "While enabled, bedrock can be mined (it mines like obsidian) and drops itself as an item when broken; while disabled, vanilla behavior is restored.",
-
+  "carpet.rule.haoBedrockMines.name": "Bedrock Can Be Mined",
+  "carpet.rule.haoBedrockMines.desc": "While enabled, bedrock can be mined (it mines like obsidian) and drops itself as an item when broken; while disabled, vanilla behavior is restored.",
   "playerNoEndPortalTeleport.commands.help.header": "End portal teleport blacklist management:",
   "playerNoEndPortalTeleport.commands.help.globalMode": "globalMode [true|false] - view/set global mode (true = no player is teleported by end portals)",
   "playerNoEndPortalTeleport.commands.help.add": "add <player> - add an online player to the no-teleport list",
@@ -31,7 +30,6 @@
   "playerNoEndPortalTeleport.commands.globalMode.state": "Global mode: %s",
   "playerNoEndPortalTeleport.commands.globalMode.enable": "Global mode enabled: no player will be teleported by end portals.",
   "playerNoEndPortalTeleport.commands.globalMode.disable": "Global mode disabled: only listed players are not teleported by end portals.",
-
   "haoaddition.category.haoaddition": "Carpet-Hao-Addition",
   "haoaddition.rule.exampleBoolean.name": "Example Boolean",
   "haoaddition.rule.exampleBoolean.desc": "An example boolean rule of this extension.",
@@ -39,7 +37,6 @@
   "haoaddition.rule.exampleString.desc": "An example string rule with a few preset options.",
   "haoaddition.command.hao.header": "Current rules of Carpet-Hao-Addition:",
   "haoaddition.command.hao.manage": "Manage them with /haoaddition <rule> <value>",
-
   "zoneguard.commands.set.success": "Set region %s: %s [%s] -> [%s]",
   "zoneguard.commands.view.empty": "There are no configured detector-disabled regions yet.",
   "zoneguard.commands.view.header": "Detector-disabled regions:",
