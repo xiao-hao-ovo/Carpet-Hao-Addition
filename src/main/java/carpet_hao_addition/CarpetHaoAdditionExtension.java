@@ -13,6 +13,7 @@ import net.minecraft.server.command.ServerCommandSource;
 
 import carpet_hao_addition.zoneguard.ZoneguardHooks;
 import carpet_hao_addition.zoneguard.ZoneguardSettings;
+import carpet_hao_addition.portal.PlayerNoEndPortalTeleportCommands;
 import carpet_hao_addition.zoneguard.command.ZoneguardCommands;
 
 import java.util.Map;
@@ -145,6 +146,9 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         // /zoneguard command tree lives in the versioned layer (versions/<mc>/src),
         // keeping per-Minecraft-version APIs out of this shared entry point.
         ZoneguardCommands.register(dispatcher);
+
+        // /playerNoEndPortalTeleport — manages the noEndPortalTeleport blacklist/global mode.
+        PlayerNoEndPortalTeleportCommands.register(dispatcher);
     }
 
     @Override
