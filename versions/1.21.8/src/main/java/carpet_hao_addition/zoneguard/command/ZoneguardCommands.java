@@ -35,8 +35,12 @@ import static net.minecraft.server.command.CommandManager.literal;
  * <p>
  * /zoneguard set &lt;id&gt; &lt;from&gt; &lt;to&gt;  - 设置立方禁用区域
  * /zoneguard view                       - 列出区域
+ * /zoneguard help                       - 显示使用说明
  * /zoneguard clear &lt;id&gt;              - 清除区域并重启区域内面对面的侦测器对
  * /zoneguard op add|remove|list &lt;player&gt; - 管理白名单
+ * <p>
+ * 树根节点的 {@code requires(ZoneguardPermissions::canUse)} 同时负责权限与规则门控:
+ * 只有 /carpet zoneguard true 开启后整棵树(含 help)才对玩家可见、可执行。
  * <p>
  * 命令注册入口在版本层,由共享层扩展的 registerCommands 委托调用。
  */
@@ -57,6 +61,8 @@ public final class ZoneguardCommands {
 												.executes(ZoneguardCommands::setRegion)))))
 				.then(literal("view")
 						.executes(ZoneguardCommands::view))
+				.then(literal("help")
+						.executes(ZoneguardCommands::help))
 				.then(literal("clear")
 						.then(argument("id", IntegerArgumentType.integer(0))
 								.executes(ZoneguardCommands::clearRegion)))
@@ -73,6 +79,10 @@ public final class ZoneguardCommands {
 		);
 	}
 
+	/**
+	 * 设置/覆盖一个区域:两个对角坐标经 DetectorRegion.fromCorners 归一化
+	 * (自动取最小/最大角),写入随世界存档持久化的 SavedData 并落盘。
+	 */
 	private static int setRegion(CommandContext<ServerCommandSource> context) {
 		ServerCommandSource source = context.getSource();
 		ServerWorld world = source.getWorld();
@@ -101,6 +111,27 @@ public final class ZoneguardCommands {
 		return data.regions().size();
 	}
 
+	/**
+	 * 输出使用说明(纯帮助,不改变任何数据/行为)。
+	 * 仅在规则开启时整树可见(由 canUse 门控),因此 help 天然也在其内。
+	 */
+	private static int help(CommandContext<ServerCommandSource> context) {
+		ServerCommandSource source = context.getSource();
+		source.sendFeedback(() -> msg("help.header"), false);
+		source.sendFeedback(() -> msg("help.line.help"), false);
+		source.sendFeedback(() -> msg("help.line.set"), false);
+		source.sendFeedback(() -> msg("help.line.view"), false);
+		source.sendFeedback(() -> msg("help.line.clear"), false);
+		source.sendFeedback(() -> msg("help.line.op"), false);
+		source.sendFeedback(() -> msg("help.line.off"), false);
+		return 1;
+	}
+
+	/**
+	 * 清除区域。原区域中可能残留被禁用期间卡住的“面对面侦测器对”,
+	 * 因此调用 RegionObserverRefresh 给已加载区块中的这类侦测器各计划一次刻,
+	 * 让它们恢复运作(反馈中报告触发对数,0 表示该区域无已加载的面对面侦测器对)。
+	 */
 	private static int clearRegion(CommandContext<ServerCommandSource> context) {
 		ServerCommandSource source = context.getSource();
 		int id = IntegerArgumentType.getInteger(context, "id");
