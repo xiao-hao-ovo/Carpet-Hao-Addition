@@ -56,9 +56,12 @@ processResources {
 	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 	inputs.property 'version', project.version
 	inputs.property 'minecraft_version', versionProperties.minecraft_version
+	def carpetMinVersion = versionProperties.carpet_core_version.split(/\+/)[0]
+	inputs.property 'carpet_min_version', carpetMinVersion
 
 	filesMatching('fabric.mod.json') {
-		expand version: project.version, minecraft_version: versionProperties.minecraft_version
+		expand version: project.version, minecraft_version: versionProperties.minecraft_version,
+				carpet_min_version: carpetMinVersion
 	}
 }
 
