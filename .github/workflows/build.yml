@@ -58,6 +58,7 @@ jobs:
       matrix:
         include:
           - dir: modern/26.2
+          - dir: modern/26.1.2
     steps:
       - name: Checkout
         uses: actions/checkout@v4

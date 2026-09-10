@@ -1,0 +1,24 @@
+{
+	"required": true,
+	"package": "carpet_hao_addition.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"ObserverBlockMixin",
+		"ComposterBlockMixin",
+		"LavaFluid_snowyCalciteMixin",
+		"FluidBlock_snowyCalciteMixin",
+		"EndPortalBlockMixin",
+		"StonecutterScreenHandlerMixin",
+		"Block_bedrockCanBeMinedMixin",
+		"ServerPlayerInteractionManager_bedrockMinesMixin",
+		"BlockState_bedrockCanBeMinedMixin",
+		"LivingEntity_witherSkeletonDropMixin",
+		"MobEntity_witherSkeletonDropMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}

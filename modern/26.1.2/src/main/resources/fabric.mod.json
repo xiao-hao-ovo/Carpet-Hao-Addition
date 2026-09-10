@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "carpet-hao-addition",
+  "version": "${version}",
+
+  "name": "Carpet-Hao-Addition",
+  "description": "A Fabric Carpet extension targeting Minecraft ${minecraft_version} (Java 25, Mojang official mappings).",
+  "authors": [
+    "Hao"
+  ],
+  "contact": {
+    "homepage": "https://github.com/xiao-hao-ovo/Carpet-Hao-Addition",
+    "sources": "https://github.com/xiao-hao-ovo/Carpet-Hao-Addition"
+  },
+
+  "license": "CC0-1.0",
+  "icon": "assets/carpet-hao-addition/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "carpet_hao_addition.CarpetHaoAdditionExtension"
+    ]
+  },
+
+  "mixins": [
+    "carpet-hao-addition.mixins.json"
+  ],
+
+  "depends": {
+    "minecraft": "${minecraft_version}",
+    "fabricloader": ">=0.19.0",
+    "carpet": ">=26.1",
+    "java": ">=25"
+  }
+}
