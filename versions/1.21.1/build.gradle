@@ -1,0 +1,91 @@
+plugins {
+	id 'fabric-loom' version "${loom_version}"
+	id 'maven-publish'
+}
+
+def versionProperties = new Properties()
+file('gradle.properties').withInputStream { versionProperties.load(it) }
+
+repositories {
+	maven {
+		name = 'masa'
+		url = 'https://masa.dy.fi/maven'
+	}
+}
+
+version = "${rootProject.mod_version}+${versionProperties.minecraft_version}"
+group = rootProject.maven_group
+
+base {
+	archivesName = rootProject.archives_base_name
+}
+
+sourceSets {
+	main {
+		java.srcDirs rootProject.file('src/main/java'), file('src/main/java')
+		resources.srcDirs rootProject.file('src/main/resources'), file('src/main/resources')
+	}
+}
+
+loom {
+	mods {
+		"carpet-hao-addition" {
+			sourceSet sourceSets.main
+		}
+	}
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${versionProperties.minecraft_version}"
+	mappings "net.fabricmc:yarn:${versionProperties.yarn_mappings}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${versionProperties.loader_version}"
+	modImplementation "carpet:fabric-carpet:${versionProperties.carpet_minecraft_version}-${versionProperties.carpet_core_version}"
+}
+
+tasks.withType(Copy).configureEach {
+	// 共享(root)与版本层 resources/java 合并打包,允许同名条目按优先级覆盖
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.withType(Jar).configureEach {
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+processResources {
+	// 多资源目录(共享 + 版本层)合并时同名文件可能来自多个 srcDir,按版本层优先
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+	inputs.property 'version', project.version
+	inputs.property 'minecraft_version', versionProperties.minecraft_version
+	def carpetMinVersion = versionProperties.carpet_core_version.split(/\+/)[0]
+	inputs.property 'carpet_min_version', carpetMinVersion
+
+	filesMatching('fabric.mod.json') {
+		expand version: project.version, minecraft_version: versionProperties.minecraft_version,
+				carpet_min_version: carpetMinVersion
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.encoding = 'UTF-8'
+	options.release = 21
+}
+
+java {
+	withSourcesJar()
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
+}
+
+jar {
+	from(rootProject.file('LICENSE')) {
+		rename { "${it}_${rootProject.name}" }
+	}
+}
+
+publishing {
+	publications {
+		create('mavenJava', MavenPublication) {
+			from components.java
+		}
+	}
+}
