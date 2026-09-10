@@ -6,6 +6,16 @@
 - 只依赖 **Carpet + Fabric Loader**（刻意不依赖 fabric-api），可纯服务端使用。
 - 全部规则注册在 Carpet 默认管理器，分类 **Hao（游戏内显示“昊”）**，文案支持中英双语（`en_us` / `zh_cn`）。
 
+## 下载
+
+| 平台 | 链接 |
+|---|---|
+| Modrinth | https://modrinth.com/mod/carpet-hao-addition |
+| CurseForge | https://www.curseforge.com/minecraft/mc-mods/carpet-hao-addition |
+| GitHub Releases | https://github.com/xiao-hao-ovo/Carpet-Hao-Addition/releases |
+
+> 每个 jar 只对应一个 Minecraft 版本，请下载与你游戏版本完全一致的那个；装错会报 `Incompatible mods found!`。
+
 ## 支持版本与依赖
 
 | Minecraft | Yarn mappings | Fabric Loader | Carpet |
