@@ -114,6 +114,41 @@ cd modern/26.2
 .\gradlew.bat :versions:1.21.8:runClient
 ```
 
+## 发布
+
+### GitHub Actions 自动发布
+
+`.github/workflows/build.yml` 在推送 tag(如 `v0.1.3`)时会自动完成三件事:
+
+1. JDK 21 构建 8 个 1.21.x 版本,JDK 25 构建 `modern/26.1.2` 与 `modern/26.2`;
+2. 把 10 个 jar 作为 **GitHub Release** 资产上传;
+3. 若配置了 `CURSEFORGE_API_KEY`,再把它们自动上传到 CurseForge 项目(默认 ID `1689732`,可用仓库变量 `CURSEFORGE_PROJECT_ID` 覆盖)。
+
+发新版流程:
+
+```powershell
+# 1. 先把 gradle.properties 里的 mod_version 改成新版本(如 0.1.3)
+# 2. 提交并推送
+git add -A; git commit -m "chore: 0.1.3"; git push
+# 3. 打 tag 触发自动构建 + 发布
+git tag v0.1.3; git push origin v0.1.3
+```
+
+一次性配置(仓库 **Settings → Secrets and variables → Actions**):
+
+- **Secrets** 新增 `CURSEFORGE_API_KEY`,值为 CurseForge API key(`$2a$10$...`,在 https://console.curseforge.com/ 创建);
+- 想换项目的话,在 **Variables** 新增 `CURSEFORGE_PROJECT_ID`(不配就用默认 `1689732`)。
+
+### 本地手动上传
+
+```powershell
+python tools/publish_curseforge.py versions --dry-run   # 先看会上传哪些 jar
+python tools/publish_curseforge.py versions             # 上传仓库构建目录里的 jar
+python tools/publish_curseforge.py list                 # 列出项目已有文件
+```
+
+凭据来源:环境变量 `CURSEFORGE_API_KEY` / `CURSEFORGE_PROJECT_ID`,或 `~/.secrets/curseforge-api-key.txt` 与 `~/.secrets/curseforge-project-id.txt`。
+
 ## 项目结构
 
 - `src/main/java/carpet_hao_addition/`
