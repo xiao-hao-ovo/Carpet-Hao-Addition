@@ -30,7 +30,7 @@
   "depends": {
     "minecraft": "${minecraft_version}",
     "fabricloader": ">=0.19.0",
-    "carpet": ">=26.1",
+    "carpet": ">=${carpet_min_version}",
     "java": ">=25"
   }
 }
