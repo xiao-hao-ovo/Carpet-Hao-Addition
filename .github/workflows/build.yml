@@ -50,3 +50,37 @@ jobs:
         with:
           files: build/libs/*.jar
           generate_release_notes: true
+
+  build-modern:
+    name: Build modern (26.x)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - dir: modern/26.2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: gradle
+
+      - name: Make gradlew executable
+        run: chmod +x ${{ matrix.dir }}/gradlew
+
+      - name: Build
+        run: ${{ matrix.dir }}/gradlew -p ${{ matrix.dir }} build --no-daemon --console=plain
+
+      - name: Show produced jars
+        run: ls -l ${{ matrix.dir }}/build/libs/*.jar
+
+      - name: Upload jars
+        uses: actions/upload-artifact@v4
+        with:
+          name: carpet-hao-addition-modern-jars
+          path: ${{ matrix.dir }}/build/libs/*.jar
+          if-no-files-found: error
