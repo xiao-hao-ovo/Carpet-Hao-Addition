@@ -15,7 +15,7 @@
   python tools/publish_modrinth.py publish                  # 提交公开审核(requested_status=approved)
   python tools/publish_modrinth.py status                   # 打印项目与版本现状
 """
-import argparse, json, os, pathlib, sys, urllib.error, urllib.request, uuid
+import argparse, json, os, pathlib, sys, urllib.error, urllib.parse, urllib.request, uuid
 
 API = "https://api.modrinth.com/v2"
 REPO = pathlib.Path(__file__).resolve().parent.parent
@@ -122,13 +122,17 @@ def make_changelog(total):
             f"(26.x 建议 ≥ 0.19)与对应版本的 Carpet;全部规则默认关闭,"
             f"游戏内用 `/carpet <规则> <值>` 开启。")
 
-def carpet_dependency(tok):
-    st, res = request("GET", '/search?query=carpet&facets=[["project_type:mod"]]&limit=5', tok)
+def carpet_dependency():
+    """查 Carpet 本体的 project_id(公开端点,不需要 token)。"""
+    qs = urllib.parse.urlencode({"query": "carpet", "facets": '[["project_type:mod"]]', "limit": "5"})
+    st, res = request("GET", f"/search?{qs}")
     if st != 200 or not isinstance(res, dict):
+        print(f"警告: 搜索 Carpet 失败 http={st}", file=sys.stderr)
         return None
     for hit in res.get("hits", []):
         if hit.get("slug") == "carpet":
             return hit.get("project_id")
+    print("警告: 搜索结果里没有 slug=carpet 的项目", file=sys.stderr)
     return None
 
 def existing_versions(tok, pid):
@@ -182,6 +186,7 @@ def upload_version(tok, pid, mc, path, dep, changelog):
         "project_id": pid,
         "file_parts": ["file"],
         "primary_file": "file",
+        "featured": False,
         "environment": "client_and_server",
     }
     raw, ctype = multipart({"data": json.dumps(data, ensure_ascii=False)},
@@ -194,7 +199,7 @@ def cmd_check(args):
     print("token/user:", st, (user or {}).get("username") if isinstance(user, dict) else user)
     st, valid = request("GET", f"/project/check?slug={SLUG}", tok)
     print("slug check:", st, valid)
-    print("carpet dependency project:", carpet_dependency(tok))
+    print("carpet dependency project:", carpet_dependency())
     print("local jars:")
     for mc, p in local_jars(args.dir):
         print("  ", mc, p.name, p.stat().st_size)
@@ -221,7 +226,9 @@ def cmd_versions(args):
     pid = ensure_project(tok, args)
     if not pid:
         sys.exit("项目不可用,已中止")
-    dep = carpet_dependency(tok)
+    dep = carpet_dependency()
+    if not dep:
+        print("警告: 未解析出 Carpet 依赖,上传的版本将不带 required 依赖声明", file=sys.stderr)
     have = existing_versions(tok, pid)
     print(f"项目已有 {len(have)} 个版本")
     fail = 0
