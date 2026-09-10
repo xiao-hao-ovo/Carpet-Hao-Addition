@@ -36,10 +36,16 @@ tasks.withType(JavaCompile).configureEach {
     options.release = project.java_version as int
 }
 
+// carpet 依赖下限取该版本 carpet 坐标的主版本(如 26.2+v260616 -> 26.2)
+ext.carpet_min_version = project.carpet_version.split(/\+/)[0]
+
 processResources {
     inputs.property 'version', project.version
     inputs.property 'minecraft_version', project.minecraft_version
+    inputs.property 'carpet_min_version', project.carpet_min_version
     filesMatching('fabric.mod.json') {
-        expand version: project.version, minecraft_version: project.minecraft_version
+        expand version: project.version,
+               minecraft_version: project.minecraft_version,
+               carpet_min_version: project.carpet_min_version
     }
 }
