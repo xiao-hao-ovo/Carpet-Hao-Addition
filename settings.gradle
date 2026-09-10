@@ -11,6 +11,9 @@ pluginManagement {
 
 rootProject.name = 'Carpet-Hao-Addition'
 
+include 'versions:1.21'
+// '1.21' 与 '1.21.x' 存在前缀歧义,显式重命名项目
+project(':versions:1.21').name = 'mc-1.21'
 include 'versions:1.21.1'
 // '1.21.1' 与 '1.21.10' / '1.21.11' 存在项目名前缀歧义,显式重命名以确保可唯一定位
 project(':versions:1.21.1').name = 'mc-1.21.1'

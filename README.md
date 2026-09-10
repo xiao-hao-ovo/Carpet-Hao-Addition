@@ -10,6 +10,7 @@
 
 | Minecraft | Yarn mappings | Fabric Loader | Carpet |
 |---|---|---|---|
+| 1.21 | 1.21+build.9 | 0.19.5（要求 ≥0.16.10） | 1.21-1.4.147+v240613 |
 | 1.21.1 | 1.21.1+build.3 | 0.19.5（要求 ≥0.16.10） | 1.21-1.4.147+v240613（上游无专用 1.21.1,该版本声明 minecraft ">1.20.1"） |
 | 1.21.2 | 1.21.2+build.1 | 0.19.5（要求 ≥0.16.10） | 1.21.2-1.4.158+v241022 |
 | 1.21.4 | 1.21.4+build.8 | 0.19.5（要求 ≥0.16.10） | 1.21.4-1.4.161+v241203 |
@@ -82,11 +83,24 @@ cd modern.2
 .\gradlew.bat build
 ```
 
-产物在 `build/libs/`（每个受支持版本一个 jar，根项目会汇总 1.21.x 各版本层代码）：
+1.21.x 产物汇总在根 `build/libs/`（每个受支持版本一个 jar）：
 
 ```
+build/libs/carpet-hao-addition-0.1.2+1.21.jar
+build/libs/carpet-hao-addition-0.1.2+1.21.1.jar
+build/libs/carpet-hao-addition-0.1.2+1.21.2.jar
+build/libs/carpet-hao-addition-0.1.2+1.21.4.jar
+build/libs/carpet-hao-addition-0.1.2+1.21.6.jar
 build/libs/carpet-hao-addition-0.1.2+1.21.8.jar
 build/libs/carpet-hao-addition-0.1.2+1.21.10.jar
+build/libs/carpet-hao-addition-0.1.2+1.21.11.jar
+```
+
+26.x 为独立子工程，需在各自目录构建，产物在 `modern/<mc>/build/libs/`：
+
+```powershell
+cd modern/26.2
+.\gradlew.bat build
 ```
 
 各版本独立构建也可用 `:versions:<mc>:build`。
