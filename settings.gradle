@@ -11,6 +11,7 @@ pluginManagement {
 
 rootProject.name = 'Carpet-Hao-Addition'
 
+include 'versions:1.21.2'
 include 'versions:1.21.4'
 include 'versions:1.21.6'
 include 'versions:1.21.8'
