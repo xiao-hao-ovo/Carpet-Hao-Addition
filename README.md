@@ -12,6 +12,7 @@
 |---|---|---|---|
 | 1.21.8 | 1.21.8+build.1 | 0.19.5（要求 ≥0.16.10） | 1.21.7-1.4.177+v250630 |
 | 1.21.10 | 1.21.10+build.3 | 0.19.5（要求 ≥0.16.10） | 1.21.10-1.4.188+v251016 |
+| 26.2 | 无（26.x 起 Mojang 取消混淆，Fabric 停用 yarn） | 0.19.5+ | 26.2+v260616 |
 
 - Java：21+
 - 模组 id：`carpet-hao-addition`；Loom：1.17.20
@@ -68,7 +69,14 @@
 .\gradlew.bat build
 ```
 
-产物在 `build/libs/`（每个受支持版本一个 jar，根项目会汇总版本层代码）：
+26.x 使用**独立子工程** `modern/26.2/`（新版 Loom 插件 `net.fabricmc.fabric-loom`、不声明 mappings、Java 25）：
+
+```powershell
+cd modern.2
+.\gradlew.bat build
+```
+
+产物在 `build/libs/`（每个受支持版本一个 jar，根项目会汇总 1.21.x 各版本层代码）：
 
 ```
 build/libs/carpet-hao-addition-0.1.2+1.21.8.jar
