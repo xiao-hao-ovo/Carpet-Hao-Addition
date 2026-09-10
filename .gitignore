@@ -25,3 +25,6 @@ bin/
 run/
 # reasonix 会话配置
 reasonix.toml
+
+# 压缩包/成品
+*.zip
