@@ -1,0 +1,45 @@
+// 26.2 独立子工程:26.x 起 Minecraft 不再混淆,使用 Loom 新插件(net.fabricmc.fabric-loom),
+// 不声明 mappings,依赖使用 implementation(而非 modImplementation / remapJar)。
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17.20'
+}
+
+version = "${mod_version}+${minecraft_version}"
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven {
+        name = 'MasaMaven'
+        url = 'https://masa.dy.fi/maven'
+    }
+    mavenCentral()
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "carpet:fabric-carpet:${project.carpet_version}"
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(project.java_version as int)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = project.java_version as int
+}
+
+processResources {
+    inputs.property 'version', project.version
+    inputs.property 'minecraft_version', project.minecraft_version
+    filesMatching('fabric.mod.json') {
+        expand version: project.version, minecraft_version: project.minecraft_version
+    }
+}
