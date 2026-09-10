@@ -1,4 +1,4 @@
-name: Build
+name: Build & Publish
 
 on:
   push:
@@ -16,6 +16,7 @@ concurrency:
 
 jobs:
   build:
+    name: Build 1.21.x (JDK 21)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -31,7 +32,7 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Build all versions
+      - name: Build all 1.21.x versions
         run: ./gradlew build --no-daemon --console=plain
 
       - name: Show produced jars
@@ -40,25 +41,19 @@ jobs:
       - name: Upload jars
         uses: actions/upload-artifact@v4
         with:
-          name: carpet-hao-addition-jars
+          name: jars-1.21x
           path: build/libs/*.jar
           if-no-files-found: error
 
-      - name: Publish release assets (tags only)
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: build/libs/*.jar
-          generate_release_notes: true
-
   build-modern:
-    name: Build modern (26.x)
+    name: Build modern ${{ matrix.label }} (JDK 25)
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
-          - dir: modern/26.2
-          - dir: modern/26.1.2
+          - { dir: modern/26.2, label: '26.2' }
+          - { dir: modern/26.1.2, label: '26.1.2' }
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -82,6 +77,55 @@ jobs:
       - name: Upload jars
         uses: actions/upload-artifact@v4
         with:
-          name: carpet-hao-addition-modern-jars
+          name: jars-modern-${{ matrix.label }}
           path: ${{ matrix.dir }}/build/libs/*.jar
           if-no-files-found: error
+
+  # 打 tag(如 v0.1.3)时:把 10 个 jar 传到 GitHub Release,并自动上传到 CurseForge。
+  # 需要仓库 secret:CURSEFORGE_API_KEY(可选 repository variable:CURSEFORGE_PROJECT_ID,默认 1689732)
+  publish:
+    name: Publish (GitHub Release + CurseForge)
+    needs: [ build, build-modern ]
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download built jars
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Collect jars
+        run: |
+          mkdir -p jars
+          find dist -name '*.jar' ! -name '*sources*' -exec cp -v {} jars/ \;
+          ls -l jars
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: jars/*.jar
+          generate_release_notes: true
+
+      - name: Check CurseForge token
+        id: cf
+        run: echo "has_key=${{ secrets.CURSEFORGE_API_KEY != '' }}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Python
+        if: steps.cf.outputs.has_key == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Upload to CurseForge
+        if: steps.cf.outputs.has_key == 'true'
+        env:
+          CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
+          CURSEFORGE_PROJECT_ID: ${{ vars.CURSEFORGE_PROJECT_ID || '1689732' }}
+        run: python tools/publish_curseforge.py versions --dir jars
+
+      - name: Skip note (no CurseForge token)
+        if: steps.cf.outputs.has_key != 'true'
+        run: echo "::warning::未配置 CURSEFORGE_API_KEY secret,已跳过 CurseForge 上传(仅发布 GitHub Release)"

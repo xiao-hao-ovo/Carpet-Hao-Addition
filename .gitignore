@@ -28,3 +28,7 @@ reasonix.toml
 
 # 压缩包/成品
 *.zip
+
+# Python
+__pycache__/
+*.pyc
