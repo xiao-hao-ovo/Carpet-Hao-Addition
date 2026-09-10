@@ -1,70 +1,116 @@
 # Carpet-Hao-Addition
 
-一个基于 [fabric-carpet-extension-example-mod](https://github.com/gnembon/fabric-carpet-extension-example-mod) 精简改造的
-Fabric Carpet 多版本扩展模组。
+一个基于 Fabric 的 [Carpet](https://github.com/gnembon/fabric-carpet) 多版本扩展模组，为技术生存与原版友好玩法提供少量实用、可配置的地毯规则。
 
-内置功能:
-- 示例规则(exampleBoolean / exampleString,见 `src/main/java/.../CarpetHaoAdditionSettings.java`);
-- **zoneguard**:在 `/zoneguard` 配置的立方区域内禁用侦测器(观察者)行为,由地毯规则 `zoneguard` 开关(默认关闭,位于 `/carpet` 分类 Hao 下)。
+- 所有规则**默认关闭**，只有在 `/carpet` 中手动开启后才生效；默认配置下不改变原版行为。
+- 只依赖 **Carpet + Fabric Loader**（刻意不依赖 fabric-api），可纯服务端使用。
+- 全部规则注册在 Carpet 默认管理器，分类 **Hao（游戏内显示“昊”）**，文案支持中英双语（`en_us` / `zh_cn`）。
 
-- 目标版本: Minecraft **1.21.8** (Fabric)
-- Java: **21**
-- 依赖: [fabric-carpet](https://masa.dy.fi/maven/carpet/fabric-carpet/) `1.4.177+v250630` (即 `1.21.7-1.4.177+v250630`)
+## 支持版本与依赖
+
+| Minecraft | Yarn mappings | Fabric Loader | Carpet |
+|---|---|---|---|
+| 1.21.8 | 1.21.8+build.1 | 0.19.5（要求 ≥0.16.10） | 1.21.7-1.4.177+v250630 |
+| 1.21.10 | 1.21.10+build.3 | 0.19.5（要求 ≥0.16.10） | 1.21.10-1.4.188+v251016 |
+
+- Java：21+
+- 模组 id：`carpet-hao-addition`；Loom：1.17.20
+
+## 规则列表
+
+游戏内用 `/carpet <规则> <值>` 查看/切换（也可在 Carpet 的规则界面里操作）。
+
+### 布尔规则
+
+| 规则 | 默认 | 说明 |
+|---|---|---|
+| `zoneguard` | false | 在 `/zoneguard` 配置的立方区域内禁用侦测器（观察者）行为；关闭规则会恢复区域内侦测器 |
+| `goldenCarrotCompost` | false | 手持金胡萝卜右键堆肥桶可 100% 堆肥（消耗与满桶流程同普通可堆肥物品） |
+| `snowyCalcite` | false | 雪地刷石机产出方解石（雪/水与岩浆相接时生成方解石） |
+| `noEndPortalTeleport` | false | 末地传送门传送控制：配合 `/playerNoEndPortalTeleport` 的名单与 `globalMode` 决定哪些玩家不被传送 |
+| `terracottaUncolor` | false | 切石机把染色陶瓦 / 染色釉陶瓦还原为普通陶瓦；启用时自动向世界部署数据包配方并随规则启停 |
+| `haoBedrockMines` | false | 基岩可被挖掘：默认按黑曜石硬度，掉落 1 块基岩；与 Carpet-AMS-Addition 的 `commandCustomBlockHardness` 同时开启时遵循其对 `minecraft:bedrock` 的自定义硬度 |
+
+### 选项规则
+
+| 规则 | 可选值 | 说明 |
+|---|---|---|
+| `witherSkeletonDropReduction` | `false` \| `bone` \| `coal` \| `skull` \| `sword` \| `all` | 自定义去除凋零骷髅掉落：骨头 / 煤炭 / 凋零骷髅头颅 / 掉落的手持石剑；`all` 为全部去除 |
+
+### 示例规则
+
+扩展自带的模板规则（归类 `haoaddition`，可用 `/haoaddition` 命令管理）：`exampleBoolean`、`exampleString`，仅作示例，可按需删除。
+
+## 命令
+
+### `/zoneguard`
+
+- `/zoneguard set <id> <from> <to>` — 新增/覆盖一个立方区域（`id` 为整数，`from`/`to` 为方块坐标）
+- `/zoneguard view` — 查看已配置区域
+- `/zoneguard clear <id>` — 删除指定区域
+- `/zoneguard op add|remove|list <player>` — 管理 ZoneGuard 权限（允许操作该命令的玩家）
+- `/zoneguard help` — 帮助
+
+> 规则关闭时命令不可见（切换规则后会向在线玩家重新推送命令树）。
+
+### `/playerNoEndPortalTeleport`
+
+- `/playerNoEndPortalTeleport add|remove <player>` — 名单增删
+- `/playerNoEndPortalTeleport list` / `clear` — 查看 / 清空名单
+- `/playerNoEndPortalTeleport globalMode [true|false]` — 查看 / 设置全局模式（true = 所有玩家都不被末地门传送）
+- `/playerNoEndPortalTeleport help` — 帮助
 
 ## 构建
 
-需要 JDK 21(例如 `JAVA_HOME=F:\JDK-21`),然后:
+需要 JDK 21+（本仓库用 Java 21 目标，实测 Java 25 也可构建）：
 
 ```powershell
 .\gradlew.bat build
 ```
 
-根项目会构建全部受支持版本,并把产物汇总到 `build/libs/` 下,例如
-`carpet-hao-addition-0.1.0+1.21.8.jar`。
+产物在 `build/libs/`（每个受支持版本一个 jar，根项目会汇总版本层代码）：
 
-启动指定版本的开发客户端:
+```
+build/libs/carpet-hao-addition-0.1.2+1.21.8.jar
+build/libs/carpet-hao-addition-0.1.2+1.21.10.jar
+```
+
+各版本独立构建也可用 `:versions:<mc>:build`。
+
+### 开发运行
+
+首次运行需在 `versions/<mc>/run/eula.txt` 写入 `eula=true`：
 
 ```powershell
+.\gradlew.bat :versions:1.21.8:runServer
 .\gradlew.bat :versions:1.21.8:runClient
 ```
 
-## 结构
+## 项目结构
 
-- `src/main/java/carpet_hao_addition/CarpetHaoAdditionExtension.java` — 所有版本共享的扩展入口(`ModInitializer` + `CarpetExtension`);
-  在 `onInitialize()` 中通过 `CarpetServer.manageExtension(this)` 注册。
-- `src/main/java/carpet_hao_addition/CarpetHaoAdditionSettings.java` — 共享规则类,字段加 `@Rule` 注解即成为本扩展的 Carpet 规则,
-  游戏内用 `/haoaddition` 命令管理。
-- `src/main/java/carpet_hao_addition/zoneguard/ZoneguardSettings.java` — 共享 zoneguard 规则(仅依赖 carpet API,不引用 Minecraft 版本类型)。
-- `src/main/resources/fabric.mod.json` — 共享模组元数据(mod id: `carpet-hao-addition`)。
-- `versions/1.21.8/` — Minecraft 1.21.8 的 Loom、映射和 Carpet 依赖配置;该目录也可放版本专用源码。
-- `versions/1.21.8/src/` — **版本专用代码**:所有与 Minecraft 1.21.8 类型打交道的 zoneguard 实现
-  (`carpet_hao_addition.zoneguard.{region,command,mixin}` 与 `zoneguard.mixins.json`)。
-  新增 Minecraft 版本时,复制版本目录并适配这一层的 API 即可,共享层保持不变。
+- `src/main/java/carpet_hao_addition/`
+  - `CarpetHaoAdditionExtension.java` — 扩展入口（`ModInitializer` + `CarpetExtension`），解析各规则类、注册命令、处理规则变更回调
+  - `*Settings.java` — 共享规则定义（仅依赖 carpet API，不引用 Minecraft 版本类型）
+  - `portal/` — 末地门传送名单（`PlayerNoEndPortalTeleportList`）
+- `src/main/resources/`
+  - `fabric.mod.json` — 模组元数据与依赖
+  - `assets/carpet-hao-addition/lang/{en_us,zh_cn}.json` — 全部用户可见文案（规则名/描述/命令消息）
+- `versions/1.21.8/`、`versions/1.21.10/`
+  - `gradle.properties` — 该版本的 minecraft / yarn / loader / carpet 版本
+  - `src/main/java/carpet_hao_addition/` — 版本专用实现：mixin、`zoneguard/`、`portal/`、`RecipeDeployHooks` 等
+  - `src/main/resources/carpet-hao-addition.mixins.json` — 该版本的 mixin 列表
 
-## zoneguard(侦测器禁用区域)
+根 `build.gradle` 汇总各版本子模块，版本层代码与共享层一起合并进对应版本的 jar。
 
-- 规则:注册在 Carpet 默认管理器,出现在 `/carpet` 的规则浏览/分类 **Hao** 下,
-  `/carpet zoneguard true|false` 切换(默认 `false`,关闭时保持原版行为)。
-- 命令(需为单机主人、OP ≥2 或本扩展白名单;`op` 子命令仅单机主人/OP):
-  - `/zoneguard` / `/zoneguard view` — 列出已配置区域;
-  - `/zoneguard set <序号> <起始坐标> <终点坐标>` — 设置一个立方禁用区域(含维度);
-  - `/zoneguard clear <序号>` — 清除区域,并重启区域内"面对面"的侦测器对;
-  - `/zoneguard op add|remove|list <玩家>` — 管理 ZoneGuard 权限白名单。
-- 规则开启后,配置区域内的侦测器不再脉冲/更新/输出红石信号;区域与白名单随世界存档持久化
-  (`zoneguard:detector_regions`)。
-- 实现说明:判定与规则门控集中在 `ZoneguardState`(版本层),mixin 注入点覆盖 1.21.8
-  `ObserverBlock` 的 scheduledTick/getStateForNeighborUpdate/updateNeighbors/强弱红石信号/
-  onBlockAdded/onStateReplaced(参考实现中 26.2 独有的 ownSignal 在 1.21.8 不存在,其职责已由
-  强弱信号注入覆盖,故未移植)。
+## 开发注意事项
 
-## 修改指引
+- **规则开关的权威读取**：使用各 `*Settings.isEnabled()` / `value()`（读取 Carpet 默认管理器中的规则值），不要直接读 `@Rule` 静态字段（carpet 新规则系统不保证回写字段）。
+- **文案**：所有用户可见文本放 `assets/carpet-hao-addition/lang/*.json`（中英成对），Java 内零硬编码；聊天/命令消息在服务端渲染，兼容纯服务端与未装本模组的客户端。
+- **Mixin 兼容性**：避免使用 `@Redirect`（旧版 mixinextras 0.5.4 会因 `FactoryRedirectWrapperMixinTransformer` 抛 `ClassCastException` 而崩溃），优先 `@ModifyArg` / `@WrapOperation` / `@Inject`。
+- **版本 API 漂移按各自 jar 字节码确认**，例如：1.21.10 死亡掉落改走 `LivingEntity.generateLoot(...)`（而非 1.21.8 的 `dropLoot` 内直接调用）、1.21.10 的 `EndPortalBlock.onEntityCollision` 多一个 `boolean` 形参。
+- 与其它 Carpet 扩展**同名规则会互相覆盖**（Carpet 默认管理器按规则名索引），新增规则请使用本模组自有命名（如 `haoBedrockMines`）。
 
-- 通用模组版本和构建配置放在根 `gradle.properties`。
-- Minecraft、Yarn、Loader 和 Carpet 版本放在对应的 `versions/<版本>/gradle.properties`。
-- 新增 Minecraft 版本时复制一个版本目录,修改其依赖,并在 `settings.gradle` 中注册新子项目。
-- 规则改名或增删后,同步更新 `canHasTranslations(...)` 里的翻译键
-  (格式:`{managerId}.rule.{ruleName}.name` / `.desc`、`{managerId}.category.{categoryId}`)。
+## 致谢
 
-## License
-
-CC0-1.0,见 [LICENSE](LICENSE)。
+- 基于 [fabric-carpet-extension-example-mod](https://github.com/gnembon/fabric-carpet-extension-example-mod) 改造。
+- 部分规则思路参考社区扩展：Carpet-AMS-Addition、Carpet-FGA-Addition 等。
