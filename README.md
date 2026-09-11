@@ -128,11 +128,11 @@ cd modern/26.2
 
 ### GitHub Actions 自动发布
 
-`.github/workflows/build.yml` 在推送 tag(如 `v0.1.3`)时会自动完成四件事:
+`.github/workflows/build.yml` 在推送 tag(如 `v0.1.4`)时会自动完成四件事:
 
 1. JDK 21 构建 8 个 1.21.x 版本,JDK 25 构建 `modern/26.1.2` 与 `modern/26.2`;
 2. 把 10 个 jar 作为 **GitHub Release** 资产上传;
-3. 若配置了 `CURSEFORGE_TOKEN`,再把它们自动上传到 CurseForge 项目(默认 ID `1689732`,可用仓库变量 `CURSEFORGE_PROJECT_ID` 覆盖);
+3. 若配置了 `CURSEFORGE_TOKEN`,再把它们自动上传到 CurseForge 项目(默认 ID `1689732`,可用仓库变量 `CURSEFORGE_PROJECT_ID` 覆盖)。若同时配置了 `CURSEFORGE_CORE_KEY`,上传前会先用只读 Core API 查一遍项目里已有的文件名,已存在的直接跳过,避免重复上传;
 4. 若配置了 `MODRINTH_TOKEN`,再把它们自动上传到 Modrinth 项目(https://modrinth.com/mod/carpet-hao-addition)。
 
 三个平台互相独立:缺哪个 secret,就只对那个平台打一条 warning 跳过,不会让 workflow 失败。
@@ -140,17 +140,18 @@ cd modern/26.2
 发新版流程:
 
 ```powershell
-# 1. 先把 gradle.properties 里的 mod_version 改成新版本(如 0.1.3)
+# 1. 先把 gradle.properties 里的 mod_version 改成新版本(如 0.1.4)
 # 2. 提交并推送
-git add -A; git commit -m "chore: 0.1.3"; git push
+git add -A; git commit -m "chore: 0.1.4"; git push
 # 3. 打 tag 触发自动构建 + 发布
-git tag v0.1.3; git push origin v0.1.3
+git tag v0.1.4; git push origin v0.1.4
 ```
 
 一次性配置(仓库 **Settings → Secrets and variables → Actions**):
 
 - **Secrets** 新增 `MODRINTH_TOKEN`,值为 Modrinth PAT(`mrp_...`,在 https://modrinth.com/settings/pats 创建)。**创建时必须勾选权限**,至少要有 `USER_READ`、`PROJECT_CREATE`、`PROJECT_WRITE`、`VERSION_CREATE` —— 没有权限的 PAT 会被 API 一律拒绝(报 `Invalid Authentication Credentials`,和「token 不存在」是同一个错误码,很难排查);
 - **Secrets** 新增 `CURSEFORGE_TOKEN`,值为 CurseForge **主站 API Token**(在 https://www.curseforge.com/account/api-tokens 创建；不是 console 的 Core API Key);
+- **Secrets** 新增 `CURSEFORGE_CORE_KEY`(可选),值为 CurseForge **Core API Key**(`$2a$10$...`,在 https://console.curseforge.com 的 API Keys 页面创建)。只为上传前查重使用:Upload API 没有列文件的端点,只有 Core API 能查。不配它也能正常发布,只是重复上传时不会被自动拦下;
 - 想换项目的话,在 **Variables** 新增 `CURSEFORGE_PROJECT_ID`(不配就用默认 `1689732`)。
 
 ### 本地手动上传
@@ -158,8 +159,10 @@ git tag v0.1.3; git push origin v0.1.3
 ```powershell
 # CurseForge
 python tools/publish_curseforge.py versions --dry-run   # 先看会上传哪些 jar
-python tools/publish_curseforge.py versions             # 上传仓库构建目录里的 jar
-python tools/publish_curseforge.py versions --prefix 0.1.3   # 只传指定版本号的 jar
+python tools/publish_curseforge.py versions             # 上传仓库构建目录里的 jar(自动查重)
+python tools/publish_curseforge.py versions --prefix 0.1.4   # 只传指定版本号的 jar
+python tools/publish_curseforge.py versions --force     # 跳过查重,强制上传
+python tools/publish_curseforge.py existing --prefix 0.1.3   # 列出项目里已存在的文件(核对重复)
 python tools/publish_curseforge.py probe                 # 校验 token 并打印版本名->ID 映射
 
 # Modrinth
@@ -172,6 +175,7 @@ python tools/publish_modrinth.py publish                # 把项目提交公开�
 凭据来源:
 
 - CurseForge:环境变量 `CURSEFORGE_TOKEN` / `CURSEFORGE_PROJECT_ID`,或 `~/.secrets/curseforge-token.txt` 与 `~/.secrets/curseforge-project-id.txt`;
+  - 查重另需只读 Core Key:环境变量 `CURSEFORGE_CORE_KEY`,或 `~/.secrets/curseforge-api-key.txt`。**两套凭据不能混用** —— 上传用主站 Token(`minecraft.curseforge.com/api`),查重只能用 Core Key(`api.curseforge.com/v1`);Core Key 缺失时脚本只打警告并跳过查重,仍会正常上传;
 - Modrinth:环境变量 `MODRINTH_TOKEN`,或 `~/.secrets/modrinth-token.txt` / `~/.secrets/modrinth-pat.txt`。默认直连,需要代理时设 `MODRINTH_PROXY`(如 `http://127.0.0.1:7897`)。
 
 > 上传时每个 jar 只勾它自己那一个 Minecraft 版本,一个版本只挂一个 jar —— 勾多了会让玩家装错并报 `Incompatible mods found!`。
