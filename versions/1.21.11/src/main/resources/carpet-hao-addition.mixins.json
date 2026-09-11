@@ -17,7 +17,9 @@
 		"ServerPlayerInteractionManager_directBlockDropsMixin",
 		"ServerWorld_directDropsMixin",
 		"LivingEntity_directEntityDropsMixin",
-		"PlayerEntity_directEntityDropsMixin"
+		"PlayerEntity_directEntityDropsMixin",
+		"ScheduledTickView_directDropsMixin",
+		"ServerWorld_tickBlockMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
