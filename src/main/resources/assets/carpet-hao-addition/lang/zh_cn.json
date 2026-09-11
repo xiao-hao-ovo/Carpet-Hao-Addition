@@ -57,5 +57,9 @@
   "zoneguard.commands.op.list.empty": "当前没有 ZoneGuard 权限玩家。",
   "zoneguard.commands.op.list": "ZoneGuard 权限玩家：%s",
   "carpet.rule.witherSkeletonDropReduction.name": "凋零骷髅掉落去除",
-  "carpet.rule.witherSkeletonDropReduction.desc": "去除凋零骷髅的指定掉落物。选项:false=原版;bone=去骨头;coal=去煤炭;skull=去凋零骷髅头颅;sword=去掉落的手持石剑;all=去除以上全部。"
+  "carpet.rule.witherSkeletonDropReduction.desc": "去除凋零骷髅的指定掉落物。选项:false=原版;bone=去骨头;coal=去煤炭;skull=去凋零骷髅头颅;sword=去掉落的手持石剑;all=去除以上全部。",
+  "carpet.rule.directBlockDrops.name": "方块掉落直入背包",
+  "carpet.rule.directBlockDrops.desc": "开启后,玩家破坏方块产生的掉落物(含连锁破坏、失去支撑后的同步掉落,以及被破坏容器内释放的物品)优先直接进入该玩家背包;背包放不下的部分仍按原版掉落在世界中。",
+  "carpet.rule.directEntityDrops.name": "实体掉落直入背包",
+  "carpet.rule.directEntityDrops.desc": "开启后,玩家击杀实体产生的掉落物(生物与盔甲架,以及矿车、船、画、物品展示框等)优先直接进入该玩家背包;背包放不下的部分仍按原版掉落在世界中。"
 }

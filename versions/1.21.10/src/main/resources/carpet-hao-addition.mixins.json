@@ -13,7 +13,11 @@
 		"ServerPlayerInteractionManager_bedrockMinesMixin",
 		"BlockState_bedrockCanBeMinedMixin",
 		"LivingEntity_witherSkeletonDropMixin",
-		"MobEntity_witherSkeletonDropMixin"
+		"MobEntity_witherSkeletonDropMixin",
+		"ServerPlayerInteractionManager_directBlockDropsMixin",
+		"ServerWorld_directDropsMixin",
+		"LivingEntity_directEntityDropsMixin",
+		"PlayerEntity_directEntityDropsMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
