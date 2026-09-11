@@ -77,6 +77,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         CarpetServer.settingsManager.parseSettingsClass(WitherSkeletonDropReductionSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(DirectDropsSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(LavaDepthStriderSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(EasyPlaceWaterloggedSettings.class);
 
         registerZoneguardRuleObserver();
     }

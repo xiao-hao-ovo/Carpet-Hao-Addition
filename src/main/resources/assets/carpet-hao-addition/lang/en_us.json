@@ -63,5 +63,7 @@
   "carpet.rule.directEntityDrops.name": "Direct Entity Drops",
   "carpet.rule.directEntityDrops.desc": "While enabled, drops produced by killing an entity (mobs and armor stands, as well as minecarts, boats, paintings and item frames) go straight into that player's inventory; whatever does not fit still drops in the world as usual.",
   "carpet.rule.lavaDepthStrider.name": "Lava Depth Strider",
-  "carpet.rule.lavaDepthStrider.desc": "While enabled, moving through lava no longer slows you down if you have Depth Strider: the water movement formula (and its water_movement_efficiency attribute) is applied to lava as well, so lava feels exactly like wearing Depth Strider boots in water. Higher enchantment levels move faster."
+  "carpet.rule.lavaDepthStrider.desc": "While enabled, moving through lava no longer slows you down if you have Depth Strider: the water movement formula (and its water_movement_efficiency attribute) is applied to lava as well, so lava feels exactly like wearing Depth Strider boots in water. Higher enchantment levels move faster.",
+  "carpet.rule.easyPlaceWaterlogged.name": "Easy Place Waterlogged",
+  "carpet.rule.easyPlaceWaterlogged.desc": "While enabled, placing a waterlogged block via Litematica easy place (following a schematic) also fills the water: the waterlogged state is set directly (no ice is actually placed) and one ice is consumed from your inventory; if you have no ice, only the block itself is placed and everything else stays unchanged. Requires Litematica."
 }

@@ -11,7 +11,6 @@
 		"StonecutterScreenHandlerMixin",
 		"Block_bedrockCanBeMinedMixin",
 		"ServerPlayerInteractionManager_bedrockMinesMixin",
-		"ClientPlayerInteractionManager_bedrockMinesMixin",
 		"BlockState_bedrockCanBeMinedMixin",
 		"LivingEntity_witherSkeletonDropMixin",
 		"MobEntity_witherSkeletonDropMixin",
@@ -21,7 +20,13 @@
 		"PlayerEntity_directEntityDropsMixin",
 		"LivingEntity_lavaDepthStriderMixin",
 		"ScheduledTickView_directDropsMixin",
-		"ServerWorld_tickBlockMixin"
+		"ServerWorld_tickBlockMixin",
+		"MinecraftServer_easyPlaceWaterloggedMixin",
+		"BlockItem_easyPlaceWaterloggedMixin"
+	],
+	"client": [
+		"ClientPlayerInteractionManager_bedrockMinesMixin",
+		"WorldUtils_easyPlaceWaterloggedMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
