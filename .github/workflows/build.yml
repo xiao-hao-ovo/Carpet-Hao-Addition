@@ -127,6 +127,7 @@ jobs:
 
       - name: Upload to CurseForge
         if: always() && steps.tok.outputs.cf == 'true'
+        continue-on-error: true
         env:
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
           CURSEFORGE_PROJECT_ID: ${{ vars.CURSEFORGE_PROJECT_ID || '1689732' }}
