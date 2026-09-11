@@ -120,28 +120,28 @@ jobs:
           echo "mr=${{ secrets.MODRINTH_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
 
       - name: Set up Python
-        if: steps.tok.outputs.cf == 'true' || steps.tok.outputs.mr == 'true'
+        if: always() && steps.tok.outputs.cf == 'true' || steps.tok.outputs.mr == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
       - name: Upload to CurseForge
-        if: steps.tok.outputs.cf == 'true'
+        if: always() && steps.tok.outputs.cf == 'true'
         env:
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
           CURSEFORGE_PROJECT_ID: ${{ vars.CURSEFORGE_PROJECT_ID || '1689732' }}
         run: python tools/publish_curseforge.py versions --dir jars
 
       - name: Skip note (CurseForge)
-        if: steps.tok.outputs.cf != 'true'
+        if: always() && steps.tok.outputs.cf != 'true'
         run: echo "::warning::未配置 CURSEFORGE_API_KEY secret,已跳过 CurseForge 上传"
 
       - name: Upload to Modrinth
-        if: steps.tok.outputs.mr == 'true'
+        if: always() && steps.tok.outputs.mr == 'true'
         env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
         run: python tools/publish_modrinth.py versions --dir jars
 
       - name: Skip note (Modrinth)
-        if: steps.tok.outputs.mr != 'true'
+        if: always() && steps.tok.outputs.mr != 'true'
         run: echo "::warning::未配置 MODRINTH_TOKEN secret,已跳过 Modrinth 上传"
