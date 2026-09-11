@@ -17,7 +17,9 @@
 		"ServerPlayerGameMode_directBlockDropsMixin",
 		"ServerLevel_directDropsMixin",
 		"LivingEntity_directEntityDropsMixin",
-		"Player_directEntityDropsMixin"
+		"Player_directEntityDropsMixin",
+		"ScheduledTickAccess_directDropsMixin",
+		"ServerLevel_tickBlockMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
