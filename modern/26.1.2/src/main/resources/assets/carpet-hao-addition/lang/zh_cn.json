@@ -61,5 +61,7 @@
   "carpet.rule.directBlockDrops.name": "方块掉落直入背包",
   "carpet.rule.directBlockDrops.desc": "开启后,玩家破坏方块产生的掉落物(含连锁破坏、失去支撑后的同步掉落,以及被破坏容器内释放的物品)优先直接进入该玩家背包;背包放不下的部分仍按原版掉落在世界中。",
   "carpet.rule.directEntityDrops.name": "实体掉落直入背包",
-  "carpet.rule.directEntityDrops.desc": "开启后,玩家击杀实体产生的掉落物(生物与盔甲架,以及矿车、船、画、物品展示框等)优先直接进入该玩家背包;背包放不下的部分仍按原版掉落在世界中。"
+  "carpet.rule.directEntityDrops.desc": "开启后,玩家击杀实体产生的掉落物(生物与盔甲架,以及矿车、船、画、物品展示框等)优先直接进入该玩家背包;背包放不下的部分仍按原版掉落在世界中。",
+  "carpet.rule.lavaDepthStrider.name": "岩浆中的深海探索者",
+  "carpet.rule.lavaDepthStrider.desc": "开启后,玩家在岩浆中移动时不再受到岩浆减速:直接套用水中移动的公式(即 water_movement_efficiency 属性),手感与穿着深海探索者靴子在水中一致;附魔等级越高移速越快。"
 }
