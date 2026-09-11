@@ -132,7 +132,7 @@ cd modern/26.2
 
 1. JDK 21 构建 8 个 1.21.x 版本,JDK 25 构建 `modern/26.1.2` 与 `modern/26.2`;
 2. 把 10 个 jar 作为 **GitHub Release** 资产上传;
-3. 若配置了 `CURSEFORGE_API_KEY`,再把它们自动上传到 CurseForge 项目(默认 ID `1689732`,可用仓库变量 `CURSEFORGE_PROJECT_ID` 覆盖);
+3. 若配置了 `CURSEFORGE_TOKEN`,再把它们自动上传到 CurseForge 项目(默认 ID `1689732`,可用仓库变量 `CURSEFORGE_PROJECT_ID` 覆盖);
 4. 若配置了 `MODRINTH_TOKEN`,再把它们自动上传到 Modrinth 项目(https://modrinth.com/mod/carpet-hao-addition)。
 
 三个平台互相独立:缺哪个 secret,就只对那个平台打一条 warning 跳过,不会让 workflow 失败。
@@ -150,7 +150,7 @@ git tag v0.1.3; git push origin v0.1.3
 一次性配置(仓库 **Settings → Secrets and variables → Actions**):
 
 - **Secrets** 新增 `MODRINTH_TOKEN`,值为 Modrinth PAT(`mrp_...`,在 https://modrinth.com/settings/pats 创建)。**创建时必须勾选权限**,至少要有 `USER_READ`、`PROJECT_CREATE`、`PROJECT_WRITE`、`VERSION_CREATE` —— 没有权限的 PAT 会被 API 一律拒绝(报 `Invalid Authentication Credentials`,和「token 不存在」是同一个错误码,很难排查);
-- **Secrets** 新增 `CURSEFORGE_API_KEY`,值为 CurseForge API key(`$2a$10$...`,在 https://console.curseforge.com/ 创建);
+- **Secrets** 新增 `CURSEFORGE_TOKEN`,值为 CurseForge **主站 API Token**(在 https://www.curseforge.com/account/api-tokens 创建；不是 console 的 Core API Key);
 - 想换项目的话,在 **Variables** 新增 `CURSEFORGE_PROJECT_ID`(不配就用默认 `1689732`)。
 
 ### 本地手动上传
@@ -159,7 +159,8 @@ git tag v0.1.3; git push origin v0.1.3
 # CurseForge
 python tools/publish_curseforge.py versions --dry-run   # 先看会上传哪些 jar
 python tools/publish_curseforge.py versions             # 上传仓库构建目录里的 jar
-python tools/publish_curseforge.py list                 # 列出项目已有文件
+python tools/publish_curseforge.py versions --prefix 0.1.3   # 只传指定版本号的 jar
+python tools/publish_curseforge.py probe                 # 校验 token 并打印版本名->ID 映射
 
 # Modrinth
 python tools/publish_modrinth.py versions --dry-run     # 先看会上传哪些 jar(不需要凭据)
@@ -170,7 +171,7 @@ python tools/publish_modrinth.py publish                # 把项目提交公开�
 
 凭据来源:
 
-- CurseForge:环境变量 `CURSEFORGE_API_KEY` / `CURSEFORGE_PROJECT_ID`,或 `~/.secrets/curseforge-api-key.txt` 与 `~/.secrets/curseforge-project-id.txt`;
+- CurseForge:环境变量 `CURSEFORGE_TOKEN` / `CURSEFORGE_PROJECT_ID`,或 `~/.secrets/curseforge-token.txt` 与 `~/.secrets/curseforge-project-id.txt`;
 - Modrinth:环境变量 `MODRINTH_TOKEN`,或 `~/.secrets/modrinth-token.txt` / `~/.secrets/modrinth-pat.txt`。默认直连,需要代理时设 `MODRINTH_PROXY`(如 `http://127.0.0.1:7897`)。
 
 > 上传时每个 jar 只勾它自己那一个 Minecraft 版本,一个版本只挂一个 jar —— 勾多了会让玩家装错并报 `Incompatible mods found!`。
