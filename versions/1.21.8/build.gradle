@@ -11,6 +11,10 @@ repositories {
 		name = 'masa'
 		url = 'https://masa.dy.fi/maven'
 	}
+	maven {
+		name = 'modrinth'
+		url = 'https://api.modrinth.com/maven'
+	}
 }
 
 version = "${rootProject.mod_version}+${versionProperties.minecraft_version}"
@@ -40,6 +44,10 @@ dependencies {
 	mappings "net.fabricmc:yarn:${versionProperties.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${versionProperties.loader_version}"
 	modImplementation "carpet:fabric-carpet:${versionProperties.carpet_minecraft_version}-${versionProperties.carpet_core_version}"
+	// 轻松放置相关规则需要 Litematica(硬依赖:未安装时本 mod 无法加载)
+	modImplementation "maven.modrinth:litematica:${versionProperties.litematica_version}"
+	modImplementation "maven.modrinth:malilib:${versionProperties.malilib_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${versionProperties.fabric_api_version}"
 }
 
 tasks.withType(Copy).configureEach {

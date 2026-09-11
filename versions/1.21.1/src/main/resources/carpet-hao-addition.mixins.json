@@ -21,7 +21,12 @@
 		"PlayerEntity_directEntityDropsMixin",
 		"LivingEntity_lavaDepthStriderMixin",
 		"WorldAccess_directDropsMixin",
-		"ServerWorld_tickBlockMixin"
+		"ServerWorld_tickBlockMixin",
+		"BlockItem_easyPlaceWaterloggedMixin",
+		"MinecraftServer_easyPlaceWaterloggedMixin"
+	],
+	"client": [
+		"WorldUtils_easyPlaceWaterloggedMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
