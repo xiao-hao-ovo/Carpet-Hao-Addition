@@ -104,7 +104,7 @@ def local_jars(directory=None):
     return sorted(out, key=lambda t: GAME_VERSIONS.index(t[0]) if t[0] in GAME_VERSIONS else 99)
 
 def existing_filenames():
-    st, body = api("GET", f"/projects/{project_id()}/files?pageSize=200")
+    st, body = api("GET", f"/mods/{project_id()}/files?pageSize=200")
     if st != 200 or not isinstance(body, dict):
         print(f"警告:无法列出项目已有文件 http={st}", file=sys.stderr)
         return set()
@@ -138,7 +138,7 @@ def cmd_versions(args):
         sys.exit(f"{fail} 个文件上传失败")
 
 def cmd_list(args):
-    st, body = api("GET", f"/projects/{project_id()}/files?pageSize=200")
+    st, body = api("GET", f"/mods/{project_id()}/files?pageSize=200")
     print("files http:", st)
     if isinstance(body, dict):
         for f in body.get("data", []):
