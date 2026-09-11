@@ -61,5 +61,7 @@
   "carpet.rule.directBlockDrops.name": "Direct Block Drops",
   "carpet.rule.directBlockDrops.desc": "While enabled, drops produced by blocks the player breaks (including chain breaks, drops of blocks that lost support in the same tick, and items released from broken containers) go straight into that player's inventory; whatever does not fit still drops in the world as usual.",
   "carpet.rule.directEntityDrops.name": "Direct Entity Drops",
-  "carpet.rule.directEntityDrops.desc": "While enabled, drops produced by killing an entity (mobs and armor stands, as well as minecarts, boats, paintings and item frames) go straight into that player's inventory; whatever does not fit still drops in the world as usual."
+  "carpet.rule.directEntityDrops.desc": "While enabled, drops produced by killing an entity (mobs and armor stands, as well as minecarts, boats, paintings and item frames) go straight into that player's inventory; whatever does not fit still drops in the world as usual.",
+  "carpet.rule.lavaDepthStrider.name": "Lava Depth Strider",
+  "carpet.rule.lavaDepthStrider.desc": "While enabled, moving through lava no longer slows you down if you have Depth Strider: the water movement formula (and its water_movement_efficiency attribute) is applied to lava as well, so lava feels exactly like wearing Depth Strider boots in water. Higher enchantment levels move faster."
 }

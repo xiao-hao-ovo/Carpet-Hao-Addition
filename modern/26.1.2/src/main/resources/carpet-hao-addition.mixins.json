@@ -18,6 +18,7 @@
 		"ServerLevel_directDropsMixin",
 		"LivingEntity_directEntityDropsMixin",
 		"Player_directEntityDropsMixin",
+		"LivingEntity_lavaDepthStriderMixin",
 		"ScheduledTickAccess_directDropsMixin",
 		"ServerLevel_tickBlockMixin"
 	],
