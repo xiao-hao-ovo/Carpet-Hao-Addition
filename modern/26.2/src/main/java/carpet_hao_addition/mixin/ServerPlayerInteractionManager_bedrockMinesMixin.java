@@ -55,8 +55,14 @@ public abstract class ServerPlayerInteractionManager_bedrockMinesMixin {
 		float delta = original.call(state, player, world, pos);
 		if (BedrockCanBeMinedSettings.isEnabled() && state.is(Blocks.BEDROCK) && delta <= 0f) {
 			// 基岩仍不可挖(无外部设置,原版为 -1)时,按黑曜石兜底,使其可被挖掘。
-			return Blocks.OBSIDIAN.defaultBlockState().getDestroyProgress(player, world, pos);
+			return hao$bedrockDelta(state, player);
 		}
 		return delta;
+	}
+
+	/** 按固定硬度 50 计算挖掘进度(与"基岩可挖时的硬度"一致,不借用黑曜石状态)。 */
+	private static float hao$bedrockDelta(BlockState state, Player player) {
+		int divisor = player.hasCorrectToolForDrops(state) ? 30 : 100;
+		return player.getDestroySpeed(state) / 50.0F / divisor;
 	}
 }
