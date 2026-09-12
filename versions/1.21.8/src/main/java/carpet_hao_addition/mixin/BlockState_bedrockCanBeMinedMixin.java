@@ -3,6 +3,7 @@ package carpet_hao_addition.mixin;
 import carpet_hao_addition.BedrockCanBeMinedSettings;
 
 import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
@@ -40,7 +41,13 @@ public abstract class BlockState_bedrockCanBeMinedMixin {
 		}
 		Float current = cir.getReturnValue();
 		if (current != null && current <= 0f) {
-			cir.setReturnValue(Blocks.OBSIDIAN.getDefaultState().calcBlockBreakingDelta(player, world, pos));
+			cir.setReturnValue(hao$bedrockDelta((BlockState) (Object) state, player));
 		}
+	}
+
+	/** 按固定硬度 50 计算挖掘进度(与"基岩可挖时的硬度"一致,不借用黑曜石状态)。 */
+	private static float hao$bedrockDelta(BlockState state, PlayerEntity player) {
+		int divisor = player.canHarvest(state) ? 30 : 100;
+		return player.getBlockBreakingSpeed(state) / 50.0F / divisor;
 	}
 }

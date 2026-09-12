@@ -8,6 +8,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -41,7 +42,13 @@ public abstract class BlockState_bedrockCanBeMinedMixin {
 		}
 		Float current = cir.getReturnValue();
 		if (current != null && current <= 0f) {
-			cir.setReturnValue(Blocks.OBSIDIAN.defaultBlockState().getDestroyProgress(player, world, pos));
+			cir.setReturnValue(hao$bedrockDelta((BlockState) (Object) state, player));
 		}
+	}
+
+	/** 按固定硬度 50 计算挖掘进度(与"基岩可挖时的硬度"一致,不借用黑曜石状态)。 */
+	private static float hao$bedrockDelta(BlockState state, Player player) {
+		int divisor = player.hasCorrectToolForDrops(state) ? 30 : 100;
+		return player.getDestroySpeed(state) / 50.0F / divisor;
 	}
 }
