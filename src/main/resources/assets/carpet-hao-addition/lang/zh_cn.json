@@ -65,5 +65,5 @@
   "carpet.rule.lavaDepthStrider.name": "岩浆中的深海探索者",
   "carpet.rule.lavaDepthStrider.desc": "开启后,玩家在岩浆中移动时不再受到岩浆减速:直接套用水中移动的公式(即 water_movement_efficiency 属性),手感与穿着深海探索者靴子在水中一致;附魔等级越高移速越快。",
   "carpet.rule.easyPlaceWaterlogged.name": "投影轻松放置补水",
-  "carpet.rule.easyPlaceWaterlogged.desc": "开启后,用 Litematica 轻松放置照着投影放置含水方块时会一并把水补上:直接设置含水状态(不会真的把冰放出来),并从背包里消耗 1 个冰;背包里没有冰时只放置方块本身,其余行为不变。需要安装 Litematica。"
+  "carpet.rule.easyPlaceWaterlogged.desc": "开启后,用 Litematica 轻松放置照投影施工时会一并把投影里的水/岩浆补上:投影里是水源(或气泡柱)时放一格水源并消耗 1 个冰;投影里是岩浆时放源岩浆并消耗 1 个岩浆块;是装岩浆的炼药锅时放装岩浆的炼药锅,消耗 1 个炼药锅和 1 个岩浆块;含水方块则直接设置含水状态。材料不足时只放置方块本身,其余行为不变。需要安装 Litematica。"
 }

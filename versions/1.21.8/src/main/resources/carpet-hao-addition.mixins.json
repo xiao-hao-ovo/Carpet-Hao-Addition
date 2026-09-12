@@ -21,8 +21,7 @@
 		"LivingEntity_lavaDepthStriderMixin",
 		"ScheduledTickView_directDropsMixin",
 		"ServerWorld_tickBlockMixin",
-		"MinecraftServer_easyPlaceWaterloggedMixin",
-		"BlockItem_easyPlaceWaterloggedMixin"
+		"MinecraftServer_easyPlaceWaterloggedMixin"
 	],
 	"client": [
 		"ClientPlayerInteractionManager_bedrockMinesMixin",

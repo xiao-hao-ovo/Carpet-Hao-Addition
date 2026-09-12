@@ -65,5 +65,5 @@
   "carpet.rule.lavaDepthStrider.name": "Lava Depth Strider",
   "carpet.rule.lavaDepthStrider.desc": "While enabled, moving through lava no longer slows you down if you have Depth Strider: the water movement formula (and its water_movement_efficiency attribute) is applied to lava as well, so lava feels exactly like wearing Depth Strider boots in water. Higher enchantment levels move faster.",
   "carpet.rule.easyPlaceWaterlogged.name": "Easy Place Waterlogged",
-  "carpet.rule.easyPlaceWaterlogged.desc": "While enabled, placing a waterlogged block via Litematica easy place (following a schematic) also fills the water: the waterlogged state is set directly (no ice is actually placed) and one ice is consumed from your inventory; if you have no ice, only the block itself is placed and everything else stays unchanged. Requires Litematica."
+  "carpet.rule.easyPlaceWaterlogged.desc": "While enabled, Litematica easy place also fills the fluids/containers from the schematic: source water (or a bubble column) is placed and consumes one ice; lava places source lava and consumes one magma block; a lava cauldron places a lava-filled cauldron, consuming one cauldron and one magma block; waterlogged blocks simply get their waterlogged state set. If the material is missing, only the block itself is placed. Requires Litematica."
 }
