@@ -62,6 +62,10 @@ public abstract class WorldUtils_easyPlaceWaterloggedMixin {
 		if (player == null || !player.level().isClientSide()) {
 			return;
 		}
+		// 触发条件:站立触发时要求未潜行,蹲下触发时要求正在潜行。
+		if (!EasyPlaceWaterloggedSettings.triggerAllowed(player.isShiftKeyDown())) {
+			return;
+		}
 		WorldSchematic schematicWorld = SchematicWorldHandler.getSchematicWorld();
 		if (schematicWorld == null) {
 			return;

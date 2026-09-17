@@ -25,9 +25,47 @@ public class EasyPlaceWaterloggedSettings {
 	@Rule(categories = {"Hao"})
 	public static boolean easyPlaceWaterlogged = false;
 
+	/** 触发条件规则名:补料在玩家站立 / 蹲下时触发。 */
+	public static final String TRIGGER_RULE_NAME = "easyPlaceWaterloggedTrigger";
+
+	/** 触发条件。 */
+	public enum Trigger {
+		/** 站立触发:玩家未潜行时才补料。 */
+		STANDING,
+		/** 蹲下触发:玩家潜行(按住潜行键)时才补料。 */
+		SNEAKING,
+		/** 两种姿态都触发(默认):站着或蹲下都补料。 */
+		ALWAYS
+	}
+
+	@Rule(categories = {"Hao"})
+	public static Trigger easyPlaceWaterloggedTrigger = Trigger.ALWAYS;
+
 	/** 权威读取:carpet 默认管理器中该规则当前是否为 true(缺失/异常按 false)。 */
 	public static boolean isEnabled() {
 		CarpetRule<?> rule = CarpetServer.settingsManager.getCarpetRule(RULE_NAME);
 		return rule != null && rule.value() instanceof Boolean value && value;
+	}
+
+	/** 权威读取触发条件(缺失/异常按 {@link Trigger#ALWAYS})。 */
+	public static Trigger trigger() {
+		CarpetRule<?> rule = CarpetServer.settingsManager.getCarpetRule(TRIGGER_RULE_NAME);
+		if (rule != null && rule.value() instanceof Trigger value) {
+			return value;
+		}
+		return Trigger.ALWAYS;
+	}
+
+	/**
+	 * 按玩家当前的潜行状态判断这次是否应该触发补料。
+	 *
+	 * @param sneaking 玩家此刻是否在潜行(蹲下)
+	 */
+	public static boolean triggerAllowed(boolean sneaking) {
+		return switch (trigger()) {
+			case STANDING -> !sneaking;
+			case SNEAKING -> sneaking;
+			case ALWAYS -> true;
+		};
 	}
 }

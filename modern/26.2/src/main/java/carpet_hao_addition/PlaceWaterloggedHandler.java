@@ -137,6 +137,10 @@ public final class PlaceWaterloggedHandler {
 				it.remove();
 				continue;
 			}
+			// 触发条件不满足时(例如要求站立而玩家正蹲着)暂停处理:记录先留着,等条件满足或自动过期。
+			if (!EasyPlaceWaterloggedSettings.triggerAllowed(player.isShiftKeyDown())) {
+				continue;
+			}
 			ServerLevel world = player.level();
 			long now = world.getGameTime();
 			Iterator<Map.Entry<BlockPos, Long>> pendingIterator = entry.getValue().entrySet().iterator();

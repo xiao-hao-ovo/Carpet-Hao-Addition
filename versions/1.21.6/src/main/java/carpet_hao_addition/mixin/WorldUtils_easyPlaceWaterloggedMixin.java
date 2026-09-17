@@ -15,9 +15,13 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.ShulkerBoxBlock;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.FluidState;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -73,6 +77,10 @@ public abstract class WorldUtils_easyPlaceWaterloggedMixin {
 		}
 		PlayerEntity player = minecraft.player;
 		if (player == null) {
+			return;
+		}
+		// 触发条件:站立触发时要求未潜行,蹲下触发时要求正在潜行。
+		if (!EasyPlaceWaterloggedSettings.triggerAllowed(player.isSneaking())) {
 			return;
 		}
 		long tick = player.getWorld().getTime();
@@ -135,6 +143,13 @@ public abstract class WorldUtils_easyPlaceWaterloggedMixin {
 		if (desired.isOf(Blocks.LAVA) && desired.getFluidState().isStill()) {
 			return fluidMissing ? PlaceWaterloggedPayload.KIND_LAVA : PlaceWaterloggedPayload.KIND_NONE;
 		}
+		// 投影里是火 / 灵魂火(常见于灵魂沙、岩浆块、下界岩上方),或需要点出的下界传送门 → 点火。
+		if (desired.isOf(Blocks.FIRE) || desired.isOf(Blocks.SOUL_FIRE) || desired.isOf(Blocks.NETHER_PORTAL)) {
+			BlockState current = player.getWorld().getBlockState(pos);
+			boolean lit = current.isOf(Blocks.FIRE) || current.isOf(Blocks.SOUL_FIRE)
+					|| current.isOf(Blocks.NETHER_PORTAL);
+			return lit ? PlaceWaterloggedPayload.KIND_NONE : PlaceWaterloggedPayload.KIND_IGNITE;
+		}
 		return PlaceWaterloggedPayload.KIND_NONE;
 	}
 
@@ -146,6 +161,9 @@ public abstract class WorldUtils_easyPlaceWaterloggedMixin {
 			case PlaceWaterloggedPayload.KIND_LAVA -> hao$hasItem(player, Items.MAGMA_BLOCK);
 			// 炼药锅本身由正常放置流程消耗(见 PlaceWaterloggedHandler),这里只要求岩浆块。
 			case PlaceWaterloggedPayload.KIND_LAVA_CAULDRON -> hao$hasItem(player, Items.MAGMA_BLOCK);
+			// 点火:火焰弹(消耗 1 个)或打火石(消耗 1 点耐久)任一即可。
+			case PlaceWaterloggedPayload.KIND_IGNITE ->
+					hao$hasItem(player, Items.FIRE_CHARGE) || hao$hasItem(player, Items.FLINT_AND_STEEL);
 			default -> false;
 		};
 	}
@@ -216,10 +234,10 @@ public abstract class WorldUtils_easyPlaceWaterloggedMixin {
 	}
 
 	/**
-	 * 在中心附近 ±1 格内收集"投影里含水、而实际还没水"的格(需要有冰)。
+	 * 在中心附近 ±1 格内找"投影里含水、而实际还没水"的格,<b>只取离中心最近的那一个</b>。
 	 * <p>
-	 * 不要求玩家准星格算得完全准:Litematica 目标格与实际放置位置可能差一格,整批上报后由服务端在
-	 * 这些格真的放上方块时补水,偶发的位置偏差就不会漏。
+	 * 用 ±1 找是为了容忍准星格与实际落点的偏移;但只上报一格,避免一次操作把周围攒下的
+	 * 多个待补水格一起补上(表现为"一次性冒出好几格水")。
 	 */
 	@Unique
 	private static List<BlockPos> hao$collectWaterlogTargets(PlayerEntity player, WorldSchematic schematicWorld,
@@ -228,15 +246,25 @@ public abstract class WorldUtils_easyPlaceWaterloggedMixin {
 		if (center == null || !hao$hasItem(player, Items.ICE)) {
 			return result;
 		}
+		BlockPos best = null;
+		double bestDistance = Double.MAX_VALUE;
 		for (int dx = -1; dx <= 1; dx++) {
 			for (int dy = -1; dy <= 1; dy++) {
 				for (int dz = -1; dz <= 1; dz++) {
 					BlockPos pos = center.add(dx, dy, dz);
-					if (hao$needsWaterlog(player, schematicWorld, pos)) {
-						result.add(pos);
+					if (!hao$needsWaterlog(player, schematicWorld, pos)) {
+						continue;
+					}
+					double distance = pos.getSquaredDistance(center.getX(), center.getY(), center.getZ());
+					if (distance < bestDistance) {
+						bestDistance = distance;
+						best = pos;
 					}
 				}
 			}
+		}
+		if (best != null) {
+			result.add(best);
 		}
 		return result;
 	}
@@ -247,12 +275,37 @@ public abstract class WorldUtils_easyPlaceWaterloggedMixin {
 		hao$recentWaterRequests.entrySet().removeIf(e -> now - e.getValue() > HAO_REQUEST_TTL);
 	}
 
+	/**
+	 * 背包(含快捷栏/副手)里是否有该物品;背包里没有时,再看背包里的潜影盒。
+	 * <p>
+	 * 潜影盒取货不依赖 QuickShulker(它是纯客户端 mod):这里直接读潜影盒的 container 组件,
+	 * 服务端扣材料时用同样的方式写回组件。
+	 */
 	@Unique
 	private static boolean hao$hasItem(PlayerEntity player, Item item) {
 		for (int slot = 0; slot < player.getInventory().size(); slot++) {
 			ItemStack stack = player.getInventory().getStack(slot);
 			if (!stack.isEmpty() && stack.isOf(item)) {
 				return true;
+			}
+		}
+		if (EasyPlaceWaterloggedSettings.shulkerMode() == EasyPlaceWaterloggedSettings.ShulkerMode.FALSE) {
+			return false;
+		}
+		for (int slot = 0; slot < player.getInventory().size(); slot++) {
+			ItemStack boxStack = player.getInventory().getStack(slot);
+			if (boxStack.isEmpty() || !(boxStack.getItem() instanceof BlockItem blockItem)
+					|| !(blockItem.getBlock() instanceof ShulkerBoxBlock)) {
+				continue;
+			}
+			ContainerComponent container = boxStack.get(DataComponentTypes.CONTAINER);
+			if (container == null) {
+				continue;
+			}
+			for (ItemStack inner : container.iterateNonEmpty()) {
+				if (inner.isOf(item)) {
+					return true;
+				}
 			}
 		}
 		return false;
