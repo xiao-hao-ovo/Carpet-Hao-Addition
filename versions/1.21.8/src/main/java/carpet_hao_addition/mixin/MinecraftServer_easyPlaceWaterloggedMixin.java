@@ -1,5 +1,7 @@
 package carpet_hao_addition.mixin;
 
+import carpet_hao_addition.EasyPlaceEntityHandler;
+import carpet_hao_addition.EasyPlaceNbtHandler;
 import carpet_hao_addition.PlaceWaterloggedHandler;
 
 import net.minecraft.server.MinecraftServer;
@@ -20,5 +22,7 @@ public abstract class MinecraftServer_easyPlaceWaterloggedMixin {
 	@Inject(method = "<init>", at = @At("TAIL"))
 	private void hao$registerWaterloggedPayload(CallbackInfo ci) {
 		PlaceWaterloggedHandler.registerServerReceiver();
+		EasyPlaceEntityHandler.registerServerReceiver();
+		EasyPlaceNbtHandler.registerServerReceiver();
 	}
 }

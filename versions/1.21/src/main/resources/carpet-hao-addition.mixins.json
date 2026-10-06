@@ -1,36 +1,43 @@
 {
-	"required": true,
-	"package": "carpet_hao_addition.mixin",
-	"compatibilityLevel": "JAVA_21",
-	"mixins": [
-		"ObserverBlockMixin",
-		"ComposterBlockMixin",
-		"LavaFluid_snowyCalciteMixin",
-		"FluidBlock_snowyCalciteMixin",
-		"EndPortalBlockMixin",
-		"StonecutterScreenHandlerMixin",
-		"Block_bedrockCanBeMinedMixin",
-		"ServerPlayerInteractionManager_bedrockMinesMixin",
-		"ClientPlayerInteractionManager_bedrockMinesMixin",
-		"BlockState_bedrockCanBeMinedMixin",
-		"LivingEntity_witherSkeletonDropMixin",
-		"MobEntity_witherSkeletonDropMixin",
-		"ServerPlayerInteractionManager_directBlockDropsMixin",
-		"ServerWorld_directDropsMixin",
-		"LivingEntity_directEntityDropsMixin",
-		"PlayerEntity_directEntityDropsMixin",
-		"LivingEntity_lavaDepthStriderMixin",
-		"WorldAccess_directDropsMixin",
-		"ServerWorld_tickBlockMixin",
-		"MinecraftServer_easyPlaceWaterloggedMixin"
-	],
-	"client": [
-		"WorldUtils_easyPlaceWaterloggedMixin"
-	],
-	"injectors": {
-		"defaultRequire": 1
-	},
-	"overwrites": {
-		"requireAnnotations": true
-	}
+  "required": true,
+  "package": "carpet_hao_addition.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ObserverBlockMixin",
+    "ComposterBlockMixin",
+    "LavaFluid_snowyCalciteMixin",
+    "FluidBlock_snowyCalciteMixin",
+    "EndPortalBlockMixin",
+    "StonecutterScreenHandlerMixin",
+    "Block_bedrockCanBeMinedMixin",
+    "ServerPlayerInteractionManager_bedrockMinesMixin",
+    "ClientPlayerInteractionManager_bedrockMinesMixin",
+    "BlockState_bedrockCanBeMinedMixin",
+    "LivingEntity_witherSkeletonDropMixin",
+    "MobEntity_witherSkeletonDropMixin",
+    "ServerPlayerInteractionManager_directBlockDropsMixin",
+    "ServerWorld_directDropsMixin",
+    "LivingEntity_directEntityDropsMixin",
+    "PlayerEntity_directEntityDropsMixin",
+    "LivingEntity_lavaDepthStriderMixin",
+    "WorldAccess_directDropsMixin",
+    "ServerWorld_tickBlockMixin",
+    "MinecraftServer_easyPlaceWaterloggedMixin",
+    "easyplace.BeaconBlockEntityAccessor",
+    "easyplace.SignItemMixin",
+    "easyplace.BlockItemMixin",
+    "easyplace.VerticallyAttachableBlockItemMixin",
+    "easyplace.SignBlockEntityInvoker"
+  ],
+  "client": [
+    "WorldUtils_easyPlaceWaterloggedMixin",
+    "easyplace.WorldUtilsMixin",
+    "easyplace.EasyPlaceUtilsInvoker"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
 }

@@ -54,6 +54,7 @@ jobs:
         include:
           - { dir: modern/26.2, label: '26.2' }
           - { dir: modern/26.1.2, label: '26.1.2' }
+          - { dir: modern/26.3, label: '26.3' }
     steps:
       - name: Checkout
         uses: actions/checkout@v4

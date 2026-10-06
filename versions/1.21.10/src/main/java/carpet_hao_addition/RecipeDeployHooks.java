@@ -44,12 +44,10 @@ public final class RecipeDeployHooks {
 			Path packDir = server.getSavePath(WorldSavePath.DATAPACKS).resolve(PACK_NAME);
 			boolean changed = false;
 
-			Path mcmeta = packDir.resolve("pack.mcmeta");
-			if (!Files.exists(mcmeta)) {
-				Files.createDirectories(packDir.resolve("data/carpet-hao-addition/recipe"));
-				Files.writeString(mcmeta, mcmetaContent(), StandardCharsets.UTF_8);
-				changed = true;
-			}
+			// 必须"内容变了就重写":旧世界数据包里残留的旧格式 pack.mcmeta
+			// (例如 1.21.9 之前缺 min_format/max_format)不会被更新,数据包会一直加载失败。
+			Files.createDirectories(packDir.resolve("data/carpet-hao-addition/recipe"));
+			changed |= writeIfChanged(packDir.resolve("pack.mcmeta"), mcmetaContent());
 			for (String color : COLORS) {
 				Path dir = packDir.resolve("data/carpet-hao-addition/recipe");
 				changed |= writeIfChanged(dir.resolve(color + "_terracotta_to_terracotta.json"),
@@ -93,6 +91,8 @@ public final class RecipeDeployHooks {
 				{
 				  "pack": {
 				    "pack_format": %d,
+				    "min_format": 81,
+				    "max_format": 9999,
 				    "description": "Carpet Hao Addition - terracotta/glazed uncolor (stonecutter)"
 				  }
 				}

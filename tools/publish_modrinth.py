@@ -95,7 +95,33 @@ def multipart(fields, files):
     buf += f"--{boundary}--\r\n".encode("utf-8")
     return bytes(buf), f"multipart/form-data; boundary={boundary}"
 
-def local_jars(directory=None):
+def current_mod_version():
+    """从仓库根 gradle.properties 读 mod_version(读不到返回 None)。"""
+    try:
+        for line in (REPO / "gradle.properties").read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if line.startswith("mod_version="):
+                return line.split("=", 1)[1].strip()
+    except OSError:
+        pass
+    return None
+
+def effective_prefix(requested=None):
+    """未显式指定 --prefix 时,默认限定为当前 mod_version。
+
+    各层 build/libs 里会残留历史版本的 jar,不限定就会把它们一起当候选传上去
+    (曾因此误传过 0.1.2 等旧版本);只上传当前版本可避免这种误传。
+    """
+    if requested:
+        return requested
+    version = current_mod_version()
+    if version:
+        print(f"版本限定: 只上传 mod_version={version} 的 jar(可用 --prefix 覆盖)")
+    else:
+        print("警告: 读不到 mod_version,本次不做版本限定", file=sys.stderr)
+    return version
+
+def local_jars(directory=None, prefix=None):
     if directory:
         paths = sorted(pathlib.Path(directory).glob("*.jar"))
     else:
@@ -105,6 +131,8 @@ def local_jars(directory=None):
     out = []
     for p in paths:
         if "sources" in p.name or not p.name.startswith("carpet-hao-addition-") or "+" not in p.name:
+            continue
+        if prefix and f"-{prefix}+" not in p.name:
             continue
         out.append((p.name[:-4].split("+", 1)[1], p))
     return sorted(out, key=lambda t: GAME_VERSIONS.index(t[0]) if t[0] in GAME_VERSIONS else 99)
@@ -213,7 +241,7 @@ def cmd_create(args):
     create_project(tok, args)
 
 def cmd_versions(args):
-    jobs = local_jars(args.dir)
+    jobs = local_jars(args.dir, effective_prefix(args.prefix))
     if not jobs:
         sys.exit("没有找到可上传的 jar")
     print(f"待上传 {len(jobs)} 个文件:")
@@ -279,6 +307,7 @@ def main():
                      ("publish", cmd_publish), ("status", cmd_status)):
         sp = sub.add_parser(name)
         sp.add_argument("--dir", help="jar 所在目录(CI 里传下载下来的 artifacts 目录)")
+        sp.add_argument("--prefix", help="只上传文件名里含该版本号的 jar(默认用 gradle.properties 的 mod_version)")
         sp.add_argument("--icon", help="项目图标 png")
         sp.add_argument("--body-file", help="项目正文 markdown")
         sp.add_argument("--dry-run", action="store_true", help="只打印将上传的文件")

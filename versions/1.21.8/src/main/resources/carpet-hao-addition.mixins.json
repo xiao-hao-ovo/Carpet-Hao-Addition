@@ -21,11 +21,23 @@
 		"LivingEntity_lavaDepthStriderMixin",
 		"ScheduledTickView_directDropsMixin",
 		"ServerWorld_tickBlockMixin",
-		"MinecraftServer_easyPlaceWaterloggedMixin"
+		"MinecraftServer_easyPlaceWaterloggedMixin",
+		"MinecraftServer_rocketShulkerMixin",
+		"DyeItem_useDyeOnShulkerBoxMixin",
+		"CactusShulkerBoxWashMixin",
+		"ServerPlayerEntity_autoMendingMixin",
+		"easyplace.BeaconBlockEntityAccessor",
+		"easyplace.SignItemMixin",
+		"easyplace.BlockItemMixin",
+    "easyplace.VerticallyAttachableBlockItemMixin",
+    "easyplace.SignBlockEntityInvoker"
 	],
 	"client": [
 		"ClientPlayerInteractionManager_bedrockMinesMixin",
-		"WorldUtils_easyPlaceWaterloggedMixin"
+		"WorldUtils_easyPlaceWaterloggedMixin",
+		"WorldUtils_easyPlaceEntityMixin",
+		"easyplace.WorldUtilsMixin",
+		"easyplace.EasyPlaceUtilsInvoker"
 	],
 	"injectors": {
 		"defaultRequire": 1

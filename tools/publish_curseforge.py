@@ -173,6 +173,34 @@ def multipart(metadata, jar):
     return nl.join(chunks), f"multipart/form-data; boundary={boundary}"
 
 
+def current_mod_version():
+    """从仓库根 gradle.properties 读 mod_version(读不到返回 None)。"""
+    try:
+        for line in (REPO / "gradle.properties").read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if line.startswith("mod_version="):
+                return line.split("=", 1)[1].strip()
+    except OSError:
+        pass
+    return None
+
+
+def effective_prefix(requested=None):
+    """未显式指定 --prefix 时,默认限定为当前 mod_version。
+
+    各层 build/libs 里会残留历史版本的 jar,不限定就会把它们一起当候选传上去
+    (曾因此误传过 0.1.2 等旧版本);只上传当前版本可避免这种误传。
+    """
+    if requested:
+        return requested
+    version = current_mod_version()
+    if version:
+        print(f"版本限定: 只上传 mod_version={version} 的 jar(可用 --prefix 覆盖)")
+    else:
+        print("警告: 读不到 mod_version,本次不做版本限定", file=sys.stderr)
+    return version
+
+
 def local_jars(directory=None, prefix=None, files=None):
     if files:
         paths = [pathlib.Path(f) for f in files]
@@ -211,7 +239,7 @@ def upload(tok, mc, jar, tag_ids):
 
 
 def cmd_versions(args):
-    jobs = local_jars(args.dir, args.prefix, args.files)
+    jobs = local_jars(args.dir, effective_prefix(args.prefix), args.files)
     if not jobs:
         sys.exit("没有找到可上传的 jar")
     print(f"待上传 {len(jobs)} 个文件:")

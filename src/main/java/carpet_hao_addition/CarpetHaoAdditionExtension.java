@@ -78,6 +78,12 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         CarpetServer.settingsManager.parseSettingsClass(DirectDropsSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(LavaDepthStriderSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(EasyPlaceWaterloggedSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(RocketShulkerSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(UseDyeOnShulkerBoxSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(CopperStonecuttingSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(AutoMendingSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(EasyPlaceEntitySettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(BetterEasyPlaceProtocolSettings.class);
 
         registerZoneguardRuleObserver();
     }
@@ -89,6 +95,8 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         // Deploy & enable the terracotta-uncolor datapack right after startup (deferred to
         // the first tick so the level is fully loaded), so recipes work without /reload.
         server.execute(() -> RecipeDeployHooks.ensureDeployed(server));
+        // Same treatment for the copper-stonecutter datapack (door / trapdoor / bulb).
+        server.execute(() -> ensureCopperStonecutting(server));
     }
 
     @Override
@@ -97,6 +105,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         // Ensure the terracotta-uncolor stonecutter recipes are deployed to the world
         // datapack and enabled (fabric-loader does not auto-load mod data/ as a datapack).
         RecipeDeployHooks.ensureDeployed(server);
+        ensureCopperStonecutting(server);
     }
 
     private void registerZoneguardRuleObserver()
@@ -115,6 +124,21 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
             String ruleName = changedRule.name();
             if (!(changedRule.value() instanceof Boolean enabled))
             {
+                return;
+            }
+
+            // 铜规则同样靠数据包启停:开关一变就立即重新部署(含 enable/disable 与 reload)。
+            if (CopperStonecuttingSettings.RULE_NAME.equals(ruleName))
+            {
+                MinecraftServer srv = source != null ? source.getServer() : null;
+                if (srv == null)
+                {
+                    srv = this.server;
+                }
+                if (srv != null)
+                {
+                    ensureCopperStonecutting(srv);
+                }
                 return;
             }
 
@@ -188,6 +212,12 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
 
         // /playerNoEndPortalTeleport — manages the noEndPortalTeleport blacklist/global mode.
         PlayerNoEndPortalTeleportCommands.register(dispatcher);
+
+        // /rocketShulker — 设置火箭潜影盒的补给位置(副手 / 主手快捷栏 1-9)。
+        RocketShulkerCommands.register(dispatcher);
+
+        // /easyPlaceEntityCount — 设置自己一次放置几个实体(1-64)。
+        EasyPlaceEntityCommands.register(dispatcher);
     }
 
     @Override
@@ -215,5 +245,25 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
                     "assets/" + MOD_ID + "/lang/en_us.json");
         }
         return translations;
+    }
+
+    /**
+     * 铜切石机配方部署只在部分层实现(1.21.8 / 1.21.10 / 1.21.11)。
+     * <p>
+     * 这里用反射调用:该层没有 {@code CopperStonecuttingDeployHook} 时静默跳过,
+     * 这样 1.21 ~ 1.21.6 等层依然可以正常编译(它们本来就没有这个功能)。
+     */
+    private static void ensureCopperStonecutting(MinecraftServer server)
+    {
+        try
+        {
+            Class.forName("carpet_hao_addition.CopperStonecuttingDeployHook")
+                    .getMethod("ensureDeployed", MinecraftServer.class)
+                    .invoke(null, server);
+        }
+        catch (Throwable ignored)
+        {
+            // 本层未实现该功能, 跳过
+        }
     }
 }
