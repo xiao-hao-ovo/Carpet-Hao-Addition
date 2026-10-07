@@ -4,6 +4,8 @@ import carpet_hao_addition.easyplace.BlockProtocolStateAdapter;
 import carpet_hao_addition.easyplace.ItemStackProtocolDataAdapter;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -107,6 +109,7 @@ public class CeilingHangingSignBlockProtocolAdapter implements BlockProtocolStat
         if (text != null && !text.isEmpty()) {
             if (text.getBoolean("has_glowing_text").orElse(false)) attributes |= glowingBit;
             String colorName = text.getString("color").orElse("");
+		System.out.println("[hao-sign] 编码 color='" + colorName + "' key=" + key);
             for (DyeColor c : DyeColor.values()) {
                 if (c.getName().equals(colorName)) {
                     attributes |= (c.ordinal() & 0b1111) << colorShift;
@@ -117,22 +120,22 @@ public class CeilingHangingSignBlockProtocolAdapter implements BlockProtocolStat
         return attributes;
     }
 
+    /**
+     * 把颜色 / 发光写回方块实体 NBT。
+     * <p>
+     * **必须走 SignText.CODEC**:26.x 的标牌 NBT 就是用它序列化的 ——
+     * SignBlockEntity.saveAdditional 里是 valueOutput.store("front_text", SignText.CODEC, frontText),
+     * 读回来也走同一个 codec。手写 color 键(1.21.8 的字符串、int 都试过)都不是它认的格式,
+     * 结果就是文字能还原、颜色永远是黑的。
+     */
     private static void applySignTextProperties(CompoundTag tag, String key, DyeColor color, boolean glowing) {
-        CompoundTag text = tag.getCompound(key).orElse(null);
-        if (text == null) {
-            text = new CompoundTag();
-            tag.put(key, text);
-        }
-        if (!text.contains("messages")) {
-            net.minecraft.nbt.ListTag messages = new net.minecraft.nbt.ListTag();
-            for (int i = 0; i < 4; ++i) {
-                messages.add(net.minecraft.nbt.StringTag.valueOf(""));
-            }
-            text.put("messages", messages);
-        }
-        text.putString("color", color.getName());
-        text.putBoolean("has_glowing_text", glowing);
-        tag.put(key, text);
+        SignText text = tag.getCompound(key)
+                .flatMap(compound -> SignText.CODEC.parse(NbtOps.INSTANCE, compound).result())
+                .orElse(SignText.EMPTY);
+        SignText updated = text.withColor(color).withGlowingText(glowing);
+        SignText.CODEC.encodeStart(NbtOps.INSTANCE, updated)
+                .result()
+                .ifPresent(encoded -> tag.put(key, (CompoundTag) encoded));
     }
 
     private static @Nullable CompoundTag getBlockEntityTag(ItemStack stack) {

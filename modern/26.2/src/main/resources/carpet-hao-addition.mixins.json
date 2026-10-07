@@ -11,7 +11,6 @@
 		"StonecutterScreenHandlerMixin",
 		"Block_bedrockCanBeMinedMixin",
 		"ServerPlayerInteractionManager_bedrockMinesMixin",
-		"MultiPlayerGameMode_bedrockMinesMixin",
 		"BlockState_bedrockCanBeMinedMixin",
 		"LivingEntity_witherSkeletonDropMixin",
 		"MobEntity_witherSkeletonDropMixin",
@@ -33,7 +32,8 @@
 		"WorldUtils_easyPlaceWaterloggedMixin",
 		"easyplace.WorldUtilsMixin",
 		"easyplace.EasyPlaceUtilsMixin",
-		"easyplace.EasyPlaceUtilsInvoker"
+		"easyplace.EasyPlaceUtilsInvoker",
+		"MultiPlayerGameMode_bedrockMinesMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

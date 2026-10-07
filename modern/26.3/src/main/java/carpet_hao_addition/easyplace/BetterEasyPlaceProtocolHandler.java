@@ -43,8 +43,6 @@ public class BetterEasyPlaceProtocolHandler {
         register(CandleBlock.class, new CandleBlockProtocolAdapter());
         register(CeilingHangingSignBlock.class, new CeilingHangingSignBlockProtocolAdapter());
         register(CommandBlock.class, new CommandBlockProtocolAdapter());
-        register(ComparatorBlock.class, new ComparatorBlockProtocolAdapter());
-        register(ComposterBlock.class, new ComposterBlockProtocolAdapter());
         register(BaseCoralWallFanBlock.class, new CoralWallFanBlockProtocolAdapter());
         register(DaylightDetectorBlock.class, new DaylightDetectorBlockProtocolAdapter());
         register(FaceAttachedHorizontalDirectionalBlock.class, new FaceAttachedHorizontalDirectionalBlockProtocolAdapter());
@@ -55,11 +53,8 @@ public class BetterEasyPlaceProtocolHandler {
         register(LightBlock.class, new LightBlockProtocolAdapter());
         register(MultifaceBlock.class, new MultifaceBlockProtocolAdapter());
         register(NoteBlock.class, new NoteBlockProtocolAdapter());
-        register(PistonBaseBlock.class, new PistonBaseBlockProtocolAdapter());
-        register(RailBlock.class, new RailBlockProtocolAdapter());
         register(RedstoneWireBlock.class, new RedStoneWireBlockProtocolAdapter());
         register(RedstoneLampBlock.class, new RedstoneLampBlockProtocolAdapter());
-        register(RepeaterBlock.class, new RepeaterBlockProtocolAdapter());
         register(SeaPickleBlock.class, new SeaPickleBlockProtocolAdapter());
         register(SkullBlock.class, new SkullBlockProtocolAdapter());
         register(SnowLayerBlock.class, new SnowLayerBlockProtocolAdapter());
@@ -74,9 +69,7 @@ public class BetterEasyPlaceProtocolHandler {
         register(CrafterBlock.class, new CrafterBlockProtocolAdapter());
         register(FlowerBedBlock.class, new FlowerBedBlockProtocolAdapter());
         register(HorizontalDirectionalBlock.class, new HorizontalDirectionalBlockProtocolAdapter());
-        register(HopperBlock.class, new HopperBlockProtocolAdapter());
         register(WallBlock.class, new WallBlockProtocolAdapter());
-        register(DetectorRailBlock.class, new DetectorRailBlockProtocolAdapter());
     }
 
     private static boolean easyPlaceState = false;

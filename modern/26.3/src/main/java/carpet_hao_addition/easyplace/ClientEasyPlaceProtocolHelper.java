@@ -14,7 +14,6 @@ import fi.dy.masa.malilib.util.data.tag.converter.DataConverterNbt;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -37,14 +36,6 @@ public class ClientEasyPlaceProtocolHelper {
         }
         Block block = stateSchematic.getBlock();
         Level world = SchematicWorldHandler.getSchematicWorld();
-
-        // 只对珊瑚类:额外发投影状态给服务端强制设置(珊瑚受 canPlaceAt 约束,不满足会放不下
-        // 或回退成地上的扇子)。其他方块不走这里,行为不变。
-        if (hao$isCoral(block)) {
-            CompoundTag coralNbt = getSchematicBlockEntityNbt(pos, stateSchematic);
-            System.out.println("[hao-easyplace] [珊瑚] 发送投影状态=" + stateSchematic);
-            EasyPlaceNbtHandler.send(pos, NbtUtils.writeBlockState(stateSchematic), coralNbt);
-        }
 
         carpet_hao_addition.easyplace.BlockProtocolStateAdapter adapter =
                 BetterEasyPlaceProtocolHandler.getAdapter(block);
@@ -88,7 +79,7 @@ public class ClientEasyPlaceProtocolHelper {
             // 完整 NBT(含标牌文字等)走独立通道单独发送 —— 协议值 16 位装不下这些。
             CompoundTag fullNbt = getSchematicBlockEntityNbt(pos, stateSchematic);
             if (fullNbt != null) {
-                EasyPlaceNbtHandler.send(pos, null, fullNbt);
+                EasyPlaceNbtHandler.send(pos, fullNbt);
             }
             if (attributesValue == 0) {
                 System.out.println("[hao-easyplace]   投影NBT=" + (fullNbt == null ? "null" : fullNbt));
@@ -118,15 +109,6 @@ public class ClientEasyPlaceProtocolHelper {
         }
         BlockEntityType<?> type = BuiltInRegistries.BLOCK_ENTITY_TYPE.getValue(id);
         return type != null && type.isValid(state);
-    }
-
-    /** 是不是珊瑚类方块(按注册名判定, 活/失活的珊瑚块/扇/墙扇都覆盖)。 */
-    private static boolean hao$isCoral(Block block) {
-        try {
-            return BuiltInRegistries.BLOCK.getKey(block).getPath().contains("coral");
-        } catch (Exception e) {
-            return false;
-        }
     }
 
     private static @Nullable CompoundTag getSchematicBlockEntityNbt(BlockPos pos, BlockState stateSchematic) {

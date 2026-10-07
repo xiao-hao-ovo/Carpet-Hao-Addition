@@ -31,6 +31,8 @@ public record PlaceWaterloggedPayload(boolean active, int kind, List<BlockPos> p
 	public static final int KIND_LAVA_CAULDRON = 3;
 	/** 待补水格:{@code positions} 里的格子随后放上方块时要补含水。 */
 	public static final int KIND_WATERLOG = 4;
+	/** 在 {@code positions} 上点火(投影里是火 / 灵魂火,或需要点出的下界传送门)。 */
+	public static final int KIND_IGNITE = 5;
 
 	public static final CustomPacketPayload.Type<PlaceWaterloggedPayload> ID =
 			new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(CarpetHaoAdditionExtension.MOD_ID, "easy_place_active"));

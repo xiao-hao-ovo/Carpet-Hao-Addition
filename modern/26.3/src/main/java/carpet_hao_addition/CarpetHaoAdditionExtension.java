@@ -69,6 +69,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         // parser always finds the required "carpet.rule.zoneguard.desc" key.
         settingsManager.parseSettingsClass(CarpetHaoAdditionSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(ZoneguardSettings.class);
+		CarpetServer.settingsManager.parseSettingsClass(WackoBeaconsSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(GoldenCarrotCompostSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(SnowyCalciteSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(NoEndPortalTeleportSettings.class);
@@ -79,6 +80,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         CarpetServer.settingsManager.parseSettingsClass(LavaDepthStriderSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(EasyPlaceWaterloggedSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(BetterEasyPlaceProtocolSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(EasyPlaceEntitySettings.class);
 
         registerZoneguardRuleObserver();
     }
@@ -189,6 +191,9 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
 
         // /playerNoEndPortalTeleport — manages the noEndPortalTeleport blacklist/global mode.
         PlayerNoEndPortalTeleportCommands.register(dispatcher);
+
+        // /easyPlaceEntityCount、/easyPlaceEntityUi — easyPlaceEntity 的每玩家设置。
+        EasyPlaceEntityCommands.register(dispatcher);
     }
 
     @Override

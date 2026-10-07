@@ -8,6 +8,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
@@ -18,7 +19,14 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.entity.SignText;
+import net.minecraft.world.level.block.entity.SignTextSlot;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -36,12 +44,6 @@ import static carpet_hao_addition.easyplace.EasyPlaceExtraProtocolHelper.isProto
 public abstract class BlockItemMixin {
     @Shadow
     public abstract Block getBlock();
-
-    /** 珊瑚类待强制的目标: 由完整 NBT 通道记录, 在 place 流程【全部结束】后统一设置。 */
-    @Unique
-    private static BlockPos hao$coralPos = null;
-    @Unique
-    private static BlockState hao$coralState = null;
 
     @Shadow
     protected abstract boolean canPlace(BlockPlaceContext context, BlockState state);
@@ -63,6 +65,62 @@ public abstract class BlockItemMixin {
             }
         }
         level.sendBlockUpdated(pos, now, now, 3);
+    }
+
+
+    /**
+     * 标牌文字颜色 / 发光:客户端与服务端都用 26.3 的 API 直接设置。
+     * <p>
+     * 为什么不直接靠"把投影 NBT 整份写进方块实体":26.x 的标牌 BE 改成了 ValueInput / 组件读写,
+     * 投影里那份 {@code front_text}(颜色是字符串 {@code "blue"})它**认不出来** ——
+     * 实测文字能还原、颜色丢失(放出来黑字)。所以这里自己解析投影 NBT 里的
+     * {@code front_text}/{@code back_text}(color / has_glowing_text),再用
+     * {@link SignBlockEntity#setText} + {@code SignText.withColor/withGlowingText} 设上去,
+     * 完全不依赖 26.x 的 NBT 字段格式。
+     * <p>
+     * 协议位(easyplace 编码进 hitVec 的那些)在服务端是拿不到的 —— 那是客户端本地的放置预测,
+     * 服务端收到的交互包里没有它,所以不能拿它当数据源。
+     */
+    @Unique
+    private static void hao$applySignColors(Level level, BlockPos pos, net.minecraft.nbt.CompoundTag fullNbt) {
+        // **两侧都要做**:1.21.8 是靠客户端把颜色写进 NBT 才生效的;26.x 的标牌 BE 不认那份
+        // 字符串格式的 color,所以这里客户端(预测放置时本地那一次)与服务端各设一次 ——
+        // 只设服务端时客户端要靠 BE 同步才看得到,实测同步过不来,放出来仍是黑字。
+        if (fullNbt == null || !(level.getBlockEntity(pos) instanceof SignBlockEntity sign)) {
+            return;
+        }
+        hao$applySignText(level, sign, fullNbt, "front_text", SignTextSlot.FRONT);
+        hao$applySignText(level, sign, fullNbt, "back_text", SignTextSlot.BACK);
+    }
+
+    /** 把投影 NBT 里某一面(messages/color/has_glowing_text)的颜色与发光设到标牌上。 */
+    @Unique
+    private static void hao$applySignText(Level level, SignBlockEntity sign, CompoundTag fullNbt,
+                                          String key, SignTextSlot slot) {
+        CompoundTag text = fullNbt.getCompound(key).orElse(null);
+        if (text == null) {
+            return;
+        }
+        boolean glowing = text.getBoolean("has_glowing_text").orElse(false);
+        String colorName = text.getString("color").orElse("");
+        SignText current = sign.getText(slot);
+        SignText updated = current.withGlowingText(glowing);
+        if (!colorName.isEmpty()) {
+            // DyeColor.byName 找不到时回退到当前颜色(而不是黑),避免把好颜色改坏。
+            updated = updated.withColor(DyeColor.byName(colorName, current.getColor()));
+        }
+        sign.setText(updated, slot);
+        System.out.println("[hao-sign] set(" + (level.isClientSide() ? "CLIENT" : "SERVER") + ") " + key
+                + " color=" + colorName + "->" + sign.getText(slot).getColor().getName()
+                + " pos=" + sign.getBlockPos());
+        if (level.isClientSide() == false && level instanceof ServerLevel serverLevel) {
+            // 修:标牌的 markUpdated 有时不触发方块实体数据包,结果服务端内存颜色对了、客户端一直黑。
+            // 这里直接把这份 BE 数据强制广播出去。
+            ClientboundBlockEntityDataPacket packet = sign.getUpdatePacket();
+            if (packet != null) {
+                serverLevel.getServer().getPlayerList().broadcastAll(packet);
+            }
+        }
     }
 
     @Inject(method = "getPlacementState", at = @At("HEAD"), cancellable = true)
@@ -103,19 +161,6 @@ public abstract class BlockItemMixin {
         }
         try {
             InteractionResult hao$result = original.call(context);
-            // 珊瑚类:整个放置流程走完后再强制设置(在方块实体数据写入里做会被后续的
-            // placeFromNbt 覆盖一次)。
-            if (hao$coralState != null && hao$coralPos != null && !context.getLevel().isClientSide()) {
-                Level hao$w = context.getLevel();
-                BlockState hao$now = hao$w.getBlockState(hao$coralPos);
-                if (!hao$now.equals(hao$coralState)) {
-                    hao$w.setBlock(hao$coralPos, hao$coralState, 3);
-                    System.out.println("[hao-easyplace] [珊瑚强制投影状态/末端] " + hao$coralPos
-                            + " " + hao$now + " -> " + hao$coralState);
-                }
-            }
-            hao$coralPos = null;
-            hao$coralState = null;
             return hao$result;
         } finally {
             BetterEasyPlaceProtocolHandler.setEasyPlaceState(false);
@@ -140,23 +185,6 @@ public abstract class BlockItemMixin {
         // 优先使用「完整 NBT 通道」送来的数据。
         carpet_hao_addition.EasyPlaceNbtHandler.PendingData data = carpet_hao_addition.EasyPlaceNbtHandler.take(player, pos);
         if (data != null) {
-            // 只有珊瑚类会带 stateNbt,按投影强制设置(不受 canPlaceAt 约束);
-            // 其他方块恒为 null,不执行这里,行为不变。
-            if (!level.isClientSide() && data.stateNbt() != null) {
-                // 这里只记录,不直接设置 —— 原版 place 在这之后还会再设一次,会把它覆盖掉。
-                try {
-                    BlockState target = net.minecraft.nbt.NbtUtils.readBlockState(
-                            level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.BLOCK),
-                            data.stateNbt());
-                    if (target != null) {
-                        hao$coralPos = pos;
-                        hao$coralState = target;
-                        System.out.println("[hao-easyplace] [珊瑚] 记录待强制: " + pos + " -> " + target);
-                    }
-                } catch (Exception e) {
-                    System.out.println("[hao-easyplace] [珊瑚] 解析投影状态失败: " + e);
-                }
-            }
             net.minecraft.nbt.CompoundTag fullNbt = data.nbt();
             // 方块实体数据组件是 TypedEntityData(必须带方块实体类型),不再是裸 NBT 包;
             // 类型取该位置实际落下的方块实体,原版 updateCustomBlockEntityTag 会核对它。
@@ -166,7 +194,10 @@ public abstract class BlockItemMixin {
                 withFullNbt.set(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA,
                         net.minecraft.world.item.component.TypedEntityData.of(hao$placedBe.getType(), fullNbt));
                 System.out.println("[hao-easyplace] [服务端] 应用完整 NBT: 位置=" + pos + " id=" + fullNbt.getString("id").orElse("?"));
+				System.out.println("[hao-sign] 服务端应用 NBT front_text=" + fullNbt.getCompound("front_text").orElse(null));
                 boolean hao$ok = original.call(level, player, pos, withFullNbt);
+                // 先按投影 NBT 设标牌颜色/发光,再广播 —— 顺序反了客户端收到的还是旧状态。
+                hao$applySignColors(level, pos, data.nbt());
                 hao$notifyClient(level, pos);
                 return hao$ok;
             }

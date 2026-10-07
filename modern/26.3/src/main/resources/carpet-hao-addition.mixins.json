@@ -3,6 +3,7 @@
 	"package": "carpet_hao_addition.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
+		"SignBlockEntity_colorProbeMixin",
 		"ObserverBlockMixin",
 		"ComposterBlockMixin",
 		"LavaFluid_snowyCalciteMixin",
@@ -11,7 +12,6 @@
 		"StonecutterScreenHandlerMixin",
 		"Block_bedrockCanBeMinedMixin",
 		"ServerPlayerInteractionManager_bedrockMinesMixin",
-		"MultiPlayerGameMode_bedrockMinesMixin",
 		"BlockState_bedrockCanBeMinedMixin",
 		"LivingEntity_witherSkeletonDropMixin",
 		"MobEntity_witherSkeletonDropMixin",
@@ -29,7 +29,11 @@
 		"easyplace.SignBlockEntityInvoker"
 	],
 	"client": [
+		"WackoBeacons_BeaconPowerButtonMixin",
+		"WackoBeacons_BeaconBlockEntityMixin",
+		"MultiPlayerGameMode_bedrockMinesMixin",
 		"WorldUtils_easyPlaceWaterloggedMixin",
+		"WorldUtils_easyPlaceEntityMixin",
 		"easyplace.WorldUtilsMixin",
 		"easyplace.EasyPlaceUtilsMixin",
 		"easyplace.EasyPlaceUtilsInvoker"
