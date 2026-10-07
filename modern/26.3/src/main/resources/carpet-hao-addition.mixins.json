@@ -22,10 +22,17 @@
 		"LivingEntity_lavaDepthStriderMixin",
 		"ScheduledTickAccess_directDropsMixin",
 		"ServerLevel_tickBlockMixin",
-		"MinecraftServer_easyPlaceWaterloggedMixin"
+		"MinecraftServer_easyPlaceWaterloggedMixin",
+		"easyplace.BeaconBlockEntityAccessor",
+		"easyplace.BlockItemMixin",
+		"easyplace.VerticallyAttachableBlockItemMixin",
+		"easyplace.SignBlockEntityInvoker"
 	],
 	"client": [
-		"WorldUtils_easyPlaceWaterloggedMixin"
+		"WorldUtils_easyPlaceWaterloggedMixin",
+		"easyplace.WorldUtilsMixin",
+		"easyplace.EasyPlaceUtilsMixin",
+		"easyplace.EasyPlaceUtilsInvoker"
 	],
 	"injectors": {
 		"defaultRequire": 1

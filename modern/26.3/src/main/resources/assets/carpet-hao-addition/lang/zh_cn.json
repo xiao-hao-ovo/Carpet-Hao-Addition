@@ -67,5 +67,7 @@
   "carpet.rule.easyPlaceWaterlogged.name": "投影轻松放置补水",
   "carpet.rule.easyPlaceWaterlogged.desc": "开启后,用 Litematica 轻松放置照着投影放置含水方块时会一并把水补上:直接设置含水状态(不会真的把冰放出来),并从背包里消耗 1 个冰;背包里没有冰时只放置方块本身,其余行为不变。需要安装 Litematica。",
   "carpet.rule.easyPlaceWaterloggedTrigger.name": "投影轻松放置补料触发条件",
-  "carpet.rule.easyPlaceWaterloggedTrigger.desc": "补料功能在什么姿态下才生效:always=两种姿态都触发(站着或蹲下都补,默认);standing=站立触发(玩家未潜行时补料,潜行时不补);sneaking=蹲下触发(玩家按住潜行键时补料,未潜行时不补)。"
+  "carpet.rule.easyPlaceWaterloggedTrigger.desc": "补料功能在什么姿态下才生效:always=两种姿态都触发(站着或蹲下都补,默认);standing=站立触发(玩家未潜行时补料,潜行时不补);sneaking=蹲下触发(玩家按住潜行键时补料,未潜行时不补)。",
+  "carpet.rule.haoBetterEasyPlaceProtocol.name": "增强轻松放置协议",
+  "carpet.rule.haoBetterEasyPlaceProtocol.desc": "照投影轻松放置时,让带朝向、开关、颜色、方块实体数据等复杂状态的方块也按投影正确放下。需要安装 Litematica。含水方块请用 easyPlaceWaterlogged。默认关闭。"
 }

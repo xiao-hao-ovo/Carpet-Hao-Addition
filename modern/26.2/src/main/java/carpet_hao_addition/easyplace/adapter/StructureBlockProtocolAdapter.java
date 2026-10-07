@@ -1,0 +1,33 @@
+package carpet_hao_addition.easyplace.adapter;
+
+import carpet_hao_addition.easyplace.BlockProtocolStateAdapter;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.block.StructureBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.StructureMode;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+public class StructureBlockProtocolAdapter implements BlockProtocolStateAdapter {
+    public static final StructureBlockProtocolAdapter INSTANCE = new StructureBlockProtocolAdapter();
+
+    public StructureBlockProtocolAdapter() {
+    }
+
+    @Override
+    public int hao$toProtocolValue(int protocolValue, BlockState fromState) {
+        int modeOrdinal = fromState.getValue(StructureBlock.MODE).ordinal();
+        return modeOrdinal & 0b0011;
+    }
+
+    @Override
+    public @Nullable BlockState hao$fromProtocolValue(int extraProtocolValue, BlockState fromState, BlockPlaceContext context) {
+        int modeOrdinal = extraProtocolValue & 0b0011;
+        return fromState.setValue(StructureBlock.MODE, StructureMode.values()[modeOrdinal]);
+    }
+
+    @Override
+    public @NotNull ProtocolType hao$getProtocolType() {
+        return ProtocolType.ADDED;
+    }
+}

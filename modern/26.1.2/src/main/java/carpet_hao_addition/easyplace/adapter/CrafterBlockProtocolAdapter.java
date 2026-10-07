@@ -1,0 +1,110 @@
+package carpet_hao_addition.easyplace.adapter;
+
+
+import carpet_hao_addition.easyplace.BlockProtocolStateAdapter;
+import carpet_hao_addition.easyplace.ItemStackProtocolDataAdapter;
+import net.minecraft.core.FrontAndTop;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.TypedEntityData;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+
+
+public class CrafterBlockProtocolAdapter implements BlockProtocolStateAdapter, ItemStackProtocolDataAdapter {
+    public static final CrafterBlockProtocolAdapter INSTANCE = new CrafterBlockProtocolAdapter();
+
+    public CrafterBlockProtocolAdapter() {
+    }
+
+    @Override
+    public int hao$toProtocolValue(int protocolValue, BlockState fromState) {
+        int orientationOrdinal = fromState.getValue(BlockStateProperties.ORIENTATION).ordinal();
+        return protocolValue | ((orientationOrdinal + 1) & 0b0000_1111);
+    }
+
+    @Override
+    public @Nullable BlockState hao$fromProtocolValue(int extraProtocolValue, BlockState fromState, BlockPlaceContext context) {
+        int orientationOrdinal = Math.floorMod((extraProtocolValue & 0b0000_1111) - 1, 12);
+        return fromState.setValue(BlockStateProperties.ORIENTATION, FrontAndTop.values()[orientationOrdinal]);
+    }
+
+    @Override
+    public @NotNull ProtocolType hao$getProtocolType() {
+        return ProtocolType.ADDED;
+    }
+
+    @Override
+    public int hao$toProtocolValueAddition(ItemStack fromStack) {
+        CompoundTag tagBlockEntity = getBlockEntityTag(fromStack);
+        if (tagBlockEntity == null) {
+            return 0;
+        }
+
+        int[] disSlots = getDisabledSlots(tagBlockEntity);
+        int bits = 0;
+        int mask = 1;
+        for (int slotIdx : disSlots) {
+            if (slotIdx > -1 && slotIdx < 9) {
+                bits |= (mask << slotIdx);
+            }
+        }
+        return (bits & 0b0001_1111_1111) << 4;
+    }
+
+    @Override
+    public @NotNull ItemStack hao$fromProtocolValueAddition(int extraProtocolValue, ItemStack fromStack) {
+        int slotBits = (extraProtocolValue >>> 4) & 0b0001_1111_1111;
+        int disCount = Integer.bitCount(slotBits);
+        if (disCount == 0) {
+            return fromStack;
+        }
+
+        int[] disSlots = new int[disCount];
+        int slotIdx = 0;
+        int mask = 1;
+        for (int i = 0; i < 9; ++i) {
+            if ((slotBits & mask) == mask) {
+                disSlots[slotIdx++] = i;
+            }
+            mask <<= 1;
+        }
+
+        
+        CompoundTag tagBlockEntity = getBlockEntityTag(fromStack);
+        if (tagBlockEntity != null && tagBlockEntity.contains("disabled_slots")) {
+            return fromStack;
+        }
+        if (tagBlockEntity == null) {
+            tagBlockEntity = new CompoundTag();
+        }
+        tagBlockEntity.putIntArray("disabled_slots", disSlots);
+        return setBlockEntityTag(fromStack, tagBlockEntity);
+    }
+
+    
+    private static @Nullable CompoundTag getBlockEntityTag(ItemStack stack) {
+        TypedEntityData<?> data = stack.get(DataComponents.BLOCK_ENTITY_DATA);
+        return data == null ? null : data.copyTagWithoutId();
+    }
+    private static ItemStack setBlockEntityTag(ItemStack stack, CompoundTag tag) {
+    ItemStack stackCopy = stack.copy();
+        stackCopy.set(DataComponents.BLOCK_ENTITY_DATA, TypedEntityData.of(BlockEntityType.CRAFTER, tag));
+    return stackCopy;
+    }
+
+    
+    private static int[] getDisabledSlots(CompoundTag tag) {
+        if (!tag.contains("disabled_slots")) {
+            return new int[0];
+    }
+        return tag.getIntArray("disabled_slots").orElseGet(() -> new int[0]);
+    }
+}

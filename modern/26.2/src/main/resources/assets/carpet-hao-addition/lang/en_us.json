@@ -67,5 +67,7 @@
   "carpet.rule.easyPlaceWaterlogged.name": "Easy Place Waterlogged",
   "carpet.rule.easyPlaceWaterlogged.desc": "While enabled, placing a waterlogged block via Litematica easy place (following a schematic) also fills the water: the waterlogged state is set directly (no ice is actually placed) and one ice is consumed from your inventory; if you have no ice, only the block itself is placed and everything else stays unchanged. Requires Litematica.",
   "carpet.rule.easyPlaceWaterloggedTrigger.name": "Easy Place Fill Trigger",
-  "carpet.rule.easyPlaceWaterloggedTrigger.desc": "When the fill feature is allowed to run: always = both poses, standing or sneaking (default); standing = only while the player is not sneaking; sneaking = only while the player is sneaking (holding the sneak key)."
+  "carpet.rule.easyPlaceWaterloggedTrigger.desc": "When the fill feature is allowed to run: always = both poses, standing or sneaking (default); standing = only while the player is not sneaking; sneaking = only while the player is sneaking (holding the sneak key).",
+  "carpet.rule.haoBetterEasyPlaceProtocol.name": "Better Easy Place Protocol",
+  "carpet.rule.haoBetterEasyPlaceProtocol.desc": "When building from a schematic, places blocks with complex states (facing, toggle, color, block-entity data...) exactly as the schematic specifies. Requires Litematica. For waterlogged blocks use easyPlaceWaterlogged. Off by default."
 }
