@@ -108,7 +108,7 @@ public class ClientEasyPlaceProtocolHelper {
     /** 是不是珊瑚类方块(按注册名判定, 活/失活的珊瑚块/扇/墙扇都覆盖)。 */
     private static boolean hao$isCoral(Block block) {
         try {
-            return net.minecraft.registry.Registries.BLOCK.getId(block).getPath().contains("coral");
+            return false;   // 强制珊瑚扇已移除:珊瑚按普通方块处理
         } catch (Exception e) {
             return false;
         }
