@@ -57,11 +57,14 @@ public final class RecipeDeployHooks {
 			// 只在"文件不存在"时写,会让旧世界永远带着旧的 pack.mcmeta:
 			// 26.x 起格式号 >81 必须带 min_format/max_format,旧格式整个数据包被判非法、
 			// 石切机配方静默失效(启动只刷一条 JsonParseException 警告)。所以按内容比对重写。
+			// 首次部署时目录还不存在,写文件前必须先建出来(否则 Files.writeString 抛
+			// NoSuchFileException,整个 ensureDeployed 中断,后面的调用全被跳过)。
+			Files.createDirectories(packDir);
 			Path mcmeta = packDir.resolve("pack.mcmeta");
 			changed |= writeIfChanged(mcmeta, mcmetaContent());
 			// 配方目录名跨版本不同:1.21 / 1.21.1 用复数 recipes,1.21.2+ 与 26.x 用单数 recipe。
 			// 两份都写,各版本各取所需(不认识的目录会被忽略),这样这条规则在 1.21.x ~ 26.3 都能生效。
-			for (String recipeDirName : new String[] {"recipe", "recipes"}) {
+			for (String recipeDirName : new String[] {"recipe"}) {
 				Path dir = packDir.resolve("data/carpet-hao-addition/" + recipeDirName);
 				Files.createDirectories(dir);
 				for (String color : COLORS) {

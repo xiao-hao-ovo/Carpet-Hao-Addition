@@ -33,6 +33,8 @@
     "easyplace.SignBlockEntityInvoker"
 	],
 	"client": [
+		"WackoBeacons_BeaconButtonWidgetMixin",
+		"WackoBeacons_BeaconBlockEntityMixin",
 		"ClientPlayerInteractionManager_bedrockMinesMixin",
 		"WorldUtils_easyPlaceWaterloggedMixin",
 		"WorldUtils_easyPlaceEntityMixin",

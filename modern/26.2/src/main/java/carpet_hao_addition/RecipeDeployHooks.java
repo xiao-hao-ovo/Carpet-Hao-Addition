@@ -29,7 +29,17 @@ public final class RecipeDeployHooks {
 	private static final Logger LOGGER = LoggerFactory.getLogger("carpet-hao-addition");
 	private static final String PACK_NAME = "carpet-hao-addition_terracotta_uncolor";
 	private static final String PACK_ID = "file/" + PACK_NAME;
-	private static final int PACK_FORMAT = 88; // Minecraft 1.21.9–1.21.10 数据包格式
+	/**
+	 * 数据包格式范围,让同一份 pack.mcmeta 在 1.21.x ~ 26.3 都能加载:
+	 * <ul>
+	 *   <li>1.21.x 读 {@code pack_format} / {@code supported_formats}(字段名如此,数值 48~81);</li>
+	 *   <li>26.x 读 {@code min_format} / {@code max_format}(格式号 >81 时**必填**,用 [major, minor]);
+	 *       它同时认识另外两个字段(元数据 section 里四个都是可选字段),所以能共存。</li>
+	 * </ul>
+	 * 值取自各版本 version.json 的 pack_version.data_major:1.21.x = 48 起,26.3 = 121。
+	 */
+	private static final int PACK_FORMAT_MIN = 48;
+	private static final int PACK_FORMAT_MAX = 121;
 
 	private static final String[] COLORS = {
 			"white", "orange", "magenta", "light_blue", "yellow", "lime", "pink",
@@ -44,18 +54,26 @@ public final class RecipeDeployHooks {
 			Path packDir = server.getWorldPath(LevelResource.DATAPACK_DIR).resolve(PACK_NAME);
 			boolean changed = false;
 
+			// 只在"文件不存在"时写,会让旧世界永远带着旧的 pack.mcmeta:
+			// 26.x 起格式号 >81 必须带 min_format/max_format,旧格式整个数据包被判非法、
+			// 石切机配方静默失效(启动只刷一条 JsonParseException 警告)。所以按内容比对重写。
+			// 首次部署时目录还不存在,写文件前必须先建出来(否则 Files.writeString 抛
+			// NoSuchFileException,整个 ensureDeployed 中断,后面的调用全被跳过)。
+			Files.createDirectories(packDir);
 			Path mcmeta = packDir.resolve("pack.mcmeta");
-			if (!Files.exists(mcmeta)) {
-				Files.createDirectories(packDir.resolve("data/carpet-hao-addition/recipe"));
-				Files.writeString(mcmeta, mcmetaContent(), StandardCharsets.UTF_8);
-				changed = true;
-			}
-			for (String color : COLORS) {
-				Path dir = packDir.resolve("data/carpet-hao-addition/recipe");
-				changed |= writeIfChanged(dir.resolve(color + "_terracotta_to_terracotta.json"),
-						recipeJson("minecraft:" + color + "_terracotta", "minecraft:terracotta"));
-				changed |= writeIfChanged(dir.resolve(color + "_glazed_terracotta_to_terracotta.json"),
-						recipeJson("minecraft:" + color + "_glazed_terracotta", "minecraft:" + color + "_terracotta"));
+			changed |= writeIfChanged(mcmeta, mcmetaContent());
+			// 配方目录名跨版本不同:1.21 / 1.21.1 用复数 recipes,1.21.2+ 与 26.x 用单数 recipe。
+			// 两份都写,各版本各取所需(不认识的目录会被忽略),这样这条规则在 1.21.x ~ 26.3 都能生效。
+			for (String recipeDirName : new String[] {"recipe"}) {
+				Path dir = packDir.resolve("data/carpet-hao-addition/" + recipeDirName);
+				Files.createDirectories(dir);
+				for (String color : COLORS) {
+					changed |= writeIfChanged(dir.resolve(color + "_terracotta_to_terracotta.json"),
+							recipeJson("minecraft:" + color + "_terracotta", "minecraft:terracotta"));
+					changed |= writeIfChanged(dir.resolve(color + "_glazed_terracotta_to_terracotta.json"),
+							recipeJson("minecraft:" + color + "_glazed_terracotta",
+									"minecraft:" + color + "_terracotta"));
+				}
 			}
 
 			boolean wantEnabled = TerracottaUncolorSettings.isEnabled();
@@ -89,15 +107,21 @@ public final class RecipeDeployHooks {
 	}
 
 	private static String mcmetaContent() {
+		// 四个字段同时写:1.21.x 认 pack_format/supported_formats,26.x 认 min_format/max_format
+		// (26.x 的元数据 section 这四个都是可选字段,多余的会被忽略),这样一份数据包跨版本可用。
 		return """
 				{
 				  "pack": {
-				    "pack_format": %d,
-				    "description": "Carpet Hao Addition - terracotta/glazed uncolor (stonecutter)"
+				    "description": "Carpet Hao Addition - terracotta/glazed uncolor (stonecutter)",
+				    "pack_format": %2$d,
+				    "supported_formats": { "min_inclusive": %1$d, "max_inclusive": %2$d },
+				    "min_format": [%1$d, 0],
+				    "max_format": [%2$d, 0]
 				  }
 				}
-				""".formatted(PACK_FORMAT);
+				""".formatted(PACK_FORMAT_MIN, PACK_FORMAT_MAX);
 	}
+
 
 	private static String recipeJson(String ingredient, String result) {
 		return """

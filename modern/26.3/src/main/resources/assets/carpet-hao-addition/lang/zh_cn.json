@@ -82,5 +82,17 @@
   "carpet-hao-addition.easyplaceentity.missingPassenger": "轻松放置实体:乘客 %s 的材料不足,已跳过(背包里没有对应物品)",
   "carpet-hao-addition.easyplaceentity.missingContents": "轻松放置实体:%s 里的内容物材料不足,已跳过",
   "carpet.rule.haoWackoBeacons.name": "信标效果解锁(客户端)",
-  "carpet.rule.haoWackoBeacons.desc": "解除信标的效果限制:Regeneration 可作主效果(配合副效果即 II 级),效果按钮不再按信标层数禁用(9 块钻石也能选 Strength)。移植自 wacko-beacons。"
+  "carpet.rule.haoWackoBeacons.desc": "解除信标的效果限制:Regeneration 可作主效果(配合副效果即 II 级),效果按钮不再按信标层数禁用(9 块钻石也能选 Strength)。移植自 wacko-beacons。",
+  "carpet.rule.copperStonecuttingRecipes.name": "切石机切铜(等值转换)",
+  "carpet.rule.copperStonecuttingRecipes.desc": "让切石机按等值转换切铜:同一变体内任意形态互切,各氧化等级/涂蜡变体之间 1:1 互换;26.x 新增的铜栏杆/铜链/铜箱子/铜灯笼/铜火把也按原版配方折算加入。配方以数据包部署,规则开关即时启停。默认关闭。",
+  "carpet.rule.useDyeOnShulkerBox.name": "潜影盒染色",
+  "carpet.rule.useDyeOnShulkerBox.desc": "手持染料右键潜影盒可把它染成对应颜色;潜行手持仙人掌右键有色潜影盒可洗回无色(不消耗仙人掌)。染色/洗色都完整保留盒内物品与自定义名称。默认关闭。",
+  "carpet.rule.autoMending_new.name": "自动经验修补",
+  "carpet.rule.autoMending_new.desc": "移植于 Carpet WuHu Addition。每 1 秒把玩家当前等级进度里已攒下的经验自动拿去修补身上带「经验修补」附魔且已损坏的装备,能修多少修多少,并扣除等量经验点(不会凭空生耐久)。默认关闭。",
+  "carpet.rule.rocketShulker.name": "火箭潜影盒自动补给",
+  "carpet.rule.rocketShulker.desc": "名称正好是 rocket 的潜影盒:指定格子里的烟花用光时会从盒内自动补一组(最多 64),用光再补。用 /rocketShulker offhand(默认) 或 /rocketShulker mainhand <1-9> 设置补给位置,只存内存,重启还原。目标格有别的物品时不会动它。默认关闭。",
+  "rocketShulker.commands.status": "火箭潜影盒补给(你自己的设置):开关=%s,位置=%s",
+  "rocketShulker.commands.status.slot": "主手快捷栏第 %s 格",
+  "rocketShulker.commands.notEnabled": "提示:功能还没开启,需要管理员用 /carpet rocketShulker true 打开。",
+  "rocketShulker.commands.playerOnly": "这条命令需要由玩家执行(设置保存在玩家自己名下)。"
 }

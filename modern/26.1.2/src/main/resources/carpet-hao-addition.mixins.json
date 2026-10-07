@@ -26,13 +26,21 @@
 		"easyplace.SignItemMixin",
 		"easyplace.BlockItemMixin",
 		"easyplace.VerticallyAttachableBlockItemMixin",
-		"easyplace.SignBlockEntityInvoker"
+		"easyplace.SignBlockEntityInvoker",
+		"DyeItem_useDyeOnShulkerBoxMixin",
+		"CactusShulkerBoxWashMixin",
+		"ServerPlayer_autoMendingMixin",
+		"MinecraftServer_rocketShulkerMixin"
 	],
 	"client": [
 		"MultiPlayerGameMode_bedrockMinesMixin",
 		"WorldUtils_easyPlaceWaterloggedMixin",
 		"easyplace.WorldUtilsMixin",
-		"easyplace.EasyPlaceUtilsInvoker"
+		"easyplace.EasyPlaceUtilsInvoker",
+		"WorldUtils_easyPlaceEntityMixin",
+		"easyplace.EasyPlaceUtilsMixin",
+		"WackoBeacons_BeaconPowerButtonMixin",
+		"WackoBeacons_BeaconBlockEntityMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

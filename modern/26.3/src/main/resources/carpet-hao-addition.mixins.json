@@ -26,7 +26,11 @@
 		"easyplace.BeaconBlockEntityAccessor",
 		"easyplace.BlockItemMixin",
 		"easyplace.VerticallyAttachableBlockItemMixin",
-		"easyplace.SignBlockEntityInvoker"
+		"easyplace.SignBlockEntityInvoker",
+		"DyeItem_useDyeOnShulkerBoxMixin",
+		"CactusShulkerBoxWashMixin",
+		"ServerPlayer_autoMendingMixin",
+		"MinecraftServer_rocketShulkerMixin"
 	],
 	"client": [
 		"WackoBeacons_BeaconPowerButtonMixin",

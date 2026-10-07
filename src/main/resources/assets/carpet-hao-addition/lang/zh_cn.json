@@ -89,5 +89,7 @@
   "carpet.rule.copperStonecuttingRecipes.name": "切石机切铜",
   "carpet.rule.copperStonecuttingRecipes.desc": "让切石机按「材料当量」转换各种铜变种:任意变体可一步切出任意形态(切制/凿制/格栅/台阶/楼梯/门/活板门/铜灯),同当量 1:1 互转,降级按比例(铜块→切制 ×4、→台阶 ×8)。所有转换严格等值,切不出无限资源。默认关闭。",
   "carpet.rule.autoMending_new.name": "自动经验修补",
-  "carpet.rule.autoMending_new.desc": "移植于 Carpet WuHu Addition。每 1 秒把玩家当前等级进度里已攒下的经验自动拿去修补身上带「经验修补」附魔且已损坏的装备,能修多少修多少,并扣除等量经验点(不会凭空生耐久)。默认关闭。"
+  "carpet.rule.autoMending_new.desc": "移植于 Carpet WuHu Addition。每 1 秒把玩家当前等级进度里已攒下的经验自动拿去修补身上带「经验修补」附魔且已损坏的装备,能修多少修多少,并扣除等量经验点(不会凭空生耐久)。默认关闭。",
+  "carpet.rule.haoWackoBeacons.name": "信标效果解锁(客户端)",
+  "carpet.rule.haoWackoBeacons.desc": "解除信标的效果限制:Regeneration 可作主效果(配合副效果即 II 级),效果按钮不再按信标层数禁用(9 块钻石也能选 Strength)。移植自 wacko-beacons。"
 }

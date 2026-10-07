@@ -82,5 +82,17 @@
   "carpet-hao-addition.easyplaceentity.missingPassenger": "Easy place entities: passenger %s skipped (its item is missing from your inventory)",
   "carpet-hao-addition.easyplaceentity.missingContents": "Easy place entities: contents %s skipped (items missing from your inventory)",
   "carpet.rule.haoWackoBeacons.name": "Wacko Beacons (client)",
-  "carpet.rule.haoWackoBeacons.desc": "Client-side beacon unlock: Regeneration selectable as a primary effect, and effect buttons are no longer disabled by beacon tier. Ported from wacko-beacons."
+  "carpet.rule.haoWackoBeacons.desc": "Client-side beacon unlock: Regeneration selectable as a primary effect, and effect buttons are no longer disabled by beacon tier. Ported from wacko-beacons.",
+  "carpet.rule.copperStonecuttingRecipes.name": "Copper Stonecutting (equal value)",
+  "carpet.rule.copperStonecuttingRecipes.desc": "Lets the stonecutter convert copper forms by equal value: any form to any form within a variant, plus 1:1 swaps between oxidation/waxed variants. New 26.x copper forms (bars/chain/chest/lantern/torch) are included, valued from vanilla recipes. Recipes ship as a datapack toggled by this rule. Off by default.",
+  "carpet.rule.useDyeOnShulkerBox.name": "Use dye on shulker box",
+  "carpet.rule.useDyeOnShulkerBox.desc": "Right-click a shulker box with dye to recolour it; sneak + right-click a coloured box while holding a cactus to wash it back to plain (the cactus is not consumed). Contents and custom name are preserved. Off by default.",
+  "carpet.rule.autoMending_new.name": "Auto mending (new)",
+  "carpet.rule.autoMending_new.desc": "Ported from Carpet WuHu Addition. Once a second, automatically spend the XP already accumulated in the level bar to repair damaged gear enchanted with Mending, repairing as much as that XP allows and deducting the same amount of XP (no free durability). Off by default.",
+  "carpet.rule.rocketShulker.name": "Rocket Shulker Auto Refill",
+  "carpet.rule.rocketShulker.desc": "For a shulker box named exactly 'rocket': when the chosen slot runs out of fireworks, refills one stack (up to 64) from the box, repeating until the box is empty. Set the slot with /rocketShulker offhand (default) or /rocketShulker mainhand <1-9>; kept in memory only. Never touches a slot holding something else. Off by default.",
+  "rocketShulker.commands.status": "Rocket shulker refill (your own setting): enabled=%s, target=%s",
+  "rocketShulker.commands.status.slot": "main-hand hotbar slot %s",
+  "rocketShulker.commands.notEnabled": "Note: the feature is not enabled yet; an operator must run /carpet rocketShulker true.",
+  "rocketShulker.commands.playerOnly": "This command must be run by a player (the setting is stored per player)."
 }

@@ -89,5 +89,7 @@
   "carpet.rule.copperStonecuttingRecipes.name": "Copper stonecutting recipes",
   "carpet.rule.copperStonecuttingRecipes.desc": "Lets the stonecutter convert copper variants by equal material value: any variant can be cut in one step into any shape (cut/chiseled/grate/slab/stairs/door/trapdoor/bulb), equal-value shapes convert 1:1, downgrades use the exact ratio (copper block -> cut x4, -> slab x8). Strictly value-preserving, no infinite resource loop. Off by default.",
   "carpet.rule.autoMending_new.name": "Auto mending (new)",
-  "carpet.rule.autoMending_new.desc": "Ported from Carpet WuHu Addition. Once a second, automatically spend the XP already accumulated in the level bar to repair damaged gear enchanted with Mending, repairing as much as that XP allows and deducting the same amount of XP (no free durability). Off by default."
+  "carpet.rule.autoMending_new.desc": "Ported from Carpet WuHu Addition. Once a second, automatically spend the XP already accumulated in the level bar to repair damaged gear enchanted with Mending, repairing as much as that XP allows and deducting the same amount of XP (no free durability). Off by default.",
+  "carpet.rule.haoWackoBeacons.name": "Wacko Beacons (client)",
+  "carpet.rule.haoWackoBeacons.desc": "Client-side beacon unlock: Regeneration selectable as a primary effect, and effect buttons are no longer disabled by beacon tier. Ported from wacko-beacons."
 }

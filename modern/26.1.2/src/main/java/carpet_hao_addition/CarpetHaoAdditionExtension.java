@@ -73,12 +73,18 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         CarpetServer.settingsManager.parseSettingsClass(SnowyCalciteSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(NoEndPortalTeleportSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(TerracottaUncolorSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(CopperStonecuttingSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(BedrockCanBeMinedSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(WitherSkeletonDropReductionSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(DirectDropsSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(LavaDepthStriderSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(EasyPlaceWaterloggedSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(BetterEasyPlaceProtocolSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(UseDyeOnShulkerBoxSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(AutoMendingSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(RocketShulkerSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(WackoBeaconsSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(EasyPlaceEntitySettings.class);
 
         registerZoneguardRuleObserver();
     }
@@ -89,7 +95,10 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         this.server = server;
         // Deploy & enable the terracotta-uncolor datapack right after startup (deferred to
         // the first tick so the level is fully loaded), so recipes work without /reload.
-        server.execute(() -> RecipeDeployHooks.ensureDeployed(server));
+        server.execute(() -> {
+            RecipeDeployHooks.ensureDeployed(server);
+            CopperStonecuttingDeployHook.ensureDeployed(server);
+        });
     }
 
     @Override
@@ -98,6 +107,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         // Ensure the terracotta-uncolor stonecutter recipes are deployed to the world
         // datapack and enabled (fabric-loader does not auto-load mod data/ as a datapack).
         RecipeDeployHooks.ensureDeployed(server);
+        CopperStonecuttingDeployHook.ensureDeployed(server);
     }
 
     private void registerZoneguardRuleObserver()
@@ -130,6 +140,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
                 {
                     // Turn the recipe datapack on/off (and reload) right away.
                     RecipeDeployHooks.ensureDeployed(srv);
+                    CopperStonecuttingDeployHook.ensureDeployed(srv);
                 }
                 return;
             }
@@ -189,6 +200,10 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
 
         // /playerNoEndPortalTeleport — manages the noEndPortalTeleport blacklist/global mode.
         PlayerNoEndPortalTeleportCommands.register(dispatcher);
+
+        // /rocketShulker — 每玩家的火箭潜影盒补给位置。
+        RocketShulkerCommands.register(dispatcher);
+        EasyPlaceEntityCommands.register(dispatcher);
     }
 
     @Override
