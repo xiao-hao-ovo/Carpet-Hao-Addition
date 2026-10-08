@@ -26,11 +26,13 @@
 		"DyeItem_useDyeOnShulkerBoxMixin",
 		"CactusShulkerBoxWashMixin",
 		"ServerPlayerEntity_autoMendingMixin",
+		"FluidState_breakWaterloggedMixin",
 		"easyplace.BeaconBlockEntityAccessor",
 		"easyplace.SignItemMixin",
 		"easyplace.BlockItemMixin",
     "easyplace.VerticallyAttachableBlockItemMixin",
-    "easyplace.SignBlockEntityInvoker"
+    "easyplace.SignBlockEntityInvoker",
+    "easyplace.CopperBulbBlockMixin"
 	],
 	"client": [
 		"WackoBeacons_BeaconButtonWidgetMixin",

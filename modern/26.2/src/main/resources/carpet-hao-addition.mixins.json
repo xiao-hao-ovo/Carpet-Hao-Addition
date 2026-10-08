@@ -7,6 +7,7 @@
 		"ComposterBlockMixin",
 		"LavaFluid_snowyCalciteMixin",
 		"FluidBlock_snowyCalciteMixin",
+		"FluidState_breakWaterloggedMixin",
 		"EndPortalBlockMixin",
 		"StonecutterScreenHandlerMixin",
 		"Block_bedrockCanBeMinedMixin",

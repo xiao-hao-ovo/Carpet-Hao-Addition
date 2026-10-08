@@ -1,5 +1,7 @@
 package carpet_hao_addition.easyplace.adapter;
 
+import carpet_hao_addition.HaoDebug;
+
 import carpet_hao_addition.easyplace.BlockProtocolStateAdapter;
 import carpet_hao_addition.easyplace.ItemStackProtocolDataAdapter;
 import net.minecraft.core.Direction;
@@ -103,7 +105,7 @@ public class StandingSignBlockProtocolAdapter implements BlockProtocolStateAdapt
         if (text != null && !text.isEmpty()) {
             if (text.getBoolean("has_glowing_text").orElse(false)) attributes |= glowingBit;
             String colorName = text.getString("color").orElse("");
-		System.out.println("[hao-sign] 编码 color='" + colorName + "' key=" + key);
+		HaoDebug.log("[hao-sign] 编码 color='" + colorName + "' key=" + key);
             for (DyeColor c : DyeColor.values()) {
                 if (c.getName().equals(colorName)) {
                     attributes |= (c.ordinal() & 0b1111) << colorShift;

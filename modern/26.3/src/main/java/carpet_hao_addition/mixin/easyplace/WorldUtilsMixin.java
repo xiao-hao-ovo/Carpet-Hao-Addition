@@ -1,5 +1,7 @@
 package carpet_hao_addition.mixin.easyplace;
 
+import carpet_hao_addition.HaoDebug;
+
 import carpet_hao_addition.easyplace.BetterEasyPlaceProtocolHandler;
 import carpet_hao_addition.easyplace.EasyPlaceExtraProtocolHelper;
 import carpet_hao_addition.easyplace.EasyPlacePendingPlacement;
@@ -68,7 +70,7 @@ public abstract class WorldUtilsMixin {
         }
         if (loopCount > 0) {
             EasyPlaceUtilsInvoker.invokeCacheEasyPlacePosition(pos);
-            System.out.println("[hao-easyplace] [多阶段补放] " + pos + " 层数=" + loopCount
+            HaoDebug.log("[hao-easyplace] [多阶段补放] " + pos + " 层数=" + loopCount
                     + " 目标=" + stateSchematic);
         }
     }
@@ -98,7 +100,7 @@ public abstract class WorldUtilsMixin {
         Direction facing = schematic.getValue(facingProperty);
         // blockPos 不能动(协议解码基准);side 要取反向(原版会再取一次)。
         Direction attachSide = facing.getOpposite();
-        System.out.println("[hao-easyplace] [墙扇修正] 扇=" + fanPos + " 墙=" + fanPos.relative(facing)
+        HaoDebug.log("[hao-easyplace] [墙扇修正] 扇=" + fanPos + " 墙=" + fanPos.relative(facing)
                 + " side=" + attachSide + " (期望 facing=" + facing
                 + ", litematica 原为 " + blockPos + "/" + side + ")");
         return new BlockHitResult(hitVec, attachSide, blockPos, false);

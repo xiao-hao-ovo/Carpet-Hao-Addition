@@ -80,6 +80,8 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         CarpetServer.settingsManager.parseSettingsClass(LavaDepthStriderSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(EasyPlaceWaterloggedSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(BetterEasyPlaceProtocolSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(CraftableTrimTemplateSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(WorldEaterProMaxSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(EasyPlaceEntitySettings.class);
         CarpetServer.settingsManager.parseSettingsClass(CopperStonecuttingSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(UseDyeOnShulkerBoxSettings.class);
@@ -98,6 +100,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         server.execute(() -> {
             RecipeDeployHooks.ensureDeployed(server);
             CopperStonecuttingDeployHook.ensureDeployed(server);
+            TrimTemplateRecipeDeployHook.ensureDeployed(server);
         });
     }
 
@@ -108,6 +111,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         // datapack and enabled (fabric-loader does not auto-load mod data/ as a datapack).
         RecipeDeployHooks.ensureDeployed(server);
         CopperStonecuttingDeployHook.ensureDeployed(server);
+        TrimTemplateRecipeDeployHook.ensureDeployed(server);
     }
 
     private void registerZoneguardRuleObserver()
@@ -129,6 +133,22 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
                 return;
             }
 
+            // 切石机切铜规则同样靠数据包启停:开关一变就立即重新部署(以前挤在陶瓦分支里,
+            // 导致只开关铜规则时不会重建数据包)。
+            if (CopperStonecuttingSettings.RULE_NAME.equals(ruleName))
+            {
+                MinecraftServer srv = source != null ? source.getServer() : null;
+                if (srv == null)
+                {
+                    srv = this.server;
+                }
+                if (srv != null)
+                {
+                    CopperStonecuttingDeployHook.ensureDeployed(srv);
+                }
+                return;
+            }
+
             if (TerracottaUncolorSettings.RULE_NAME.equals(ruleName))
             {
                 MinecraftServer srv = source != null ? source.getServer() : null;
@@ -139,8 +159,22 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
                 if (srv != null)
                 {
                     // Turn the recipe datapack on/off (and reload) right away.
-                    RecipeDeployHooks.ensureDeployed(srv);
-                    CopperStonecuttingDeployHook.ensureDeployed(srv);
+                    RecipeDeployHooks.ensureDeployed(srv);
+                }
+                return;
+            }
+
+            // 可合成纹饰模板规则同样靠数据包启停:开关一变就立即重新部署。
+            if (CraftableTrimTemplateSettings.RULE_NAME.equals(ruleName))
+            {
+                MinecraftServer srv = source != null ? source.getServer() : null;
+                if (srv == null)
+                {
+                    srv = this.server;
+                }
+                if (srv != null)
+                {
+                    TrimTemplateRecipeDeployHook.ensureDeployed(srv);
                 }
                 return;
             }

@@ -70,6 +70,15 @@ public class BetterEasyPlaceProtocolHandler {
         register(FlowerBedBlock.class, new FlowerBedBlockProtocolAdapter());
         register(HorizontalDirectionalBlock.class, new HorizontalDirectionalBlockProtocolAdapter());
         register(WallBlock.class, new WallBlockProtocolAdapter());
+        // 这 7 类以前只在 26.1.2/26.2 注册过,26.3 与 1.21.x 都漏了 → 铁轨/活塞/中继器/比较器/
+        // 漏斗/探测铁轨/堆肥桶的状态全都还原不出来(典型现象:投影里 3 档的中继器放出来变 1 档)。
+        register(RailBlock.class, new RailBlockProtocolAdapter());
+        register(DetectorRailBlock.class, new DetectorRailBlockProtocolAdapter());
+        register(PistonBaseBlock.class, new PistonBaseBlockProtocolAdapter());
+        register(RepeaterBlock.class, new RepeaterBlockProtocolAdapter());
+        register(ComparatorBlock.class, new ComparatorBlockProtocolAdapter());
+        register(HopperBlock.class, new HopperBlockProtocolAdapter());
+        register(ComposterBlock.class, new ComposterBlockProtocolAdapter());
     }
 
     private static boolean easyPlaceState = false;

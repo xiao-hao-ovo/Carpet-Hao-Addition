@@ -84,6 +84,8 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         CarpetServer.settingsManager.parseSettingsClass(AutoMendingSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(EasyPlaceEntitySettings.class);
         CarpetServer.settingsManager.parseSettingsClass(BetterEasyPlaceProtocolSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(CraftableTrimTemplateSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(WorldEaterProMaxSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(WackoBeaconsSettings.class);
 
         registerZoneguardRuleObserver();
@@ -98,6 +100,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         server.execute(() -> RecipeDeployHooks.ensureDeployed(server));
         // Same treatment for the copper-stonecutter datapack (door / trapdoor / bulb).
         server.execute(() -> ensureCopperStonecutting(server));
+        server.execute(() -> ensureTrimTemplates(server));
     }
 
     @Override
@@ -107,6 +110,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         // datapack and enabled (fabric-loader does not auto-load mod data/ as a datapack).
         RecipeDeployHooks.ensureDeployed(server);
         ensureCopperStonecutting(server);
+        ensureTrimTemplates(server);
     }
 
     private void registerZoneguardRuleObserver()
@@ -139,6 +143,21 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
                 if (srv != null)
                 {
                     ensureCopperStonecutting(srv);
+                }
+                return;
+            }
+
+            // 可合成纹饰模板规则同样靠数据包启停:开关一变就立即重新部署。
+            if (CraftableTrimTemplateSettings.RULE_NAME.equals(ruleName))
+            {
+                MinecraftServer srv = source != null ? source.getServer() : null;
+                if (srv == null)
+                {
+                    srv = this.server;
+                }
+                if (srv != null)
+                {
+                    ensureTrimTemplates(srv);
                 }
                 return;
             }
@@ -246,6 +265,26 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
                     "assets/" + MOD_ID + "/lang/en_us.json");
         }
         return translations;
+    }
+
+    /**
+     * 可合成纹饰模板配方的部署同样只在部分层实现(1.21.8 / 26.3)。
+     * <p>
+     * 与 {@link #ensureCopperStonecutting} 同理用反射:该层没有
+     * {@code TrimTemplateRecipeDeployHook} 时静默跳过,其他层照常编译。
+     */
+    private static void ensureTrimTemplates(MinecraftServer server)
+    {
+        try
+        {
+            Class.forName("carpet_hao_addition.TrimTemplateRecipeDeployHook")
+                    .getMethod("ensureDeployed", MinecraftServer.class)
+                    .invoke(null, server);
+        }
+        catch (Throwable ignored)
+        {
+            // 本层未实现该功能, 跳过
+        }
     }
 
     /**

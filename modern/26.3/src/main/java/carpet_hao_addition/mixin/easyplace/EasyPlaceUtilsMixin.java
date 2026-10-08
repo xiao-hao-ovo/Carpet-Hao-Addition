@@ -1,5 +1,7 @@
 package carpet_hao_addition.mixin.easyplace;
 
+import carpet_hao_addition.HaoDebug;
+
 import carpet_hao_addition.easyplace.BetterEasyPlaceProtocolHandler;
 import carpet_hao_addition.easyplace.ClientEasyPlaceProtocolHelper;
 import carpet_hao_addition.easyplace.EasyPlacePendingPlacement;
@@ -29,7 +31,7 @@ public abstract class EasyPlaceUtilsMixin {
 	private static void hao_replaceHitPos(BlockPos pos, BlockState state, Vec3 hitVecIn, CallbackInfoReturnable<Vec3> cir) {
 		if (BetterEasyPlaceProtocolHandler.isRuleEnabled()) {
 			Vec3 out = ClientEasyPlaceProtocolHelper.encodeHitPosItemData(cir.getReturnValue(), pos, state);
-			System.out.println("[hao-easyplace] [CarpetVec] pos=" + pos + " in=" + cir.getReturnValue() + " out=" + out);
+			HaoDebug.log("[hao-easyplace] [CarpetVec] pos=" + pos + " in=" + cir.getReturnValue() + " out=" + out);
 			cir.setReturnValue(out);
 		}
 	}
@@ -44,7 +46,7 @@ public abstract class EasyPlaceUtilsMixin {
 			return;
 		}
 		Vec3 encoded = ClientEasyPlaceProtocolHelper.encodeHitPosItemData(cir.getReturnValue(), pos, state);
-		System.out.println("[hao-easyplace] [V3] pos=" + pos + " state=" + state
+		HaoDebug.log("[hao-easyplace] [V3] pos=" + pos + " state=" + state
 				+ " litematica返回=" + cir.getReturnValue() + " 我们编码后=" + encoded);
 		EasyPlacePendingPlacement.pos = pos;
 		EasyPlacePendingPlacement.schematic = state;

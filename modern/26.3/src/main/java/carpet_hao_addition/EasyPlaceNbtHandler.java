@@ -1,5 +1,7 @@
 package carpet_hao_addition;
 
+import carpet_hao_addition.HaoDebug;
+
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
@@ -50,7 +52,7 @@ public final class EasyPlaceNbtHandler {
 		ServerPlayNetworking.registerGlobalReceiver(EasyPlaceNbtPayload.ID, (payload, context) -> {
 			ServerPlayer player = context.player();
 			context.server().execute(() -> {
-				System.out.println("[hao-easyplace] [服务端] 收到包: 位置=" + payload.pos()
+				HaoDebug.log("[hao-easyplace] [服务端] 收到包: 位置=" + payload.pos()
 						+ " id=" + (payload.nbt() == null ? "null" : payload.nbt().getString("id").orElse("?")));
 				PENDING.computeIfAbsent(player.getUUID(), ignored -> new HashMap<>())
 						.put(payload.pos(), new PendingData(payload.nbt()));
@@ -64,7 +66,7 @@ public final class EasyPlaceNbtHandler {
 		registerPayloadType();
 		// 不做节流:该函数只在真正放置时调用,节流会吞包导致文字错位。
 		boolean canSend = net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.canSend(EasyPlaceNbtPayload.ID);
-		System.out.println("[hao-easyplace] [客户端] 发包: 位置=" + pos + " canSend=" + canSend
+		HaoDebug.log("[hao-easyplace] [客户端] 发包: 位置=" + pos + " canSend=" + canSend
 				+ " id=" + (nbt == null ? "null" : nbt.getString("id").orElse("?")));
 		if (canSend) {
 			net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(
@@ -78,7 +80,7 @@ public final class EasyPlaceNbtHandler {
 			return null;
 		}
 		Map<BlockPos, PendingData> byPos = PENDING.get(serverPlayer.getUUID());
-		System.out.println("[hao-easyplace] [take] 查找 pos=" + pos
+		HaoDebug.log("[hao-easyplace] [take] 查找 pos=" + pos
 				+ " 缓存=" + (byPos == null ? "null" : byPos.keySet()));
 		if (byPos == null) {
 			return null;
@@ -99,10 +101,10 @@ public final class EasyPlaceNbtHandler {
 			}
 			if (bestKey != null) {
 				nbt = byPos.remove(bestKey);
-				System.out.println("[hao-easyplace] [take] 宽容命中: 查找=" + pos
+				HaoDebug.log("[hao-easyplace] [take] 宽容命中: 查找=" + pos
 						+ " 实际=" + bestKey + " 距离=" + bestDist);
 			} else {
-				System.out.println("[hao-easyplace] [take] 宽容未命中: 查找=" + pos
+				HaoDebug.log("[hao-easyplace] [take] 宽容未命中: 查找=" + pos
 						+ " 缓存=" + byPos.keySet());
 			}
 		}

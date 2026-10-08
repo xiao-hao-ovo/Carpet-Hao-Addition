@@ -1,5 +1,7 @@
 package carpet_hao_addition.mixin.easyplace;
 
+import carpet_hao_addition.HaoDebug;
+
 import carpet_hao_addition.easyplace.BetterEasyPlaceProtocolHandler;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -42,7 +44,7 @@ public abstract class VerticallyAttachableBlockItemMixin {
             return;
         }
         BlockState state = BetterEasyPlaceProtocolHandler.decodePlacementState(baseState.getBlock(), context, baseState);
-        System.out.println("[hao-easyplace] [子类解码] block=" + hao$block()
+        HaoDebug.log("[hao-easyplace] [子类解码] block=" + hao$block()
                 + " 原=" + baseState + " 改=" + state
                 + " side=" + context.getClickedFace() + " hitPos=" + context.getClickLocation()
                 + " 世界该处=" + context.getLevel().getBlockState(context.getClickedPos()));

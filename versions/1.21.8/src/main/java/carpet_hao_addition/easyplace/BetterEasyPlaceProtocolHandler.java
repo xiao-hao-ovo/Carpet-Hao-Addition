@@ -1,5 +1,7 @@
 package carpet_hao_addition.easyplace;
 
+import carpet_hao_addition.HaoDebug;
+
 import carpet_hao_addition.BetterEasyPlaceProtocolSettings;
 import carpet_hao_addition.easyplace.adapter.*;
 import carpet_hao_addition.easyplace.BlockProtocolStateAdapter;
@@ -75,6 +77,15 @@ public class BetterEasyPlaceProtocolHandler {
         register(FlowerbedBlock.class, new FlowerBedBlockProtocolAdapter());
         register(HorizontalFacingBlock.class, new HorizontalDirectionalBlockProtocolAdapter());
         register(WallBlock.class, new WallBlockProtocolAdapter());
+        // 这 7 类以前只在 26.1.2/26.2 注册过,1.21.x 与 26.3 都漏了 → 铁轨/活塞/中继器/比较器/
+        // 漏斗/探测铁轨/堆肥桶的状态全都还原不出来(典型现象:投影里 3 档的中继器放出来变 1 档)。
+        register(RailBlock.class, new RailBlockProtocolAdapter());
+        register(DetectorRailBlock.class, new DetectorRailBlockProtocolAdapter());
+        register(PistonBlock.class, new PistonBlockProtocolAdapter());
+        register(RepeaterBlock.class, new RepeaterBlockProtocolAdapter());
+        register(ComparatorBlock.class, new ComparatorBlockProtocolAdapter());
+        register(HopperBlock.class, new HopperBlockProtocolAdapter());
+        register(ComposterBlock.class, new ComposterBlockProtocolAdapter());
     }
 
     private static boolean easyPlaceState = false;
@@ -235,7 +246,7 @@ public class BetterEasyPlaceProtocolHandler {
 
         int protocolAdditionValue = decodeProtocolValueFromHitDim(relativeHitZ);
         ItemStack restored = itemStackProtocolDataAdapter.hao$fromProtocolValueAddition(protocolAdditionValue, stack);
-        System.out.println("[hao-easyplace] 服务端解码 值=" + protocolAdditionValue + " 物品=" + stack.getItem()
+        HaoDebug.log("[hao-easyplace] 服务端解码 值=" + protocolAdditionValue + " 物品=" + stack.getItem()
                 + " 还原后BlockEntityTag=" + (restored.get(net.minecraft.component.DataComponentTypes.BLOCK_ENTITY_DATA) != null));
         return restored;
     }

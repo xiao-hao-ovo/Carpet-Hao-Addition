@@ -57,8 +57,15 @@ public final class PlaceWaterloggedHandler {
 	private static final Map<UUID, Map<BlockPos, Long>> PENDING_WATERLOG = new HashMap<>();
 	/** 待灌岩浆的炼药锅格:玩家 UUID → (格子 → 请求时刻)。方块(炼药锅)落下后灌岩浆。 */
 	private static final Map<UUID, Map<BlockPos, Long>> PENDING_LAVA_CAULDRON = new HashMap<>();
-	/** 待处理记录的存活时长(服务端刻)。 */
-	private static final long PENDING_TTL = 40L;
+	/** 待放水源的格:玩家 UUID → (格子 → 请求时刻)。等占位方块(冰)落下后换成水。 */
+	private static final Map<UUID, Map<BlockPos, Long>> PENDING_WATER = new HashMap<>();
+	/** 待放岩浆的格:同上,占位方块是岩浆块。 */
+	private static final Map<UUID, Map<BlockPos, Long>> PENDING_LAVA = new HashMap<>();
+	/**
+	 * 待处理记录的存活时长(服务端刻)。放宽到 1 分钟:实际用起来常常是"放完才发现背包里没冰/没岩浆块,
+	 * 去拿一趟再回来",2 秒(40 tick)早就过期了,表现就是"事后拿着冰再也补不上"。
+	 */
+	private static final long PENDING_TTL = 1200L;
 
 	private static boolean payloadRegistered;
 	private static boolean receiverRegistered;
@@ -91,6 +98,8 @@ public final class PlaceWaterloggedHandler {
 				if (!EasyPlaceWaterloggedSettings.isEnabled() || !payload.active()) {
 					PENDING_WATERLOG.remove(player.getUUID());
 					PENDING_LAVA_CAULDRON.remove(player.getUUID());
+					PENDING_WATER.remove(player.getUUID());
+					PENDING_LAVA.remove(player.getUUID());
 					return;
 				}
 				if (!(player.level() instanceof ServerLevel world)) {
@@ -107,6 +116,16 @@ public final class PlaceWaterloggedHandler {
 						// 只记下"待灌岩浆的炼药锅格",炼药锅本身交给正常放置流程。
 						markPending(PENDING_LAVA_CAULDRON, player, payload.positions(), now);
 						prunePending(PENDING_LAVA_CAULDRON, now);
+					}
+					case PlaceWaterloggedPayload.KIND_WATER -> {
+						// 记为"待放水源格":原版会把占位方块(冰)真放下去,等它落下后由 tryPlaceWater 换成水。
+						markPending(PENDING_WATER, player, payload.positions(), now);
+						prunePending(PENDING_WATER, now);
+					}
+					case PlaceWaterloggedPayload.KIND_LAVA -> {
+						// 同上,占位方块是岩浆块。
+						markPending(PENDING_LAVA, player, payload.positions(), now);
+						prunePending(PENDING_LAVA, now);
 					}
 					default -> {
 						for (BlockPos pos : payload.positions()) {
@@ -135,11 +154,14 @@ public final class PlaceWaterloggedHandler {
 	 * </ol>
 	 */
 	private static void onServerTick(MinecraftServer server) {
-		if (PENDING_WATERLOG.isEmpty() && PENDING_LAVA_CAULDRON.isEmpty()) {
+		if (PENDING_WATERLOG.isEmpty() && PENDING_LAVA_CAULDRON.isEmpty()
+				&& PENDING_WATER.isEmpty() && PENDING_LAVA.isEmpty()) {
 			return;
 		}
 		// 每 tick 只处理一格:之前攒下多格待处理时不会"一次性全补上"。
 		processPending(server, PENDING_LAVA_CAULDRON, PlaceWaterloggedHandler::tryFillCauldron, true);
+		processPending(server, PENDING_LAVA, PlaceWaterloggedHandler::tryPlaceLava, true);
+		processPending(server, PENDING_WATER, PlaceWaterloggedHandler::tryPlaceWater, true);
 		processPending(server, PENDING_WATERLOG, PlaceWaterloggedHandler::tryWaterlog, true);
 	}
 
@@ -216,9 +238,60 @@ public final class PlaceWaterloggedHandler {
 		if (!consumeOne(player, Items.ICE)) {
 			return false; // 暂时没有冰:留着,等有材料或过期
 		}
-		world.setBlock(pos, state.setValue(BlockStateProperties.WATERLOGGED, true), Block.UPDATE_ALL);
+		BlockState waterlogged = state.setValue(BlockStateProperties.WATERLOGGED, true);
+		// 含水方块里"点燃"的状态要一起熄掉(营火/灵魂营火/蜡烛):原版是在 getStateForPlacement 里
+		// 设 LIT = !waterlogged 的,我们事后补水得自己补这一步,否则营火含水但 LIT 还是 true,
+		// 看起来照样在烧 —— 这就是"含水营火不熄灭"的原因。
+		if (waterlogged.hasProperty(BlockStateProperties.LIT)) {
+			waterlogged = waterlogged.setValue(BlockStateProperties.LIT, false);
+		}
+		world.setBlock(pos, waterlogged, Block.UPDATE_ALL);
+		HaoDebug.log("[hao-waterlog] 补水 " + pos + " " + state.getBlock() + " -> " + waterlogged);
 		// 排一次流体 tick,保证含的水按流体规则更新(灵魂沙上生成气泡柱)。
 		world.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(world));
+		return true;
+	}
+
+	/** 该格该有水(源) → 扣 1 个冰,放成水;占位方块(冰)落下前会一直重试。 */
+	private static boolean tryPlaceWater(ServerPlayer player, ServerLevel world, BlockPos pos) {
+		return tryPlaceFluid(player, world, pos, Fluids.WATER, Blocks.WATER, Items.ICE, Blocks.ICE);
+	}
+
+	/** 该格该有岩浆(源) → 扣 1 个岩浆块,放成岩浆。 */
+	private static boolean tryPlaceLava(ServerPlayer player, ServerLevel world, BlockPos pos) {
+		return tryPlaceFluid(player, world, pos, Fluids.LAVA, Blocks.LAVA, Items.MAGMA_BLOCK, Blocks.MAGMA_BLOCK);
+	}
+
+	/**
+	 * 放一格流体源;返回 false 表示这次没成,条目保留、下一 tick 再试(没材料时会一直等,直到过期)。
+	 * <p>
+	 * 关键参数 {@code placeholderBlock}:投影里是流体、而玩家手上只有"能顶一下"的物品时,原版放置流程
+	 * 会把这个物品真放进世界当占位(水源 → 冰,岩浆 → 岩浆块)。它会挡住这一次替换,所以这里允许把它换成
+	 * 流体;这种时候材料在放占位方块那一下已经扣过了,不再重复扣。
+	 */
+	private static boolean tryPlaceFluid(ServerPlayer player, ServerLevel world, BlockPos pos,
+			Fluid fluid, Block block, Item cost, Block placeholderBlock) {
+		if (player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) > 64.0) {
+			return true; // 玩家走远了:这次目标作废
+		}
+		FluidState current = world.getFluidState(pos);
+		if (!current.isEmpty() && current.isSource()) {
+			return true; // 已经是目标源流体
+		}
+		BlockState state = world.getBlockState(pos);
+		// 流动流体格要允许被源覆盖:否则流体一旦流到投影里的源格,那格就永远补不上源。
+		boolean placeholder = state.is(placeholderBlock);
+		boolean flowingFluid = !current.isEmpty();
+		if (!placeholder && !state.isAir() && !state.canBeReplaced() && !flowingFluid) {
+			return !state.isAir(); // 落的是别的实体方块:目标作废
+		}
+		if (!placeholder && !consumeOne(player, cost)) {
+			return false; // 暂时没有材料:留着,等有材料或过期
+		}
+		world.setBlock(pos, block.defaultBlockState(), Block.UPDATE_ALL);
+		// 排流体 tick:否则放下的会是"死水/死岩浆"(不流动,灵魂沙上也不生成气泡柱)。
+		world.scheduleTick(pos, fluid, fluid.getTickDelay(world));
+		HaoDebug.log("[hao-waterlog] 放流体 " + pos + " " + block + (placeholder ? "(把占位方块替换掉)" : ""));
 		return true;
 	}
 

@@ -1,5 +1,7 @@
 package carpet_hao_addition.mixin.easyplace;
 
+import carpet_hao_addition.HaoDebug;
+
 import carpet_hao_addition.BetterEasyPlaceProtocolSettings;
 import carpet_hao_addition.easyplace.BetterEasyPlaceProtocolHandler;
 import carpet_hao_addition.easyplace.ISignBlockEntity;
@@ -59,7 +61,7 @@ public abstract class BlockItemMixin {
             // 标牌文字靠它自己的 updateListeners 同步,只调 World.updateListeners 不够。
             if (be instanceof SignBlockEntity signBe) {
                 ((SignBlockEntityInvoker) signBe).hao$callUpdateListeners();
-                System.out.println("[hao-easyplace] [广播刷新] 标牌 updateListeners: " + pos);
+                HaoDebug.log("[hao-easyplace] [广播刷新] 标牌 updateListeners: " + pos);
             }
         }
         level.updateListeners(pos, now, now, 3);
@@ -68,7 +70,7 @@ public abstract class BlockItemMixin {
     @Inject(method = "getPlacementState", at = @At("HEAD"), cancellable = true)
     private void hao_betterEasyPlaceProtocolDecode(ItemPlacementContext context, CallbackInfoReturnable<BlockState> cir) {
         double relativeHitZ = getRelativeHitZ(context.getHitPos(), EasyPlaceExtraProtocolHelper.getClickedPos(context));
-        System.out.println("[hao-easyplace] [getPlacementState] 规则="
+        HaoDebug.log("[hao-easyplace] [getPlacementState] 规则="
                 + BetterEasyPlaceProtocolHandler.isRuleEnabled()
                 + " hitPos=" + context.getHitPos() + " blockPos=" + EasyPlaceExtraProtocolHelper.getClickedPos(context)
                 + " relZ=" + String.format("%.3f", relativeHitZ)
@@ -82,7 +84,7 @@ public abstract class BlockItemMixin {
             baseState = this.getBlock().getPlacementState(context);
         }
         BlockState state = BetterEasyPlaceProtocolHandler.decodePlacementState(this.getBlock(), context, baseState);
-        System.out.println("[hao-easyplace]   [放置解码] hitPos=" + context.getHitPos()
+        HaoDebug.log("[hao-easyplace]   [放置解码] hitPos=" + context.getHitPos()
                 + " blockPos=" + EasyPlaceExtraProtocolHelper.getClickedPos(context) + " side=" + context.getSide()
                 + " 还原状态=" + state);
         if (state == null) {
@@ -110,7 +112,7 @@ public abstract class BlockItemMixin {
                 BlockState hao$now = hao$w.getBlockState(hao$coralPos);
                 if (!hao$now.equals(hao$coralState)) {
                     hao$w.setBlockState(hao$coralPos, hao$coralState, 3);
-                    System.out.println("[hao-easyplace] [珊瑚强制投影状态/末端] " + hao$coralPos
+                    HaoDebug.log("[hao-easyplace] [珊瑚强制投影状态/末端] " + hao$coralPos
                             + " " + hao$now + " -> " + hao$coralState);
                 }
             }
@@ -145,10 +147,10 @@ public abstract class BlockItemMixin {
                     if (target != null) {
                         hao$coralPos = pos;
                         hao$coralState = target;
-                        System.out.println("[hao-easyplace] [珊瑚] 记录待强制: " + pos + " -> " + target);
+                        HaoDebug.log("[hao-easyplace] [珊瑚] 记录待强制: " + pos + " -> " + target);
                     }
                 } catch (Exception e) {
-                    System.out.println("[hao-easyplace] [珊瑚] 解析投影状态失败: " + e);
+                    HaoDebug.log("[hao-easyplace] [珊瑚] 解析投影状态失败: " + e);
                 }
             }
             net.minecraft.nbt.NbtCompound fullNbt = data.nbt();
@@ -156,7 +158,7 @@ public abstract class BlockItemMixin {
                 ItemStack withFullNbt = stack.copy();
                 withFullNbt.set(net.minecraft.component.DataComponentTypes.BLOCK_ENTITY_DATA,
                         net.minecraft.component.type.NbtComponent.of(fullNbt));
-                System.out.println("[hao-easyplace] [服务端] 应用完整 NBT: 位置=" + pos + " id=" + fullNbt.getString("id"));
+                HaoDebug.log("[hao-easyplace] [服务端] 应用完整 NBT: 位置=" + pos + " id=" + fullNbt.getString("id"));
                 boolean hao$ok = original.call(instance, pos, level, player, withFullNbt, state);
                 hao$notifyClient(level, pos);
                 return hao$ok;
@@ -165,7 +167,7 @@ public abstract class BlockItemMixin {
             hao$notifyClient(level, pos);
             return hao$ok2;
         }
-        System.out.println("[hao-easyplace] [postPlacement] pos=" + pos
+        HaoDebug.log("[hao-easyplace] [postPlacement] pos=" + pos
                 + " side=" + context.getSide() + " state=" + state
                 + " 世界该处=" + level.getBlockState(pos));
         ItemStack newStack = BetterEasyPlaceProtocolHandler.applyItemStackProtocolData(stack, context);

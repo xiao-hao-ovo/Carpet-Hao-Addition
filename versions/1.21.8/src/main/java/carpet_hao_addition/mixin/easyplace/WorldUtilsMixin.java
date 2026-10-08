@@ -1,5 +1,7 @@
 package carpet_hao_addition.mixin.easyplace;
 
+import carpet_hao_addition.HaoDebug;
+
 import carpet_hao_addition.easyplace.BetterEasyPlaceProtocolHandler;
 import carpet_hao_addition.easyplace.ClientEasyPlaceProtocolHelper;
 import carpet_hao_addition.easyplace.EasyPlaceExtraProtocolHelper;
@@ -37,7 +39,7 @@ public abstract class WorldUtilsMixin {
     private static void hao_replaceHitPos(BlockPos pos, BlockState state, Vec3d hitVecIn, CallbackInfoReturnable<Vec3d> cir) {
         if (BetterEasyPlaceProtocolHandler.isRuleEnabled()) {
             Vec3d out = ClientEasyPlaceProtocolHelper.encodeHitPosItemData(cir.getReturnValue(), pos, state);
-            System.out.println("[hao-easyplace] [CarpetVec] pos=" + pos + " in=" + cir.getReturnValue() + " out=" + out);
+            HaoDebug.log("[hao-easyplace] [CarpetVec] pos=" + pos + " in=" + cir.getReturnValue() + " out=" + out);
             cir.setReturnValue(out);
         }
     }
@@ -60,7 +62,7 @@ public abstract class WorldUtilsMixin {
             return;
         }
         Vec3d encoded = ClientEasyPlaceProtocolHelper.encodeHitPosItemData(cir.getReturnValue(), pos, state);
-        System.out.println("[hao-easyplace] [V3] pos=" + pos + " state=" + state
+        HaoDebug.log("[hao-easyplace] [V3] pos=" + pos + " state=" + state
                 + " litematica返回=" + cir.getReturnValue() + " 我们编码后=" + encoded);
         hao$msPos = pos;
         hao$msSchematic = state;
@@ -112,7 +114,7 @@ public abstract class WorldUtilsMixin {
         }
         if (loopCount > 0) {
             EasyPlaceUtilsInvoker.invokeCacheEasyPlacePosition(pos);
-            System.out.println("[hao-easyplace] [多阶段补放] " + pos + " 层数=" + loopCount
+            HaoDebug.log("[hao-easyplace] [多阶段补放] " + pos + " 层数=" + loopCount
                     + " 目标=" + stateSchematic);
         }
     }
@@ -142,7 +144,7 @@ public abstract class WorldUtilsMixin {
         Direction facing = schematic.get(facingProperty);
         // blockPos 不能动(协议解码基准);side 要取反向(原版会再取一次)。
         Direction attachSide = facing.getOpposite();
-        System.out.println("[hao-easyplace] [墙扇修正] 扇=" + fanPos + " 墙=" + fanPos.offset(facing)
+        HaoDebug.log("[hao-easyplace] [墙扇修正] 扇=" + fanPos + " 墙=" + fanPos.offset(facing)
                 + " side=" + attachSide + " (期望 facing=" + facing
                 + ", litematica 原为 " + blockPos + "/" + side + ")");
         return new BlockHitResult(hitVec, attachSide, blockPos, false);

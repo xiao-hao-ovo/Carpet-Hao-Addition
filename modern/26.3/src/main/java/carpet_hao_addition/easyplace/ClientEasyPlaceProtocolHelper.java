@@ -1,5 +1,7 @@
 package carpet_hao_addition.easyplace;
 
+import carpet_hao_addition.HaoDebug;
+
 import carpet_hao_addition.EasyPlaceNbtHandler;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.schematic.LitematicaSchematic;
@@ -71,10 +73,10 @@ public class ClientEasyPlaceProtocolHelper {
         }
         if (attributesValue == 0) {
             BlockEntity blockEntity = world.getBlockEntity(pos);
-            System.out.println("[hao-easyplace]   投影方块实体=" + (blockEntity == null ? "null" : blockEntity.getClass().getSimpleName()));
+            HaoDebug.log("[hao-easyplace]   投影方块实体=" + (blockEntity == null ? "null" : blockEntity.getClass().getSimpleName()));
             if (blockEntity != null) {
                 attributesValue = BetterEasyPlaceProtocolHandler.encodeBlockEntityProtocolAddition(blockEntity);
-                System.out.println("[hao-easyplace]   实体编码位=" + attributesValue);
+                HaoDebug.log("[hao-easyplace]   实体编码位=" + attributesValue);
             }
             // 完整 NBT(含标牌文字等)走独立通道单独发送 —— 协议值 16 位装不下这些。
             CompoundTag fullNbt = getSchematicBlockEntityNbt(pos, stateSchematic);
@@ -82,12 +84,12 @@ public class ClientEasyPlaceProtocolHelper {
                 EasyPlaceNbtHandler.send(pos, fullNbt);
             }
             if (attributesValue == 0) {
-                System.out.println("[hao-easyplace]   投影NBT=" + (fullNbt == null ? "null" : fullNbt));
+                HaoDebug.log("[hao-easyplace]   投影NBT=" + (fullNbt == null ? "null" : fullNbt));
                 attributesValue = BetterEasyPlaceProtocolHandler.encodeBlockEntityNbtProtocolAddition(fullNbt);
-                System.out.println("[hao-easyplace]   NBT编码位=" + attributesValue);
+                HaoDebug.log("[hao-easyplace]   NBT编码位=" + attributesValue);
             }
         }
-        System.out.println("[hao-easyplace] 客户端编码 方块=" + block + " 状态位=" + protocolAdditionValue
+        HaoDebug.log("[hao-easyplace] 客户端编码 方块=" + block + " 状态位=" + protocolAdditionValue
                 + " 方块实体位=" + attributesValue);
         protocolAdditionValue |= attributesValue;
         protocolAdditionValue |= EasyPlaceExtraProtocolHelper.waterloggedBit(stateSchematic);
@@ -120,21 +122,21 @@ public class ClientEasyPlaceProtocolHelper {
                 if (directBe != null) {
                     CompoundTag directNbt = directBe.saveWithFullMetadata(schematicWorld.registryAccess());
                     if (hao$idMatchesState(directNbt, stateSchematic)) {
-                        System.out.println("[hao-easyplace]    投影世界直查命中: " + pos
+                        HaoDebug.log("[hao-easyplace]    投影世界直查命中: " + pos
                                 + " id=" + directNbt.getString("id").orElse("?"));
                         return directNbt;
                     }
-                    System.out.println("[hao-easyplace]    投影世界直查类型不符, 转换算: " + pos
+                    HaoDebug.log("[hao-easyplace]    投影世界直查类型不符, 转换算: " + pos
                             + " id=" + directNbt.getString("id").orElse("?")
                             + " 期望方块=" + stateSchematic.getBlock());
                 } else {
-                    System.out.println("[hao-easyplace]    直查诊断: pos=" + pos
+                    HaoDebug.log("[hao-easyplace]    直查诊断: pos=" + pos
                             + " 投影该处方块=" + schematicWorld.getBlockState(pos)
                             + " 期望方块=" + stateSchematic.getBlock());
                 }
             }
         } catch (Exception e) {
-            System.out.println("[hao-easyplace]    投影世界直查异常: " + e);
+            HaoDebug.log("[hao-easyplace]    投影世界直查异常: " + e);
         }
         try {
             List<SchematicPlacementManager.PlacementPart> parts = DataManager.getSchematicPlacementManager().getAllPlacementsTouchingChunk(pos);
@@ -163,7 +165,7 @@ public class ClientEasyPlaceProtocolHelper {
                 BlockPos schematicPos = SchematicUtils.getSchematicContainerPositionFromWorldPosition(
                         pos, schematic, regionName, schematicPlacement, placement, container);
                 if (schematicPos != null) {
-                    System.out.println("[hao-easyplace]    换算诊断: worldPos=" + pos
+                    HaoDebug.log("[hao-easyplace]    换算诊断: worldPos=" + pos
                             + " schematicPos=" + schematicPos + " mapKeys=" + blockEntityMap.keySet());
                     CompoundData data = blockEntityMap.get(schematicPos);
                     CompoundTag nbt = data == null ? null : DataConverterNbt.toVanillaCompound(data);
@@ -187,7 +189,7 @@ public class ClientEasyPlaceProtocolHelper {
                             }
                         }
                         if (nbt != null) {
-                            System.out.println("[hao-easyplace]    类型兜底命中: 目标=" + schematicPos
+                            HaoDebug.log("[hao-easyplace]    类型兜底命中: 目标=" + schematicPos
                                     + " 实际=" + bestPos + " 距离=" + bestDist
                                     + " id=" + nbt.getString("id").orElse("?"));
                         }
@@ -198,8 +200,8 @@ public class ClientEasyPlaceProtocolHelper {
                 }
             }
         } catch (Exception e) {
-            System.out.println("[hao-easyplace]     getSchematicBlockEntityNbt 异常: " + e);
-            e.printStackTrace();
+            HaoDebug.log("[hao-easyplace]     getSchematicBlockEntityNbt 异常: " + e);
+            HaoDebug.stackTrace(e);
             return null;
         }
         return null;
