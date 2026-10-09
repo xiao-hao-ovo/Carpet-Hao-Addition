@@ -39,12 +39,6 @@ public abstract class BlockItemMixin {
     @Shadow
     public abstract Block getBlock();
 
-    /** 珊瑚类待强制的目标: 由 postPlacement 记录, 在 place 流程【全部结束】后统一设置。 */
-    @Unique
-    private static BlockPos hao$coralPos = null;
-    @Unique
-    private static BlockState hao$coralState = null;
-
     @Shadow
     protected abstract boolean canPlace(ItemPlacementContext context, BlockState state);
 
@@ -104,21 +98,7 @@ public abstract class BlockItemMixin {
             BetterEasyPlaceProtocolHandler.setPlaceTargetBlock(this.getBlock());
         }
         try {
-            ActionResult hao$result = original.call(context);
-            // 珊瑚类:整个放置流程走完后再强制设置(在 postPlacement 里做会被后续的
-            // placeFromNbt 覆盖一次)。
-            if (hao$coralState != null && hao$coralPos != null && !context.getWorld().isClient()) {
-                World hao$w = context.getWorld();
-                BlockState hao$now = hao$w.getBlockState(hao$coralPos);
-                if (!hao$now.equals(hao$coralState)) {
-                    hao$w.setBlockState(hao$coralPos, hao$coralState, 3);
-                    HaoDebug.log("[hao-easyplace] [珊瑚强制投影状态/末端] " + hao$coralPos
-                            + " " + hao$now + " -> " + hao$coralState);
-                }
-            }
-            hao$coralPos = null;
-            hao$coralState = null;
-            return hao$result;
+            return original.call(context);
         } finally {
             BetterEasyPlaceProtocolHandler.setEasyPlaceState(false);
             BetterEasyPlaceProtocolHandler.setPlaceProperty(0);
@@ -136,23 +116,6 @@ public abstract class BlockItemMixin {
         // 优先使用「完整 NBT 通道」送来的数据。
         carpet_hao_addition.EasyPlaceNbtHandler.PendingData data = carpet_hao_addition.EasyPlaceNbtHandler.take(player, pos);
         if (data != null) {
-            // 只有珊瑚类会带 stateNbt,按投影强制设置(不受 canPlaceAt 约束);
-            // 其他方块恒为 null,不执行这里,行为不变。
-            if (!level.isClient() && data.stateNbt() != null) {
-                // 这里只记录,不直接设置 —— 原版 place 在这之后还会再设一次,会把它覆盖掉。
-                try {
-                    BlockState target = net.minecraft.nbt.NbtHelper.toBlockState(
-                            level.getRegistryManager().getOrThrow(net.minecraft.registry.RegistryKeys.BLOCK),
-                            data.stateNbt());
-                    if (target != null) {
-                        hao$coralPos = pos;
-                        hao$coralState = target;
-                        HaoDebug.log("[hao-easyplace] [珊瑚] 记录待强制: " + pos + " -> " + target);
-                    }
-                } catch (Exception e) {
-                    HaoDebug.log("[hao-easyplace] [珊瑚] 解析投影状态失败: " + e);
-                }
-            }
             net.minecraft.nbt.NbtCompound fullNbt = data.nbt();
             if (fullNbt != null) {
                 ItemStack withFullNbt = stack.copy();
