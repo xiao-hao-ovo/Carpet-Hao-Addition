@@ -6,7 +6,7 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * 客户端跨 mixin 共享的「本次投影放置」缓存:记录本次投影放置的位置/状态/编码后的 hitVec,
- * 供 {@code doEasyPlaceAction} 返回后补放多阶段方块、以及修正珊瑚墙扇的点击面。
+ * 供 {@code doEasyPlaceAction} 返回后补放多阶段方块。
  * <p>
  * 1.21.8 的 litematica 把协议钩子都放在 {@code WorldUtils} 上,缓存可以放同一个 mixin 的
  * {@code @Unique} 字段里;26.x 起 litematica 把 {@code applyCarpetProtocolHitVec} /

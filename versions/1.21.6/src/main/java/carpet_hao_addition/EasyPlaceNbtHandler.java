@@ -21,7 +21,7 @@ public final class EasyPlaceNbtHandler {
 	private static boolean payloadRegistered = false;
 	private static boolean receiverRegistered = false;
 
-	/** 服务端缓存的一条数据:投影方块状态(仅珊瑚类会填) + 完整方块实体 NBT(可 null)。 */
+	/** 服务端缓存的一条数据:该位置的完整方块实体 NBT(可 null)。 */
 	public record PendingData(NbtCompound nbt) {
 	}
 

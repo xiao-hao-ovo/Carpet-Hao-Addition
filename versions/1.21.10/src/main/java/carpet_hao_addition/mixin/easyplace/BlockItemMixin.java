@@ -115,6 +115,8 @@ public abstract class BlockItemMixin {
         // 优先使用「完整 NBT 通道」送来的数据。
         carpet_hao_addition.EasyPlaceNbtHandler.PendingData data = carpet_hao_addition.EasyPlaceNbtHandler.take(player, pos);
         if (data != null) {
+            net.minecraft.nbt.NbtCompound fullNbt = data.nbt();
+            if (fullNbt != null) {
                 ItemStack withFullNbt = stack.copy();
                 withFullNbt.set(net.minecraft.component.DataComponentTypes.BLOCK_ENTITY_DATA,
                         net.minecraft.entity.TypedEntityData.create(net.minecraft.registry.Registries.BLOCK_ENTITY_TYPE.get(net.minecraft.util.Identifier.tryParse(fullNbt.getString("id").orElse(""))), fullNbt));
