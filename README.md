@@ -1,10 +1,26 @@
 # Carpet-Hao-Addition
 
+[![License](https://img.shields.io/github/license/xiao-hao-ovo/Carpet-Hao-Addition)](LICENSE)
+[![Modrinth](https://img.shields.io/modrinth/dt/carpet-hao-addition?color=00AF5C&label=Modrinth%20downloads&logo=modrinth)](https://modrinth.com/mod/carpet-hao-addition)
+[![CurseForge](https://img.shields.io/curseforge/dt/1689732?logo=curseforge&label=CurseForge%20downloads&color=f16436)](https://www.curseforge.com/minecraft/mc-mods/carpet-hao-addition)
+[![MC Versions](https://cf.way2muchnoise.eu/versions/For%20MC_1689732_all.svg)](https://www.curseforge.com/minecraft/mc-mods/carpet-hao-addition)
+[![GitHub downloads](https://img.shields.io/github/downloads/xiao-hao-ovo/Carpet-Hao-Addition/total?color=161616&label=GitHub%20downloads&logo=github)](https://github.com/xiao-hao-ovo/Carpet-Hao-Addition/releases)
+[![Build](https://github.com/xiao-hao-ovo/Carpet-Hao-Addition/actions/workflows/build.yml/badge.svg)](https://github.com/xiao-hao-ovo/Carpet-Hao-Addition/actions/workflows/build.yml)
+
+**中文** | [English](README_en.md)
+
 一个基于 Fabric 的 [Carpet](https://github.com/gnembon/fabric-carpet) 多版本扩展模组，为技术生存与原版友好玩法提供少量实用、可配置的地毯规则。
 
 - 所有规则**默认关闭**，只有在 `/carpet` 中手动开启后才生效；默认配置下不改变原版行为。
 - 只依赖 **Carpet + Fabric Loader**（刻意不依赖 fabric-api），可纯服务端使用。
 - 全部规则注册在 Carpet 默认管理器，分类 **Hao（游戏内显示“昊”）**，文案支持中英双语（`en_us` / `zh_cn`）。
+
+## 文档
+
+- [规则](docs/rules.md) —— 全部规则的类型、默认值、参考选项与说明
+- [命令](docs/commands.md) —— 各命令的语法与效果
+
+游戏内用 `/carpet <规则> <值>` 查看/切换规则（也可在 Carpet 的规则界面里操作）。
 
 ## 下载
 
@@ -30,53 +46,10 @@
 | 1.21.11 | 1.21.11+build.6 | 0.19.5（要求 ≥0.16.10） | 1.21.11-1.4.194+v260107 |
 | 26.1.2 | 无（26.x 起 Mojang 取消混淆，Fabric 停用 yarn） | 0.19.5+ | 26.1+v260401 |
 | 26.2 | 无（26.x 起 Mojang 取消混淆，Fabric 停用 yarn） | 0.19.5+ | 26.2+v260616 |
+| 26.3 | 无（26.x 起 Mojang 取消混淆，Fabric 停用 yarn） | 0.19.5+ | 26.3+ |
 
-- Java：21+
+- Java：21+（26.x 需要 25）
 - 模组 id：`carpet-hao-addition`；Loom：1.17.20
-
-## 规则列表
-
-游戏内用 `/carpet <规则> <值>` 查看/切换（也可在 Carpet 的规则界面里操作）。
-
-### 布尔规则
-
-| 规则 | 默认 | 说明 |
-|---|---|---|
-| `zoneguard` | false | 在 `/zoneguard` 配置的立方区域内禁用侦测器（观察者）行为；关闭规则会恢复区域内侦测器 |
-| `goldenCarrotCompost` | false | 手持金胡萝卜右键堆肥桶可 100% 堆肥（消耗与满桶流程同普通可堆肥物品） |
-| `snowyCalcite` | false | 雪地刷石机产出方解石（雪/水与岩浆相接时生成方解石） |
-| `noEndPortalTeleport` | false | 末地传送门传送控制：配合 `/playerNoEndPortalTeleport` 的名单与 `globalMode` 决定哪些玩家不被传送 |
-| `terracottaUncolor` | false | 切石机把染色陶瓦 / 染色釉陶瓦还原为普通陶瓦；启用时自动向世界部署数据包配方并随规则启停 |
-| `haoBedrockMines` | false | 基岩可被挖掘：默认按黑曜石硬度，掉落 1 块基岩；与 Carpet-AMS-Addition 的 `commandCustomBlockHardness` 同时开启时遵循其对 `minecraft:bedrock` 的自定义硬度 |
-
-### 选项规则
-
-| 规则 | 可选值 | 说明 |
-|---|---|---|
-| `witherSkeletonDropReduction` | `false` \| `bone` \| `coal` \| `skull` \| `sword` \| `all` | 自定义去除凋零骷髅掉落：骨头 / 煤炭 / 凋零骷髅头颅 / 掉落的手持石剑；`all` 为全部去除 |
-
-### 示例规则
-
-扩展自带的模板规则（归类 `haoaddition`，可用 `/haoaddition` 命令管理）：`exampleBoolean`、`exampleString`，仅作示例，可按需删除。
-
-## 命令
-
-### `/zoneguard`
-
-- `/zoneguard set <id> <from> <to>` — 新增/覆盖一个立方区域（`id` 为整数，`from`/`to` 为方块坐标）
-- `/zoneguard view` — 查看已配置区域
-- `/zoneguard clear <id>` — 删除指定区域
-- `/zoneguard op add|remove|list <player>` — 管理 ZoneGuard 权限（允许操作该命令的玩家）
-- `/zoneguard help` — 帮助
-
-> 规则关闭时命令不可见（切换规则后会向在线玩家重新推送命令树）。
-
-### `/playerNoEndPortalTeleport`
-
-- `/playerNoEndPortalTeleport add|remove <player>` — 名单增删
-- `/playerNoEndPortalTeleport list` / `clear` — 查看 / 清空名单
-- `/playerNoEndPortalTeleport globalMode [true|false]` — 查看 / 设置全局模式（true = 所有玩家都不被末地门传送）
-- `/playerNoEndPortalTeleport help` — 帮助
 
 ## 构建
 
@@ -86,34 +59,29 @@
 .\gradlew.bat build
 ```
 
-26.x 使用**独立子工程** `modern/26.2/`（新版 Loom 插件 `net.fabricmc.fabric-loom`、不声明 mappings、Java 25）：
+26.x 使用**独立子工程** `modern/26.1.2`、`modern/26.2`、`modern/26.3`（新版 Loom 插件 `net.fabricmc.fabric-loom`、不声明 mappings、Java 25）：
 
 ```powershell
-cd modern.2
+cd modern/26.3
 .\gradlew.bat build
 ```
 
-1.21.x 产物汇总在根 `build/libs/`（每个受支持版本一个 jar）：
+1.21.x 产物汇总在各版本目录的 `build/libs/`（每个受支持版本一个 jar）：
 
 ```
-build/libs/carpet-hao-addition-0.1.2+1.21.jar
-build/libs/carpet-hao-addition-0.1.2+1.21.1.jar
-build/libs/carpet-hao-addition-0.1.2+1.21.2.jar
-build/libs/carpet-hao-addition-0.1.2+1.21.4.jar
-build/libs/carpet-hao-addition-0.1.2+1.21.6.jar
-build/libs/carpet-hao-addition-0.1.2+1.21.8.jar
-build/libs/carpet-hao-addition-0.1.2+1.21.10.jar
-build/libs/carpet-hao-addition-0.1.2+1.21.11.jar
+versions/1.21.8/build/libs/carpet-hao-addition-0.2.3+1.21.8.jar
+versions/1.21.10/build/libs/carpet-hao-addition-0.2.3+1.21.10.jar
+...
 ```
 
-26.x 为独立子工程，需在各自目录构建，产物在 `modern/<mc>/build/libs/`：
+各版本也可单独构建（`1.21` 与 `1.21.1` 因项目名前缀歧义被重命名为 `mc-1.21` / `mc-1.21.1`）：
 
 ```powershell
-cd modern/26.2
-.\gradlew.bat build
+.\gradlew.bat :versions:1.21.8:build
+.\gradlew.bat :versions:mc-1.21.1:build
 ```
 
-各版本独立构建也可用 `:versions:<mc>:build`。
+> 一次跑 `.\gradlew.bat build`（八层并行）时 `remapJar` 有概率报 `Failed to create service instance` 而失败；**逐层单独构建更稳**。
 
 ### 开发运行
 
@@ -128,10 +96,10 @@ cd modern/26.2
 
 ### GitHub Actions 自动发布
 
-`.github/workflows/build.yml` 在推送 tag(如 `v0.1.4`)时会自动完成四件事:
+`.github/workflows/build.yml` 在推送 tag(如 `v0.2.3`)时会自动完成四件事:
 
-1. JDK 21 构建 8 个 1.21.x 版本,JDK 25 构建 `modern/26.1.2` 与 `modern/26.2`;
-2. 把 10 个 jar 作为 **GitHub Release** 资产上传;
+1. JDK 21 构建 8 个 1.21.x 版本,JDK 25 构建 `modern/26.1.2`、`modern/26.2` 与 `modern/26.3`;
+2. 把 11 个 jar 作为 **GitHub Release** 资产上传;
 3. 若配置了 `CURSEFORGE_TOKEN`,再把它们自动上传到 CurseForge 项目(默认 ID `1689732`,可用仓库变量 `CURSEFORGE_PROJECT_ID` 覆盖)。若同时配置了 `CURSEFORGE_CORE_KEY`,上传前会先用只读 Core API 查一遍项目里已有的文件名,已存在的直接跳过,避免重复上传;
 4. 若配置了 `MODRINTH_TOKEN`,再把它们自动上传到 Modrinth 项目(https://modrinth.com/mod/carpet-hao-addition)。
 
@@ -140,11 +108,11 @@ cd modern/26.2
 发新版流程:
 
 ```powershell
-# 1. 先把 gradle.properties 里的 mod_version 改成新版本(如 0.1.4)
+# 1. 先把 gradle.properties 里的 mod_version 改成新版本(如 0.2.4,共 4 处:根 + modern/26.1.2 + modern/26.2 + modern/26.3)
 # 2. 提交并推送
-git add -A; git commit -m "chore: 0.1.4"; git push
+git add -A; git commit -m "chore: 0.2.4"; git push
 # 3. 打 tag 触发自动构建 + 发布
-git tag v0.1.4; git push origin v0.1.4
+git tag v0.2.4; git push origin v0.2.4
 ```
 
 一次性配置(仓库 **Settings → Secrets and variables → Actions**):
@@ -160,9 +128,9 @@ git tag v0.1.4; git push origin v0.1.4
 # CurseForge
 python tools/publish_curseforge.py versions --dry-run   # 先看会上传哪些 jar
 python tools/publish_curseforge.py versions             # 上传仓库构建目录里的 jar(自动查重)
-python tools/publish_curseforge.py versions --prefix 0.1.4   # 只传指定版本号的 jar
+python tools/publish_curseforge.py versions --prefix 0.2.3   # 只传指定版本号的 jar
 python tools/publish_curseforge.py versions --force     # 跳过查重,强制上传
-python tools/publish_curseforge.py existing --prefix 0.1.3   # 列出项目里已存在的文件(核对重复)
+python tools/publish_curseforge.py existing --prefix 0.2.3   # 列出项目里已存在的文件(核对重复)
 python tools/publish_curseforge.py probe                 # 校验 token 并打印版本名->ID 映射
 
 # Modrinth
@@ -189,10 +157,11 @@ python tools/publish_modrinth.py publish                # 把项目提交公开�
 - `src/main/resources/`
   - `fabric.mod.json` — 模组元数据与依赖
   - `assets/carpet-hao-addition/lang/{en_us,zh_cn}.json` — 全部用户可见文案（规则名/描述/命令消息）
-- `versions/1.21.8/`、`versions/1.21.10/`
+- `versions/<mc>/`（1.21.x 各层）
   - `gradle.properties` — 该版本的 minecraft / yarn / loader / carpet 版本
   - `src/main/java/carpet_hao_addition/` — 版本专用实现：mixin、`zoneguard/`、`portal/`、`RecipeDeployHooks` 等
   - `src/main/resources/carpet-hao-addition.mixins.json` — 该版本的 mixin 列表
+- `modern/<mc>/`（26.x 三层，独立子工程）
 
 根 `build.gradle` 汇总各版本子模块，版本层代码与共享层一起合并进对应版本的 jar。
 
@@ -203,6 +172,7 @@ python tools/publish_modrinth.py publish                # 把项目提交公开�
 - **Mixin 兼容性**：避免使用 `@Redirect`（旧版 mixinextras 0.5.4 会因 `FactoryRedirectWrapperMixinTransformer` 抛 `ClassCastException` 而崩溃），优先 `@ModifyArg` / `@WrapOperation` / `@Inject`。
 - **版本 API 漂移按各自 jar 字节码确认**，例如：1.21.10 死亡掉落改走 `LivingEntity.generateLoot(...)`（而非 1.21.8 的 `dropLoot` 内直接调用）、1.21.10 的 `EndPortalBlock.onEntityCollision` 多一个 `boolean` 形参。
 - 与其它 Carpet 扩展**同名规则会互相覆盖**（Carpet 默认管理器按规则名索引），新增规则请使用本模组自有命名（如 `haoBedrockMines`）。
+- **改规则集后请同步** `docs/rules.md` / `docs/rules_en.md`（模板见 `docs/new-rule-template.md`）。
 
 ## 致谢
 
