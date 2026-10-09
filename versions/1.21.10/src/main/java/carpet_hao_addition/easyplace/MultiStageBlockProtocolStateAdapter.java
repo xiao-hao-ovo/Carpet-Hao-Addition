@@ -2,7 +2,7 @@ package carpet_hao_addition.easyplace;
 
 import net.minecraft.block.BlockState;
 
-/** 多阶段方块协议适配器:给"需要点好几次才叠得出来"的方块用(典型是珊瑚扇)。 */
+/** 多阶段方块协议适配器:给"需要点好几次才叠得出来"的方块用(雪层/海泡菜/蜡烛/藤蔓等)。 */
 public interface MultiStageBlockProtocolStateAdapter {
 	/** 决定最多要点几次。 */
 	void hao$setLoopCount(LoopContext ctx);

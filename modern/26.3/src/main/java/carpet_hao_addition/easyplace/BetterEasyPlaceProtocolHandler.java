@@ -43,7 +43,6 @@ public class BetterEasyPlaceProtocolHandler {
         register(CandleBlock.class, new CandleBlockProtocolAdapter());
         register(CeilingHangingSignBlock.class, new CeilingHangingSignBlockProtocolAdapter());
         register(CommandBlock.class, new CommandBlockProtocolAdapter());
-        register(BaseCoralWallFanBlock.class, new CoralWallFanBlockProtocolAdapter());
         register(DaylightDetectorBlock.class, new DaylightDetectorBlockProtocolAdapter());
         register(FaceAttachedHorizontalDirectionalBlock.class, new FaceAttachedHorizontalDirectionalBlockProtocolAdapter());
         register(HugeMushroomBlock.class, new HugeMushroomBlockProtocolAdapter());
@@ -68,7 +67,6 @@ public class BetterEasyPlaceProtocolHandler {
         register(CopperBulbBlock.class, new CopperBulbBlockProtocolAdapter());
         register(CrafterBlock.class, new CrafterBlockProtocolAdapter());
         register(FlowerBedBlock.class, new FlowerBedBlockProtocolAdapter());
-        register(HorizontalDirectionalBlock.class, new HorizontalDirectionalBlockProtocolAdapter());
         register(WallBlock.class, new WallBlockProtocolAdapter());
         // 这 7 类以前只在 26.1.2/26.2 注册过,26.3 与 1.21.x 都漏了 → 铁轨/活塞/中继器/比较器/
         // 漏斗/探测铁轨/堆肥桶的状态全都还原不出来(典型现象:投影里 3 档的中继器放出来变 1 档)。

@@ -15,7 +15,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ActionResult;
-import net.minecraft.block.CoralWallFanBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.Vec3d;
@@ -116,36 +115,4 @@ public abstract class WorldUtilsMixin {
                     + " 目标=" + stateSchematic);
         }
     }
-
-    /**
-     * 修正珊瑚墙扇的点击面:原版按 {@code facing = side.getOpposite()} 决定贴哪面墙,
-     * 所以 side 要传 {@code facing.getOpposite()};blockPos 保持 litematica 给的原值(它是协议解码基准)。
-     */
-    @WrapOperation(
-            method = "doEasyPlaceAction",
-            at = @At(value = "NEW", target = "(Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Direction;Lnet/minecraft/util/math/BlockPos;Z)Lnet/minecraft/util/hit/BlockHitResult;"),
-            require = 0)
-    private static BlockHitResult hao$fixWallFanHitResult(Vec3d hitVec, Direction side, BlockPos blockPos,
-                                                          boolean insideBlock, Operation<BlockHitResult> original) {
-        BlockState schematic = hao$msSchematic;
-        BlockPos fanPos = hao$msPos;
-        if (schematic == null || fanPos == null
-                || !(schematic.getBlock() instanceof CoralWallFanBlock
-                     || schematic.getBlock() instanceof net.minecraft.block.DeadCoralWallFanBlock)) {
-            return original.call(hitVec, side, blockPos, insideBlock);
-        }
-        net.minecraft.state.property.Property<Direction> facingProperty =
-                EasyPlaceExtraProtocolHelper.getFirstDirectionProperty(schematic);
-        if (facingProperty == null) {
-            return original.call(hitVec, side, blockPos, insideBlock);
-        }
-        Direction facing = schematic.get(facingProperty);
-        // blockPos 不能动(协议解码基准);side 要取反向(原版会再取一次)。
-        Direction attachSide = facing.getOpposite();
-        System.out.println("[hao-easyplace] [墙扇修正] 扇=" + fanPos + " 墙=" + fanPos.offset(facing)
-                + " side=" + attachSide + " (期望 facing=" + facing
-                + ", litematica 原为 " + blockPos + "/" + side + ")");
-        return new BlockHitResult(hitVec, attachSide, blockPos, false);
-    }
-
 }

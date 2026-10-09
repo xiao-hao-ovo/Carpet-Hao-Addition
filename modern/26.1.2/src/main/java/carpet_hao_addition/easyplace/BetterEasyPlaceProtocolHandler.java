@@ -45,7 +45,6 @@ public class BetterEasyPlaceProtocolHandler {
         register(CommandBlock.class, new CommandBlockProtocolAdapter());
         register(ComparatorBlock.class, new ComparatorBlockProtocolAdapter());
         register(ComposterBlock.class, new ComposterBlockProtocolAdapter());
-        register(BaseCoralWallFanBlock.class, new CoralWallFanBlockProtocolAdapter());
         register(DaylightDetectorBlock.class, new DaylightDetectorBlockProtocolAdapter());
         register(FaceAttachedHorizontalDirectionalBlock.class, new FaceAttachedHorizontalDirectionalBlockProtocolAdapter());
         register(HugeMushroomBlock.class, new HugeMushroomBlockProtocolAdapter());
@@ -73,7 +72,6 @@ public class BetterEasyPlaceProtocolHandler {
         register(CopperBulbBlock.class, new CopperBulbBlockProtocolAdapter());
         register(CrafterBlock.class, new CrafterBlockProtocolAdapter());
         register(FlowerBedBlock.class, new FlowerBedBlockProtocolAdapter());
-        register(HorizontalDirectionalBlock.class, new HorizontalDirectionalBlockProtocolAdapter());
         register(HopperBlock.class, new HopperBlockProtocolAdapter());
         register(WallBlock.class, new WallBlockProtocolAdapter());
         register(DetectorRailBlock.class, new DetectorRailBlockProtocolAdapter());

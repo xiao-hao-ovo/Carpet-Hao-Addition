@@ -30,14 +30,6 @@ public class ClientEasyPlaceProtocolHelper {
         Block block = stateSchematic.getBlock();
         World world = SchematicWorldHandler.getSchematicWorld();
 
-        // 只对珊瑚类:额外发投影状态给服务端强制设置(珊瑚受 canPlaceAt 约束,不满足会放不下
-        // 或回退成地上的扇子)。其他方块不走这里,行为不变。
-        if (hao$isCoral(block)) {
-            net.minecraft.nbt.NbtCompound coralNbt = getSchematicBlockEntityNbt(pos, stateSchematic);
-            System.out.println("[hao-easyplace] [珊瑚] 发送投影状态=" + stateSchematic);
-            EasyPlaceNbtHandler.send(pos, net.minecraft.nbt.NbtHelper.fromBlockState(stateSchematic), coralNbt);
-        }
-
         carpet_hao_addition.easyplace.BlockProtocolStateAdapter adapter =
                 BetterEasyPlaceProtocolHandler.getAdapter(block);
         if (!(adapter instanceof ItemStackProtocolDataAdapter itemStackAdapter)) {
@@ -71,7 +63,7 @@ public class ClientEasyPlaceProtocolHelper {
             // 完整 NBT(含标牌文字等)走独立通道单独发送 —— 协议值 16 位装不下这些。
             net.minecraft.nbt.NbtCompound fullNbt = getSchematicBlockEntityNbt(pos, stateSchematic);
             if (fullNbt != null) {
-                EasyPlaceNbtHandler.send(pos, null, fullNbt);
+                EasyPlaceNbtHandler.send(pos, fullNbt);
             }
             if (attributesValue == 0) {
                 net.minecraft.nbt.NbtCompound nbt = fullNbt;
@@ -103,15 +95,6 @@ public class ClientEasyPlaceProtocolHelper {
         net.minecraft.block.entity.BlockEntityType<?> type =
                 net.minecraft.registry.Registries.BLOCK_ENTITY_TYPE.get(id);
         return type != null && type.supports(state);
-    }
-
-    /** 是不是珊瑚类方块(按注册名判定, 活/失活的珊瑚块/扇/墙扇都覆盖)。 */
-    private static boolean hao$isCoral(Block block) {
-        try {
-            return false;   // 强制珊瑚扇已移除:珊瑚按普通方块处理
-        } catch (Exception e) {
-            return false;
-        }
     }
 
     private static NbtCompound getSchematicBlockEntityNbt(BlockPos pos, BlockState stateSchematic) {

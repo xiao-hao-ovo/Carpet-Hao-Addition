@@ -22,7 +22,7 @@ public final class EasyPlaceNbtHandler {
 	private static boolean receiverRegistered = false;
 
 	/** 服务端缓存的一条数据:投影方块状态(仅珊瑚类会填) + 完整方块实体 NBT(可 null)。 */
-	public record PendingData(NbtCompound stateNbt, NbtCompound nbt) {
+	public record PendingData(NbtCompound nbt) {
 	}
 
 	/** 服务端:玩家 UUID -> (位置 -> 数据)。 */
@@ -59,26 +59,24 @@ public final class EasyPlaceNbtHandler {
 			ServerPlayerEntity player = context.player();
 			context.server().execute(() -> {
 				System.out.println("[hao-easyplace] [服务端] 收到包: 位置=" + payload.pos()
-						+ " id=" + (payload.nbt() == null ? "null" : payload.nbt().getString("id"))
-						+ " 带状态=" + (payload.stateNbt() != null));
+						+ " id=" + (payload.nbt() == null ? "null" : payload.nbt().getString("id")));
 				PENDING.computeIfAbsent(player.getUuid(), ignored -> new HashMap<>())
-						.put(payload.pos(), new PendingData(payload.stateNbt(), payload.nbt()));
+						.put(payload.pos(), new PendingData(payload.nbt()));
 			});
 		});
 	}
 
 	/** 客户端:把该位置的完整 NBT 发给服务端(同内容不重复发)。 */
 	@Environment(EnvType.CLIENT)
-	public static void send(BlockPos pos, NbtCompound stateNbt, NbtCompound nbt) {
+	public static void send(BlockPos pos, NbtCompound nbt) {
 		registerPayloadType();
 		// 不做节流:该函数只在真正放置时调用,节流会吞包导致文字错位。
 		boolean canSend = net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.canSend(EasyPlaceNbtPayload.ID);
 		System.out.println("[hao-easyplace] [客户端] 发包: 位置=" + pos + " canSend=" + canSend
-				+ " 带状态=" + (stateNbt != null)
 				+ " id=" + (nbt == null ? "null" : nbt.getString("id")));
 		if (canSend) {
 			net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(
-					new EasyPlaceNbtPayload(pos, stateNbt, nbt));
+					new EasyPlaceNbtPayload(pos, nbt));
 		}
 	}
 

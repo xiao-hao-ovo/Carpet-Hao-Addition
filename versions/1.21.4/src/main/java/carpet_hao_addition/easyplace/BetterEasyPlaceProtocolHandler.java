@@ -39,10 +39,6 @@ public class BetterEasyPlaceProtocolHandler {
         register(CampfireBlock.class, new CampfireBlockProtocolAdapter());
         register(CandleBlock.class, new CandleBlockProtocolAdapter());
         register(CommandBlock.class, new CommandBlockProtocolAdapter());
-        register(CoralWallFanBlock.class, new CoralWallFanBlockProtocolAdapter());
-        // 失活珊瑚墙扇是【独立的类】, 与活珊瑚墙扇没有继承关系, 必须单独注册,
-        // 否则 getAdapter 沿父类链查不到 -> 编码被跳过 -> 珊瑚扇位置/朝向全错。
-        register(DeadCoralWallFanBlock.class, new CoralWallFanBlockProtocolAdapter());
         register(DaylightDetectorBlock.class, new DaylightDetectorBlockProtocolAdapter());
         register(WallMountedBlock.class, new FaceAttachedHorizontalDirectionalBlockProtocolAdapter());
         register(MushroomBlock.class, new HugeMushroomBlockProtocolAdapter());
@@ -73,7 +69,6 @@ public class BetterEasyPlaceProtocolHandler {
         register(BulbBlock.class, new CopperBulbBlockProtocolAdapter());
         register(CrafterBlock.class, new CrafterBlockProtocolAdapter());
         register(FlowerbedBlock.class, new FlowerBedBlockProtocolAdapter());
-        register(HorizontalFacingBlock.class, new HorizontalDirectionalBlockProtocolAdapter());
         register(WallBlock.class, new WallBlockProtocolAdapter());
     }
 
