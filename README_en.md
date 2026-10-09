@@ -12,7 +12,7 @@
 A multi-version [Carpet](https://github.com/gnembon/fabric-carpet) extension mod for Fabric, adding a small set of practical, configurable rules for technical survival and vanilla-friendly play.
 
 - Every rule is **off by default** and only takes effect once enabled via `/carpet`.
-- Depends only on **Carpet + Fabric Loader** — deliberately not on fabric-api, so it works on a pure server.
+- Depends only on **Carpet + Fabric API**, no other prerequisites; it works on a pure server.
 - All rules live in Carpet's default settings manager under the category **Hao**, with bilingual text.
 
 ## Dependencies
@@ -21,7 +21,7 @@ A multi-version [Carpet](https://github.com/gnembon/fabric-carpet) extension mod
 |----|----|----|----|
 | Carpet | Required | [Modrinth](https://modrinth.com/mod/carpet) &#124; [GitHub](https://github.com/gnembon/fabric-carpet) | |
 | Fabric Loader | Required | [Website](https://fabricmc.net/) | ≥0.16.10 |
-| Fabric API | Not needed | - | Deliberately not required; runs on a pure server |
+| Fabric API | Required | [Modrinth](https://modrinth.com/mod/fabric-api) &#124; [CurseForge](https://www.curseforge.com/minecraft/mc-mods/fabric-api) | Needed for custom packets and per-tick callbacks |
 
 ## Supported versions
 

@@ -12,7 +12,7 @@
 基于 Fabric 的 [Carpet](https://github.com/gnembon/fabric-carpet) 多版本扩展模组，为技术生存与原版友好玩法提供少量实用、可配置的地毯规则。
 
 - 所有规则**默认关闭**，在 `/carpet` 中手动开启后才生效。
-- 只依赖 **Carpet + Fabric Loader**，刻意不依赖 fabric-api，可纯服务端使用。
+- 只依赖 **Carpet + Fabric API**，不需要其它前置；可纯服务端使用。
 - 全部规则注册在 Carpet 默认管理器，分类 **Hao（游戏内显示“昊”）**，文案中英双语。
 
 ## 依赖
@@ -21,7 +21,7 @@
 |----|----|----|----|
 | Carpet | 必须 | [Modrinth](https://modrinth.com/mod/carpet) &#124; [GitHub](https://github.com/gnembon/fabric-carpet) | |
 | Fabric Loader | 必须 | [官网](https://fabricmc.net/) | ≥0.16.10 |
-| Fabric API | 不需要 | - | 刻意不依赖，可纯服务端使用 |
+| Fabric API | 必须 | [Modrinth](https://modrinth.com/mod/fabric-api) &#124; [CurseForge](https://www.curseforge.com/minecraft/mc-mods/fabric-api) | 自定义网络包与逐 tick 回调需要它 |
 
 ## 版本支持
 
