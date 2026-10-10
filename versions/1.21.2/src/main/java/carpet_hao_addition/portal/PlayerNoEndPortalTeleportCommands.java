@@ -33,7 +33,7 @@ import static net.minecraft.server.command.CommandManager.literal;
  * - help                    显示用法
  * <p>
  * 名单与全局模式保存在内存(PlayerNoEndPortalTeleportList),重启后清空;
- * 判定由版本层 EndPortalBlockMixin 调用 shouldBlock(uuid)。
+ * 判定由版本层 EndPortalTeleportMixin 调用 shouldBlock(uuid)。
  */
 public final class PlayerNoEndPortalTeleportCommands {
 	private PlayerNoEndPortalTeleportCommands() {
