@@ -26,7 +26,7 @@ import java.util.Map;
 
 public class SchematicPlacementEncoder {
 
-    public static Vec3d encodeHitPosItemData(Vec3d hitPos, BlockPos pos, BlockState stateSchematic) {
+    public static Vec3d encodeSchematicItemData(Vec3d hitPos, BlockPos pos, BlockState stateSchematic) {
         if (!ProjectionPlacement.enabled()) {
             return hitPos;
         }
@@ -64,7 +64,7 @@ public class SchematicPlacementEncoder {
         BlockEntity blockEntity = world == null ? null : world.getBlockEntity(pos);
         HaoDebug.log("[hao-easyplace]   投影方块实体=" + (blockEntity == null ? "null" : blockEntity.getClass().getSimpleName()));
         if (blockEntity != null) {
-            int fromEntity = ProjectionPlacement.encodeBlockEntityProtocolAddition(blockEntity);
+            int fromEntity = ProjectionPlacement.encodeBlockEntityBits(blockEntity);
             HaoDebug.log("[hao-easyplace]   实体编码位=" + fromEntity);
             if (fromEntity != 0) {
                 return fromEntity;
@@ -72,7 +72,7 @@ public class SchematicPlacementEncoder {
         }
 
         // 完整 NBT(含标牌文字等)走独立通道单独发送 —— 协议值装不下这些。
-        NbtCompound fullNbt = getSchematicBlockEntityNbt(pos, stateSchematic);
+        NbtCompound fullNbt = schematicBlockEntityNbt(pos, stateSchematic);
         if (fullNbt != null) {
             BlockDataChannel.send(pos, fullNbt);
         }
@@ -97,7 +97,7 @@ public class SchematicPlacementEncoder {
         return type != null && type.supports(state);
     }
 
-    private static NbtCompound getSchematicBlockEntityNbt(BlockPos pos, BlockState stateSchematic) {
+    private static NbtCompound schematicBlockEntityNbt(BlockPos pos, BlockState stateSchematic) {
         // 投影世界坐标与世界一致,直接查同一坐标即可 —— 坐标换算那条路会偏格,还会抓错方块实体。
         try {
             net.minecraft.world.World schematicWorld = SchematicWorldHandler.getSchematicWorld();
@@ -194,7 +194,7 @@ public class SchematicPlacementEncoder {
                 }
             }
         } catch (Exception e) {
-            HaoDebug.log("[hao-easyplace]     getSchematicBlockEntityNbt 异常: " + e);
+            HaoDebug.log("[hao-easyplace]     schematicBlockEntityNbt 异常: " + e);
             HaoDebug.stackTrace(e);
             return null;
         }

@@ -38,7 +38,7 @@ public abstract class SchematicHitVecMixin {
             cancellable = true)
     private static void hao$encodeProtocolBits(BlockPos pos, BlockState state, Vec3 hitVecIn, CallbackInfoReturnable<Vec3> cir) {
         if (ProjectionPlacement.enabled()) {
-            Vec3 out = SchematicPlacementEncoder.encodeHitPosItemData(cir.getReturnValue(), pos, state);
+            Vec3 out = SchematicPlacementEncoder.encodeSchematicItemData(cir.getReturnValue(), pos, state);
             HaoDebug.log("[hao-easyplace] [CarpetVec] pos=" + pos + " in=" + cir.getReturnValue() + " out=" + out);
             cir.setReturnValue(out);
         }
@@ -61,7 +61,7 @@ public abstract class SchematicHitVecMixin {
         if (!ProjectionPlacement.enabled()) {
             return;
         }
-        Vec3 encoded = SchematicPlacementEncoder.encodeHitPosItemData(cir.getReturnValue(), pos, state);
+        Vec3 encoded = SchematicPlacementEncoder.encodeSchematicItemData(cir.getReturnValue(), pos, state);
         HaoDebug.log("[hao-easyplace] [V3] pos=" + pos + " state=" + state
                 + " litematica返回=" + cir.getReturnValue() + " 我们编码后=" + encoded);
         hao$msPos = pos;
@@ -106,7 +106,7 @@ public abstract class SchematicHitVecMixin {
             mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, hitResult);
         }
         if (loopCount > 0) {
-            SchematicUtilsInvoker.invokeCacheEasyPlacePosition(pos);
+            SchematicUtilsInvoker.hao$cachePlacement(pos);
             HaoDebug.log("[hao-easyplace] [多阶段补放] " + pos + " 层数=" + loopCount
                     + " 目标=" + stateSchematic);
         }

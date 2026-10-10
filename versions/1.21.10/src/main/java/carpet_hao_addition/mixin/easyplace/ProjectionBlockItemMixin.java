@@ -77,7 +77,7 @@ public abstract class ProjectionBlockItemMixin {
         if (baseState == null) {
             baseState = this.getBlock().getPlacementState(context);
         }
-        BlockState state = ProjectionPlacement.decodePlacementState(this.getBlock(), context, baseState);
+        BlockState state = ProjectionPlacement.decodeSchematicState(this.getBlock(), context, baseState);
         HaoDebug.log("[hao-easyplace]   [放置解码] hitPos=" + context.getHitPos()
                 + " blockPos=" + PlacementBitTools.clickedPos(context) + " side=" + context.getSide()
                 + " 还原状态=" + state);
@@ -93,17 +93,17 @@ public abstract class ProjectionBlockItemMixin {
     private ActionResult hao$enterPlacementWindow(ItemPlacementContext context, Operation<ActionResult> original) {
         if (ProjectionPlacement.enabled()
                 && isProtocolHit(hitOffsetX(context.getHitPos(), PlacementBitTools.clickedPos(context)))) {
-            ProjectionPlacement.setEasyPlaceState(true);
-            ProjectionPlacement.setPlaceTargetPos(PlacementBitTools.clickedPos(context));
-            ProjectionPlacement.setPlaceTargetBlock(this.getBlock());
+            ProjectionPlacement.markProjectedState(true);
+            ProjectionPlacement.assignPlaceTargetPos(PlacementBitTools.clickedPos(context));
+            ProjectionPlacement.assignPlaceTargetBlock(this.getBlock());
         }
         try {
             return original.call(context);
         } finally {
-            ProjectionPlacement.setEasyPlaceState(false);
-            ProjectionPlacement.setPlaceProperty(0);
-            ProjectionPlacement.setPlaceTargetPos(BlockPos.ORIGIN);
-            ProjectionPlacement.setPlaceTargetBlock(Blocks.AIR);
+            ProjectionPlacement.markProjectedState(false);
+            ProjectionPlacement.noteWindowFlags(0);
+            ProjectionPlacement.assignPlaceTargetPos(BlockPos.ORIGIN);
+            ProjectionPlacement.assignPlaceTargetBlock(Blocks.AIR);
         }
     }
 
@@ -136,7 +136,7 @@ public abstract class ProjectionBlockItemMixin {
         HaoDebug.log("[hao-easyplace] [postPlacement] pos=" + pos
                 + " side=" + context.getSide() + " state=" + state
                 + " 世界该处=" + level.getBlockState(pos));
-        ItemStack newStack = ProjectionPlacement.applyItemStackProtocolData(stack, context);
+        ItemStack newStack = ProjectionPlacement.applySchematicItemData(stack, context);
         if (newStack == null) {
             return original.call(instance, pos, level, player, stack, state);
         }

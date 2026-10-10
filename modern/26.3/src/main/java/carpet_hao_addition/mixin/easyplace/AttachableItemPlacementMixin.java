@@ -43,7 +43,7 @@ public abstract class AttachableItemPlacementMixin {
         if (!isProtocolHit(relativeHitZ)) {
             return;
         }
-        BlockState state = ProjectionPlacement.decodePlacementState(baseState.getBlock(), context, baseState);
+        BlockState state = ProjectionPlacement.decodeSchematicState(baseState.getBlock(), context, baseState);
         HaoDebug.log("[hao-easyplace] [子类解码] block=" + hao$block()
                 + " 原=" + baseState + " 改=" + state
                 + " side=" + context.getClickedFace() + " hitPos=" + context.getClickLocation()

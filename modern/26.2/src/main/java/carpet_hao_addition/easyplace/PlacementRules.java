@@ -93,7 +93,7 @@ import static carpet_hao_addition.easyplace.PlacementCodecs.stepped;
  */
 public final class PlacementRules {
 
-	private static final Map<Class<? extends Block>, PlacementCodec> RULES = new HashMap<>();
+	private static final Map<Class<? extends Block>, PlacementCodec> STATE_CODECS = new HashMap<>();
 
 	/** 「方块 -> 物品数据编解码」规则表。 */
 	private static final Map<Class<? extends Block>, ItemDataCodec> ITEM_DATA = new HashMap<>();
@@ -115,7 +115,7 @@ public final class PlacementRules {
 		// ---------- 旋转类（16 向，值 +1 存放；0 表示「没编码」） ----------
 
 		// 旗帜：站立变体有 ROTATION，墙挂变体没有，编码器内部会跳过
-		rule(BannerBlock.class, custom(
+		stateCodec(BannerBlock.class, custom(
 				state -> state.hasProperty(BannerBlock.ROTATION)
 						? ((state.getValue(BannerBlock.ROTATION) + 1) & 0b1111)
 						: 0,
@@ -127,7 +127,7 @@ public final class PlacementRules {
 				}));
 
 		// 头颅 / 玩家头颅：同上，墙挂变体绕过
-		rule(SkullBlock.class, custom(
+		stateCodec(SkullBlock.class, custom(
 				state -> state.hasProperty(SkullBlock.ROTATION)
 						? ((state.getValue(SkullBlock.ROTATION) + 1) & 0b1111)
 						: 0,
@@ -141,14 +141,14 @@ public final class PlacementRules {
 		// ---------- 告示牌系列 ----------
 
 		// 站立变体：旋转角直存低 4 位
-		rule(SignBlock.class, intProp(StandingSignBlock.ROTATION, 4, 0));
+		stateCodec(SignBlock.class, intProp(StandingSignBlock.ROTATION, 4, 0));
 		// 墙挂变体：朝向按 ordinal 直存（投影端约定 NORTH=2 … WEST=5）
-		rule(WallSignBlock.class, facingByOrdinal(BlockStateProperties.HORIZONTAL_FACING, 0, 3));
+		stateCodec(WallSignBlock.class, facingByOrdinal(BlockStateProperties.HORIZONTAL_FACING, 0, 3));
 		// 悬挂告示牌的站立变体多一个「已挂到方块上」标记（bit4）
-		rule(CeilingHangingSignBlock.class, stack(
+		stateCodec(CeilingHangingSignBlock.class, stack(
 				intProp(CeilingHangingSignBlock.ROTATION, 4, 0),
 				boolProp(CeilingHangingSignBlock.ATTACHED, 4)));
-		rule(WallHangingSignBlock.class, facingByOrdinal(BlockStateProperties.HORIZONTAL_FACING, 0, 3));
+		stateCodec(WallHangingSignBlock.class, facingByOrdinal(BlockStateProperties.HORIZONTAL_FACING, 0, 3));
 
 		// 这四种方块除状态外还带着一块手持物数据：文字颜色 / 发光 / 打蜡。
 		// 两家告示牌的方块实体 id 不一样，所以各配一个实例。
@@ -167,22 +167,22 @@ public final class PlacementRules {
 		// 营火：水平朝向占低 2 位 + 点燃标记占 bit4。
 		// 注意此处不登记 HorizontalFacingBlock —— 活板门/门/栅栏门都继承它，
 		// 按基类接管会覆盖投影原生对这些方块的轻松放置（曾导致活板门 half/open 丢失）。
-		rule(CampfireBlock.class, stack(
+		stateCodec(CampfireBlock.class, stack(
 				facing4(),
 				boolProp(CampfireBlock.LIT, 4)));
 
 		// 比较器：水平朝向占低 2 位 + 减法模式占 bit2
-		rule(ComparatorBlock.class, stack(
+		stateCodec(ComparatorBlock.class, stack(
 				facing4(),
 				enumProp(ComparatorBlock.MODE, 2, 1, 0)));
 
 		// 命令方块：六向朝向（低 3 位，值 +1）+ 条件模式（bit4）
-		rule(CommandBlock.class, stack(
+		stateCodec(CommandBlock.class, stack(
 				allFacing(),
 				boolProp(BlockStateProperties.CONDITIONAL, 4)));
 
 		// 漏斗：六向朝向（低 3 位）+ 禁用标记（bit3：禁用才置位）
-		rule(HopperBlock.class, stack(
+		stateCodec(HopperBlock.class, stack(
 				allFacing(),
 				custom(state -> state.hasProperty(HopperBlock.ENABLED)
 								&& !state.getValue(HopperBlock.ENABLED) ? 0b1000 : 0,
@@ -191,19 +191,19 @@ public final class PlacementRules {
 								: state)));
 
 		// 拼图方块 / 合成器：朝向用 ORIENTATION 的 ordinal（低 4 位，值 +1，共 12 种）
-		rule(JigsawBlock.class, enumProp(JigsawBlock.ORIENTATION, 0, 4, -1));
-		rule(CrafterBlock.class, enumProp(BlockStateProperties.ORIENTATION, 0, 4, -1));
+		stateCodec(JigsawBlock.class, enumProp(JigsawBlock.ORIENTATION, 0, 4, -1));
+		stateCodec(CrafterBlock.class, enumProp(BlockStateProperties.ORIENTATION, 0, 4, -1));
 
 		// 钟：水平朝向 + 挂载方式（bit4-5）
-		rule(BellBlock.class, stack(
+		stateCodec(BellBlock.class, stack(
 				facing4Marked(),
 				enumProp(BellBlock.ATTACHMENT, 4, 2, 0)));
 
 		// 拉杆 / 墙面按钮：水平朝向 + 贴面（bit4-5）[+ 拉杆的开关状态 bit6]
-		rule(FaceAttachedHorizontalDirectionalBlock.class, stack(
+		stateCodec(FaceAttachedHorizontalDirectionalBlock.class, stack(
 				facing4Marked(),
 				enumProp(FaceAttachedHorizontalDirectionalBlock.FACE, 4, 2, 0)));
-		rule(LeverBlock.class, stack(
+		stateCodec(LeverBlock.class, stack(
 				facing4Marked(),
 				enumProp(FaceAttachedHorizontalDirectionalBlock.FACE, 4, 2, 0),
 				boolProp(LeverBlock.POWERED, 6)));
@@ -211,7 +211,7 @@ public final class PlacementRules {
 		// ---------- 台阶与楼梯 ----------
 
 		// 楼梯：朝向低 2 位、上下半 bit2、形状 bit3-5（与投影约定一致，不可改）
-		rule(StairBlock.class, stack(
+		stateCodec(StairBlock.class, stack(
 				custom(state -> state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)
 								? (state.getValue(BlockStateProperties.HORIZONTAL_FACING).ordinal() - 2) & 0b11
 								: 0,
@@ -228,17 +228,17 @@ public final class PlacementRules {
 		// ---------- 档位 / 数值类 ----------
 
 		// 音符盒：音高 0-24，占低 5 位
-		rule(NoteBlock.class, intProp(NoteBlock.NOTE, 5, 25));
+		stateCodec(NoteBlock.class, intProp(NoteBlock.NOTE, 5, 25));
 
 		// 光照方块：亮度 0-15，占低 4 位
-		rule(LightBlock.class, intProp(LightBlock.LEVEL, 4, 0));
+		stateCodec(LightBlock.class, intProp(LightBlock.LEVEL, 4, 0));
 
 		// 结构方块：模式（保存/加载/角落/数据），占低 2 位
-		rule(StructureBlock.class, enumProp(StructureBlock.MODE, 0, 2, 0));
+		stateCodec(StructureBlock.class, enumProp(StructureBlock.MODE, 0, 2, 0));
 
 		// 可堆肥：层数 0-8，占低 4 位；仅当规则取 with_composter_level 时才编解码，
 		// 否则整项返回 0（等于「按原版放置」）
-		rule(ComposterBlock.class, custom(
+		stateCodec(ComposterBlock.class, custom(
 				state -> ProjectionPlacementSettings.composterLevelEnabled()
 						&& state.hasProperty(ComposterBlock.LEVEL)
 						? (state.getValue(ComposterBlock.LEVEL) & 0b1111)
@@ -253,7 +253,7 @@ public final class PlacementRules {
 				}));
 
 		// 中继器：朝向低 2 位（值 -2）、延迟 bit2-3（值 -1）、锁存 bit4、通电 bit5
-		rule(RepeaterBlock.class, custom(
+		stateCodec(RepeaterBlock.class, custom(
 				state -> {
 					int bits = 0;
 					if (state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
@@ -292,26 +292,26 @@ public final class PlacementRules {
 		// ---------- 开关类 ----------
 
 		// 铜灯：点亮 bit0、通电 bit1（与投影端一致，不可对调）
-		rule(CopperBulbBlock.class, stack(
+		stateCodec(CopperBulbBlock.class, stack(
 				boolProp(CopperBulbBlock.LIT, 0),
 				boolProp(CopperBulbBlock.POWERED, 1)));
 
 		// 红石灯：点亮 bit4
-		rule(RedstoneLampBlock.class, boolProp(RedstoneLampBlock.LIT, 4));
+		stateCodec(RedstoneLampBlock.class, boolProp(RedstoneLampBlock.LIT, 4));
 
 		// 阳光探测器：反向 bit0
-		rule(DaylightDetectorBlock.class, boolProp(DaylightDetectorBlock.INVERTED, 0));
+		stateCodec(DaylightDetectorBlock.class, boolProp(DaylightDetectorBlock.INVERTED, 0));
 
 		// 探测铁轨：通电 bit0
-		rule(DetectorRailBlock.class, boolProp(DetectorRailBlock.POWERED, 0));
+		stateCodec(DetectorRailBlock.class, boolProp(DetectorRailBlock.POWERED, 0));
 
 		// 灯笼：悬挂 bit0
-		rule(LanternBlock.class, boolProp(LanternBlock.HANGING, 0));
+		stateCodec(LanternBlock.class, boolProp(LanternBlock.HANGING, 0));
 
 		// ---------- 位域类 ----------
 
 		// 巨型蘑菇：N/E/S/W/UP/DOWN 依次占 bit0-5（与投影端一致，不可改序）
-		rule(HugeMushroomBlock.class, stack(
+		stateCodec(HugeMushroomBlock.class, stack(
 				boolProp(HugeMushroomBlock.NORTH, 0),
 				boolProp(HugeMushroomBlock.EAST, 1),
 				boolProp(HugeMushroomBlock.SOUTH, 2),
@@ -320,7 +320,7 @@ public final class PlacementRules {
 				boolProp(HugeMushroomBlock.DOWN, 5)));
 
 		// 墙：四向 WallSide 各占 2 位、柱高 bit8
-		rule(WallBlock.class, stack(
+		stateCodec(WallBlock.class, stack(
 				enumProp(WallBlock.NORTH, 0, 2, 0),
 				enumProp(WallBlock.EAST, 2, 2, 0),
 				enumProp(WallBlock.SOUTH, 4, 2, 0),
@@ -329,7 +329,7 @@ public final class PlacementRules {
 
 		// 红石线：只有「孤立点」这一种特殊形态需要还原（bit0）。
 		// 注意连接属性是 EnumProperty<RedstoneSide>（NONE / SIDE / UP），不是布尔量。
-		rule(RedStoneWireBlock.class, custom(
+		stateCodec(RedStoneWireBlock.class, custom(
 				state -> isIsolatedDot(state) ? 0b0001 : 0,
 				(bits, state, ctx) -> {
 					if ((bits & 0b0001) == 0) {
@@ -345,12 +345,12 @@ public final class PlacementRules {
 				}));
 
 		// 铁轨：形状低 4 位；bit4 标记「不要自动改形状」
-		rule(RailBlock.class, stack(
+		stateCodec(RailBlock.class, stack(
 				enumProp(RailBlock.SHAPE, 0, 4, 0),
 				custom(state -> 0b0001_0000,
 						(bits, state, ctx) -> {
 							if ((bits & 0b0001_0000) != 0) {
-								ProjectionPlacement.setPlaceFlag(
+								ProjectionPlacement.noteFlag(
 										ProjectionPlacement.RAIL_KEEP_SHAPE);
 							}
 							return state;
@@ -359,7 +359,7 @@ public final class PlacementRules {
 		// ---------- 堆叠类（需要连续点几次才叠到目标） ----------
 
 		// 雪层：层数 1-8 占低 3 位；雪是「一层层加」的
-		rule(SnowLayerBlock.class, stepped(
+		stateCodec(SnowLayerBlock.class, stepped(
 				(bits, state, ctx) -> {
 					if (!state.hasProperty(SnowLayerBlock.LAYERS)) {
 						return state;
@@ -373,7 +373,7 @@ public final class PlacementRules {
 				(schem, client, index) -> (schem.getValue(SnowLayerBlock.LAYERS) - 1) & 0b0111));
 
 		// 海泡菜：1-4 个占低 2 位
-		rule(SeaPickleBlock.class, stepped(
+		stateCodec(SeaPickleBlock.class, stepped(
 				(bits, state, ctx) -> {
 					if (!state.hasProperty(SeaPickleBlock.PICKLES)) {
 						return state;
@@ -385,7 +385,7 @@ public final class PlacementRules {
 				(schem, client, index) -> (schem.getValue(SeaPickleBlock.PICKLES) - 1) & 0b0011));
 
 		// 海龟蛋：1-4 个占低 2 位
-		rule(TurtleEggBlock.class, stepped(
+		stateCodec(TurtleEggBlock.class, stepped(
 				(bits, state, ctx) -> {
 					if (!state.hasProperty(TurtleEggBlock.EGGS)) {
 						return state;
@@ -397,7 +397,7 @@ public final class PlacementRules {
 				(schem, client, index) -> (schem.getValue(TurtleEggBlock.EGGS) - 1) & 0b0011));
 
 		// 蜡烛：个数 1-4 占低 2 位，点亮标记占 bit2（注意不是 bit0）
-		rule(CandleBlock.class, stepped(
+		stateCodec(CandleBlock.class, stepped(
 				(bits, state, ctx) -> {
 					if (!state.hasProperty(CandleBlock.CANDLES)) {
 						return state;
@@ -417,7 +417,7 @@ public final class PlacementRules {
 						| (schem.getValue(CandleBlock.LIT) ? 0b0100 : 0)));
 
 		// 花床：朝向占 bit2-3，数量 1-4 占低 2 位（位序与原实现一致，不可对调）
-		rule(FlowerBedBlock.class, stepped(
+		stateCodec(FlowerBedBlock.class, stepped(
 				(bits, state, ctx) -> {
 					if (!state.hasProperty(FlowerBedBlock.AMOUNT)) {
 						return state;
@@ -439,7 +439,7 @@ public final class PlacementRules {
 						| ((schem.getValue(FlowerBedBlock.AMOUNT) - 1) & 0b11)));
 
 		// 藤蔓：方向表是「去掉 DOWN」的 5 个（UP/N/E/S/W，索引 0..4），一次长一个方向
-		rule(VineBlock.class, stepped(
+		stateCodec(VineBlock.class, stepped(
 				(bits, state, ctx) -> {
 					int index = bits & 0b0111;
 					if (index >= VINE_DIRECTIONS.length) {
@@ -466,7 +466,7 @@ public final class PlacementRules {
 				}));
 
 		// 发光地衣等「多面方块」：方向表是完整的 6 向（索引 0..5），一次铺一个面
-		rule(MultifaceBlock.class, stepped(
+		stateCodec(MultifaceBlock.class, stepped(
 				(bits, state, ctx) -> {
 					int index = bits & 0b0111;
 					if (index >= VINE_DIRECTIONS.length + 1) {
@@ -490,7 +490,7 @@ public final class PlacementRules {
 				}));
 
 		// 信标本身没有可还原的方块状态（要还原的是手持物上的效果数据）
-		rule(BeaconBlock.class, PlacementCodecs.none());
+		stateCodec(BeaconBlock.class, PlacementCodecs.none());
 	}
 
 	// ==================== 查询 ====================
@@ -501,7 +501,7 @@ public final class PlacementRules {
 	 */
 	public static PlacementCodec codec(Block block) {
 		for (Class<?> type = block.getClass(); type != null; type = type.getSuperclass()) {
-			PlacementCodec found = RULES.get(type);
+			PlacementCodec found = STATE_CODECS.get(type);
 			if (found != null) {
 				return found;
 			}
@@ -528,8 +528,8 @@ public final class PlacementRules {
 		return null;
 	}
 
-	private static void rule(Class<? extends Block> type, PlacementCodec codec) {
-		RULES.put(type, codec);
+	private static void stateCodec(Class<? extends Block> type, PlacementCodec codec) {
+		STATE_CODECS.put(type, codec);
 	}
 
 	private static void itemData(Class<? extends Block> type, ItemDataCodec codec) {

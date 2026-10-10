@@ -20,7 +20,7 @@ public class SignPlacementMixin {
     private void hao$suppressSuccess(BlockPos pos, Level world, Player player, ItemStack stack,
                                      BlockState state, CallbackInfoReturnable<Boolean> cir) {
         if (ProjectionPlacement.isProjected()
-                && ProjectionPlacement.getPlaceTargetPos().equals(pos)
+                && ProjectionPlacement.placeTarget().equals(pos)
                 && world.getBlockState(pos).getBlock() instanceof SignBlock) {
             cir.setReturnValue(false);
         }

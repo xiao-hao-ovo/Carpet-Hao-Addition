@@ -43,11 +43,11 @@ public final class ProjectionPlacement {
 		return PlacementWindow.isOpen();
 	}
 
-	public static void setEasyPlaceState(boolean value) {
+	public static void markProjectedState(boolean value) {
 		PlacementWindow.setOpen(value);
 	}
 
-	public static void setPlaceProperty(long value) {
+	public static void noteWindowFlags(long value) {
 		PlacementWindow.setFlags(value);
 	}
 
@@ -55,23 +55,23 @@ public final class ProjectionPlacement {
 		return PlacementWindow.hasFlag(flag);
 	}
 
-	public static void setPlaceFlag(long flag) {
+	public static void noteFlag(long flag) {
 		PlacementWindow.raiseFlag(flag);
 	}
 
-	public static BlockPos getPlaceTargetPos() {
+	public static BlockPos placeTarget() {
 		return PlacementWindow.targetPos();
 	}
 
-	public static void setPlaceTargetPos(BlockPos pos) {
+	public static void assignPlaceTargetPos(BlockPos pos) {
 		PlacementWindow.setTargetPos(pos);
 	}
 
-	public static Block getPlaceTargetBlock() {
+	public static Block placeTargetBlock() {
 		return PlacementWindow.targetBlock();
 	}
 
-	public static void setPlaceTargetBlock(Block block) {
+	public static void assignPlaceTargetBlock(Block block) {
 		PlacementWindow.setTargetBlock(block);
 	}
 
@@ -84,7 +84,7 @@ public final class ProjectionPlacement {
 	 * @param baseState 可以传 {@code null}，此时按 {@code block} 现算一个
 	 * @return 还原后的状态；规则没开时返回 {@code null}
 	 */
-	public static BlockState decodePlacementState(Block block, BlockPlaceContext context, BlockState baseState) {
+	public static BlockState decodeSchematicState(Block block, BlockPlaceContext context, BlockState baseState) {
 		if (!enabled()) {
 			return null;
 		}
@@ -98,10 +98,10 @@ public final class ProjectionPlacement {
 	}
 
 	/**
-	 * 同 {@link #decodePlacementState}，但用于「站着 / 挂墙」二选一的方块
+	 * 同 {@link #decodeSchematicState}，但用于「站着 / 挂墙」二选一的方块
 	 * （灯笼、告示牌这类）：先按点击的面挑出基础状态，再还原。
 	 */
-	public static BlockState decodeAttachablePlacementState(Block standingBlock, Block wallBlock,
+	public static BlockState decodeHangingState(Block standingBlock, Block wallBlock,
 														   BlockPlaceContext context) {
 		if (!enabled()) {
 			return null;
@@ -145,7 +145,7 @@ public final class ProjectionPlacement {
 	// ==================== 物品数据 ====================
 
 	/** 服务端真正放置前调用：把协议位写回手持物。返回 {@code null} 表示不用管。 */
-	public static ItemStack applyItemStackProtocolData(ItemStack stack, BlockPlaceContext context) {
+	public static ItemStack applySchematicItemData(ItemStack stack, BlockPlaceContext context) {
 		if (!enabled()) {
 			return null;
 		}
@@ -169,7 +169,7 @@ public final class ProjectionPlacement {
 	}
 
 	/** 客户端编码：投影世界的方块实体拿得到时，直接从它取物品数据位。 */
-	public static int encodeBlockEntityProtocolAddition(BlockEntity blockEntity) {
+	public static int encodeBlockEntityBits(BlockEntity blockEntity) {
 		if (blockEntity == null) {
 			return 0;
 		}
