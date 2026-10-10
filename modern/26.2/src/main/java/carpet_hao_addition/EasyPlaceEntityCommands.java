@@ -31,7 +31,7 @@ public final class EasyPlaceEntityCommands {
 	private EasyPlaceEntityCommands() {
 	}
 
-	public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+	public static void registerCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
 		dispatcher.register(literal("easyPlaceEntityCount")
 				.executes(context -> show(context.getSource()))
 				.then(argument("count", IntegerArgumentType.integer(1, EasyPlaceEntitySettings.MAX_COUNT))

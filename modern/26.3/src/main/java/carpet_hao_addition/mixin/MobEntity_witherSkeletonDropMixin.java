@@ -27,7 +27,7 @@ public abstract class MobEntity_witherSkeletonDropMixin {
 	private void hao$removeWitherSkeletonSword(ServerLevel level, DamageSource source, boolean hitByPlayer,
 			CallbackInfo ci) {
 		Mob self = (Mob) (Object) this;
-		if (!(self instanceof WitherSkeleton) || !WitherSkeletonDropReductionSettings.remove("sword")) {
+		if (!(self instanceof WitherSkeleton) || !WitherSkeletonDropReductionSettings.removeEntry("sword")) {
 			return;
 		}
 		ItemStack mainHand = self.getItemBySlot(EquipmentSlot.MAINHAND);

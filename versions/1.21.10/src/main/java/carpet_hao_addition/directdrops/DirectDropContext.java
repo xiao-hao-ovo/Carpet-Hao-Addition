@@ -51,7 +51,7 @@ public final class DirectDropContext {
 		return stack == null || stack.isEmpty() ? null : stack.get(stack.size() - 1);
 	}
 
-	public static void clear() {
+	public static void clearList() {
 		STACK.remove();
 	}
 }

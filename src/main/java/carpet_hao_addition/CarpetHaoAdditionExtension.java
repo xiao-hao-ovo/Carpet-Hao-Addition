@@ -34,7 +34,7 @@ import static net.minecraft.server.command.CommandManager.literal;
  */
 public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializer
 {
-    public static final String MOD_ID = "carpet-hao-addition";
+    public static final String HAO_MOD_ID = "carpet-hao-addition";
     /** Identifier of the settings manager, also the name of its command: /haoaddition */
     public static final String MANAGER_ID = "haoaddition";
     public static final String MOD_NAME = "Carpet-Hao-Addition";
@@ -49,7 +49,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
     public CarpetHaoAdditionExtension()
     {
         this.modVersion = FabricLoader.getInstance()
-                .getModContainer(MOD_ID)
+                .getModContainer(HAO_MOD_ID)
                 .map(container -> container.getMetadata().getVersion().getFriendlyString())
                 .orElse("unknown");
         this.settingsManager = new SettingsManager(modVersion, MANAGER_ID, MOD_NAME);
@@ -228,16 +228,16 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
 
         // /zoneguard command tree lives in the versioned layer (versions/<mc>/src),
         // keeping per-Minecraft-version APIs out of this shared entry point.
-        ZoneguardCommands.register(dispatcher);
+        ZoneguardCommands.registerCommand(dispatcher);
 
         // /playerNoEndPortalTeleport — manages the noEndPortalTeleport blacklist/global mode.
-        PlayerNoEndPortalTeleportCommands.register(dispatcher);
+        PlayerNoEndPortalTeleportCommands.registerCommand(dispatcher);
 
         // /rocketShulker — 设置火箭潜影盒的补给位置(副手 / 主手快捷栏 1-9)。
-        RocketShulkerCommands.register(dispatcher);
+        RocketShulkerCommands.registerCommand(dispatcher);
 
         // /easyPlaceEntityCount — 设置自己一次放置几个实体(1-64)。
-        EasyPlaceEntityCommands.register(dispatcher);
+        EasyPlaceEntityCommands.registerCommand(dispatcher);
     }
 
     @Override
@@ -256,13 +256,13 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         // shipped as regular Minecraft lang files for client-side rendering.
         String language = lang == null ? "en_us" : lang;
         Map<String, String> translations = Translations.getTranslationFromResourcePath(
-                "assets/" + MOD_ID + "/lang/" + language + ".json");
+                "assets/" + HAO_MOD_ID + "/lang/" + language + ".json");
         if (translations.isEmpty() && !"en_us".equals(language))
         {
             // Fall back to English when the requested language file is missing, so
             // Carpet's rule parser always finds the required name/desc keys.
             translations = Translations.getTranslationFromResourcePath(
-                    "assets/" + MOD_ID + "/lang/en_us.json");
+                    "assets/" + HAO_MOD_ID + "/lang/en_us.json");
         }
         return translations;
     }

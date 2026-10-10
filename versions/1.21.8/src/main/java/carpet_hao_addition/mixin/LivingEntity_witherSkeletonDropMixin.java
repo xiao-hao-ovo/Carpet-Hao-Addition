@@ -29,7 +29,7 @@ public abstract class LivingEntity_witherSkeletonDropMixin {
 			index = 2)
 	private Consumer<ItemStack> hao$filterWitherSkeletonLoot(Consumer<ItemStack> consumer) {
 		if (!((Object) this instanceof WitherSkeletonEntity)
-				|| WitherSkeletonDropReductionSettings.value().equals("false")) {
+				|| WitherSkeletonDropReductionSettings.storedValue().equals("false")) {
 			return consumer;
 		}
 
@@ -41,12 +41,12 @@ public abstract class LivingEntity_witherSkeletonDropMixin {
 	}
 
 	private static boolean shouldRemove(Item item) {
-		if (WitherSkeletonDropReductionSettings.remove("bone") && item == Items.BONE) {
+		if (WitherSkeletonDropReductionSettings.removeEntry("bone") && item == Items.BONE) {
 			return true;
 		}
-		if (WitherSkeletonDropReductionSettings.remove("coal") && item == Items.COAL) {
+		if (WitherSkeletonDropReductionSettings.removeEntry("coal") && item == Items.COAL) {
 			return true;
 		}
-		return WitherSkeletonDropReductionSettings.remove("skull") && item == Items.WITHER_SKELETON_SKULL;
+		return WitherSkeletonDropReductionSettings.removeEntry("skull") && item == Items.WITHER_SKELETON_SKULL;
 	}
 }

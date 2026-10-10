@@ -18,7 +18,7 @@ import java.util.List;
  */
 public record EntityPlacementPayload(List<EntitySpawn> spawns, int count) implements CustomPayload {
 	public static final CustomPayload.Id<EntityPlacementPayload> ID =
-			new CustomPayload.Id<>(Identifier.of(CarpetHaoAdditionExtension.MOD_ID, "easy_place_entity"));
+			new CustomPayload.Id<>(Identifier.of(CarpetHaoAdditionExtension.HAO_MOD_ID, "easy_place_entity"));
 
 	public static final PacketCodec<RegistryByteBuf, EntityPlacementPayload> CODEC =
 			PacketCodec.of(

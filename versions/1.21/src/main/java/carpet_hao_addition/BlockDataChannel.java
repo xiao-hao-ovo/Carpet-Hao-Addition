@@ -26,7 +26,7 @@ public final class BlockDataChannel {
 	}
 
 	/** 服务端:玩家 UUID -> (位置 -> 数据)。 */
-	private static final Map<UUID, Map<BlockPos, PendingData>> PENDING = new HashMap<>();
+	private static final Map<UUID, Map<BlockPos, PendingData>> HAO_PENDING = new HashMap<>();
 
 	/** 客户端节流:最近一次发出的 (位置 + NBT 指纹),避免每 tick 重复发包。 */
 	@Environment(EnvType.CLIENT)
@@ -60,7 +60,7 @@ public final class BlockDataChannel {
 			context.server().execute(() -> {
 				System.out.println("[hao-easyplace] [服务端] 收到包: 位置=" + payload.pos()
 						+ " id=" + (payload.nbt() == null ? "null" : payload.nbt().getString("id")));
-				PENDING.computeIfAbsent(player.getUuid(), ignored -> new HashMap<>())
+				HAO_PENDING.computeIfAbsent(player.getUuid(), ignored -> new HashMap<>())
 						.put(payload.pos(), new PendingData(payload.nbt()));
 			});
 		});
@@ -68,7 +68,7 @@ public final class BlockDataChannel {
 
 	/** 客户端:把该位置的完整 NBT 发给服务端(同内容不重复发)。 */
 	@Environment(EnvType.CLIENT)
-	public static void send(BlockPos pos, NbtCompound nbt) {
+	public static void sendPacket(BlockPos pos, NbtCompound nbt) {
 		registerPayloadType();
 		// 不做节流:该函数只在真正放置时调用,节流会吞包导致文字错位。
 		boolean canSend = net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.canSend(BlockDataPayload.ID);
@@ -85,7 +85,7 @@ public final class BlockDataChannel {
 		if (!(player instanceof ServerPlayerEntity serverPlayer)) {
 			return null;
 		}
-		Map<BlockPos, PendingData> byPos = PENDING.get(serverPlayer.getUuid());
+		Map<BlockPos, PendingData> byPos = HAO_PENDING.get(serverPlayer.getUuid());
 		System.out.println("[hao-easyplace] [take] 查找 pos=" + pos
 				+ " 缓存=" + (byPos == null ? "null" : byPos.keySet()));
 		if (byPos == null) {
@@ -115,7 +115,7 @@ public final class BlockDataChannel {
 			}
 		}
 		if (byPos.isEmpty()) {
-			PENDING.remove(serverPlayer.getUuid());
+			HAO_PENDING.remove(serverPlayer.getUuid());
 		}
 		return nbt;
 	}

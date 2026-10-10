@@ -84,11 +84,11 @@ public final class WaterloggedFillHandler {
 				long now = world.getGameTime();
 				switch (payload.kind()) {
 					case WaterloggedFillPayload.KIND_WATERLOG -> {
-						markPending(PENDING_WATERLOG, player, payload.positions(), now);
+						markAsPending(PENDING_WATERLOG, player, payload.positions(), now);
 						prunePending(PENDING_WATERLOG, now);
 					}
 					case WaterloggedFillPayload.KIND_LAVA_CAULDRON -> {
-						markPending(PENDING_LAVA_CAULDRON, player, payload.positions(), now);
+						markAsPending(PENDING_LAVA_CAULDRON, player, payload.positions(), now);
 						prunePending(PENDING_LAVA_CAULDRON, now);
 					}
 					default -> {
@@ -121,7 +121,7 @@ public final class WaterloggedFillHandler {
 
 	private interface PendingAction {
 		/** @return true 表示这一格已处理完,可以从名单里移除。 */
-		boolean apply(ServerPlayer player, ServerLevel world, BlockPos pos);
+		boolean applyTo(ServerPlayer player, ServerLevel world, BlockPos pos);
 	}
 
 	private static void processPending(MinecraftServer server, Map<UUID, Map<BlockPos, Long>> table,
@@ -150,7 +150,7 @@ public final class WaterloggedFillHandler {
 					pendingIterator.remove();
 					continue;
 				}
-				if (action.apply(player, world, pending.getKey())) {
+				if (action.applyTo(player, world, pending.getKey())) {
 					pendingIterator.remove();
 				}
 			}
@@ -230,7 +230,7 @@ public final class WaterloggedFillHandler {
 		world.scheduleTick(pos, fluid, fluid.getTickDelay(world));
 	}
 
-	private static void markPending(Map<UUID, Map<BlockPos, Long>> table, ServerPlayer player,
+	private static void markAsPending(Map<UUID, Map<BlockPos, Long>> table, ServerPlayer player,
 			List<BlockPos> positions, long now) {
 		Map<BlockPos, Long> pending = table.computeIfAbsent(player.getUUID(), key -> new HashMap<>());
 		for (BlockPos pos : positions) {

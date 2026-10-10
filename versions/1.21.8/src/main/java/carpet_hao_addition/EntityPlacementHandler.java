@@ -119,12 +119,12 @@ public final class EntityPlacementHandler {
 		receiverRegistered = true;
 		ServerPlayNetworking.registerGlobalReceiver(EntityPlacementPayload.ID, (payload, context) -> {
 			ServerPlayerEntity player = context.player();
-			context.server().execute(() -> hao$spawn(player, payload));
+			context.server().execute(() -> hao$spawnEntity(player, payload));
 		});
 	}
 
 	/** 逐条放出实体;每条都先确认这一格没有同类型实体。 */
-	private static void hao$spawn(ServerPlayerEntity player, EntityPlacementPayload payload) {
+	private static void hao$spawnEntity(ServerPlayerEntity player, EntityPlacementPayload payload) {
 		if (!EasyPlaceEntitySettings.isEnabled()) {
 			return;
 		}

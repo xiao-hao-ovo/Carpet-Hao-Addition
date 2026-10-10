@@ -13,7 +13,7 @@ import net.minecraft.util.math.BlockPos;
  */
 public final class PlacementWindow {
 
-	private static boolean open = false;
+	private static boolean windowOpen = false;
 	private static long flags = 0;
 	private static BlockPos targetPos = BlockPos.ORIGIN;
 	private static Block targetBlock = Blocks.AIR;
@@ -23,11 +23,11 @@ public final class PlacementWindow {
 
 	/** 是否正处在一次投影放置动作之中。 */
 	public static boolean isOpen() {
-		return open;
+		return windowOpen;
 	}
 
 	public static void setOpen(boolean value) {
-		open = value;
+		windowOpen = value;
 	}
 
 	/** 覆盖全部标记位。 */

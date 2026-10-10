@@ -26,7 +26,7 @@ import java.nio.file.Path;
  * 3. 仅状态变化时触发 reload,幂等。
  */
 public final class TrimTemplateRecipeDeployHook {
-	private static final Logger LOGGER = LoggerFactory.getLogger("carpet-hao-addition");
+	private static final Logger HAO_LOGGER = LoggerFactory.getLogger("carpet-hao-addition");
 	private static final String PACK_NAME = "hao-trim-templates";
 	private static final String PACK_ID = "file/" + PACK_NAME;
 	/** 1.21.7–1.21.8 的数据包格式。 */
@@ -87,19 +87,19 @@ public final class TrimTemplateRecipeDeployHook {
 			if (wantEnabled && packManager.getProfile(PACK_ID) != null && !enabled) {
 				packManager.enable(PACK_ID);
 				changed = true;
-				LOGGER.info("Enabled datapack '{}' ({} craftable trim-template recipes).",
+				HAO_LOGGER.info("Enabled datapack '{}' ({} craftable trim-template recipes).",
 						PACK_NAME, TEMPLATES.length);
 			} else if (!wantEnabled && enabled) {
 				packManager.disable(PACK_ID);
 				changed = true;
-				LOGGER.info("Disabled datapack '{}' (rule haoCraftableTrimTemplates is off).", PACK_NAME);
+				HAO_LOGGER.info("Disabled datapack '{}' (rule haoCraftableTrimTemplates is off).", PACK_NAME);
 			}
 
 			if (changed) {
 				server.reloadResources(packManager.getEnabledIds());
 			}
 		} catch (IOException e) {
-			LOGGER.error("Failed to deploy craftable trim-template datapack", e);
+			HAO_LOGGER.error("Failed to deploy craftable trim-template datapack", e);
 		}
 	}
 

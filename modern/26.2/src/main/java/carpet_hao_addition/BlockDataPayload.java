@@ -12,7 +12,7 @@ import net.minecraft.resources.Identifier;
  */
 public record BlockDataPayload(BlockPos pos, CompoundTag nbt) implements CustomPacketPayload {
 	public static final CustomPacketPayload.Type<BlockDataPayload> ID =
-			new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(CarpetHaoAdditionExtension.MOD_ID, "easy_place_nbt"));
+			new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(CarpetHaoAdditionExtension.HAO_MOD_ID, "easy_place_nbt"));
 
 	public static final StreamCodec<RegistryFriendlyByteBuf, BlockDataPayload> CODEC =
 			StreamCodec.of(

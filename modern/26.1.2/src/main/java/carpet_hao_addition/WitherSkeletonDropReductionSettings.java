@@ -25,7 +25,7 @@ public class WitherSkeletonDropReductionSettings {
 	public static String witherSkeletonDropReduction = "false";
 
 	/** 权威读取:carpet 默认管理器中该规则当前值(缺失/异常按 false)。 */
-	public static String value() {
+	public static String storedValue() {
 		CarpetRule<?> rule = CarpetServer.settingsManager.getCarpetRule(RULE_NAME);
 		if (rule != null && rule.value() instanceof String s) {
 			return s;
@@ -34,8 +34,8 @@ public class WitherSkeletonDropReductionSettings {
 	}
 
 	/** 指定选项是否处于“去除”状态(bone/coal/skull/sword 各自,all 全去除)。 */
-	public static boolean remove(String option) {
-		String v = value();
+	public static boolean removeEntry(String option) {
+		String v = storedValue();
 		return v.equals(option) || v.equals("all");
 	}
 }

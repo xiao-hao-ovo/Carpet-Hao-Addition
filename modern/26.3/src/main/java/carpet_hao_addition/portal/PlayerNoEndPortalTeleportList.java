@@ -35,7 +35,7 @@ public final class PlayerNoEndPortalTeleportList {
 	}
 
 	/** @return 是否成功新增(之前不在名单) */
-	public static boolean add(UUID uuid, String name) {
+	public static boolean addEntry(UUID uuid, String name) {
 		if (uuid == null) {
 			return false;
 		}
@@ -44,12 +44,12 @@ public final class PlayerNoEndPortalTeleportList {
 	}
 
 	/** @return 是否成功移除(之前确实在名单) */
-	public static boolean remove(UUID uuid) {
+	public static boolean removeEntry(UUID uuid) {
 		return uuid != null && BLOCKED.remove(uuid) != null;
 	}
 
 	/** @return 清空的人数 */
-	public static int clear() {
+	public static int clearList() {
 		int size = BLOCKED.size();
 		BLOCKED.clear();
 		return size;

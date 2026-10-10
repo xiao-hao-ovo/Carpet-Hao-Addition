@@ -22,7 +22,7 @@ public final class EasyPlacePendingPlacement {
 	public static Vec3 hitVec = null;
 
 	/** 用完即清,避免影响下一次放置。 */
-	public static void clear() {
+	public static void clearList() {
 		pos = null;
 		schematic = null;
 		hitVec = null;

@@ -122,12 +122,12 @@ public final class EntityPlacementHandler {
 			ServerPlayer player = context.player();
 			System.out.println(TAG + " 收到包: player=" + player.getName().getString()
 					+ " 实体数=" + payload.spawns().size() + " count=" + payload.count());
-			context.server().execute(() -> spawn(player, payload));
+			context.server().execute(() -> spawnEntity(player, payload));
 		});
 	}
 
 	/** 逐条放出实体;每条都先确认这一格没有同类型实体。 */
-	private static void spawn(ServerPlayer player, EntityPlacementPayload payload) {
+	private static void spawnEntity(ServerPlayer player, EntityPlacementPayload payload) {
 		if (!EasyPlaceEntitySettings.isEnabled()) {
 			System.out.println(TAG + " 忽略: 规则未开");
 			return;

@@ -42,7 +42,7 @@ public final class PlayerNoEndPortalTeleportCommands {
 
 	private static final String MSG = "playerNoEndPortalTeleport.commands.";
 
-	public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+	public static void registerCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
 		dispatcher.register(literal("playerNoEndPortalTeleport")
 				.requires(PlayerNoEndPortalTeleportCommands::canUse)
 				.executes(PlayerNoEndPortalTeleportCommands::help)
@@ -52,12 +52,12 @@ public final class PlayerNoEndPortalTeleportCommands {
 								.executes(PlayerNoEndPortalTeleportCommands::setGlobalMode)))
 				.then(literal("add")
 						.then(argument("player", EntityArgument.player())
-								.executes(PlayerNoEndPortalTeleportCommands::add)))
+								.executes(PlayerNoEndPortalTeleportCommands::addEntry)))
 				.then(literal("remove")
 						.then(argument("player", EntityArgument.player())
-								.executes(PlayerNoEndPortalTeleportCommands::remove)))
+								.executes(PlayerNoEndPortalTeleportCommands::removeEntry)))
 				.then(literal("clear")
-						.executes(PlayerNoEndPortalTeleportCommands::clear))
+						.executes(PlayerNoEndPortalTeleportCommands::clearList))
 				.then(literal("list")
 						.executes(PlayerNoEndPortalTeleportCommands::list))
 				.then(literal("help")
@@ -73,11 +73,11 @@ public final class PlayerNoEndPortalTeleportCommands {
 		return !source.isPlayer() || Commands.LEVEL_GAMEMASTERS.check(source.permissions());
 	}
 
-	private static int add(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+	private static int addEntry(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
 		ServerPlayer player = EntityArgument.getPlayer(context, "player");
 		UUID uuid = player.getUUID();
 		String name = player.getName().getString();
-		if (PlayerNoEndPortalTeleportList.add(uuid, name)) {
+		if (PlayerNoEndPortalTeleportList.addEntry(uuid, name)) {
 			context.getSource().sendSuccess(() -> msg("add.success", name), true);
 			return 1;
 		}
@@ -85,10 +85,10 @@ public final class PlayerNoEndPortalTeleportCommands {
 		return 0;
 	}
 
-	private static int remove(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+	private static int removeEntry(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
 		ServerPlayer player = EntityArgument.getPlayer(context, "player");
 		UUID uuid = player.getUUID();
-		if (PlayerNoEndPortalTeleportList.remove(uuid)) {
+		if (PlayerNoEndPortalTeleportList.removeEntry(uuid)) {
 			context.getSource().sendSuccess(() -> msg("remove.success", player.getName().getString()), true);
 			return 1;
 		}
@@ -96,8 +96,8 @@ public final class PlayerNoEndPortalTeleportCommands {
 		return 0;
 	}
 
-	private static int clear(CommandContext<CommandSourceStack> context) {
-		int cleared = PlayerNoEndPortalTeleportList.clear();
+	private static int clearList(CommandContext<CommandSourceStack> context) {
+		int cleared = PlayerNoEndPortalTeleportList.clearList();
 		if (cleared == 0) {
 			context.getSource().sendSuccess(() -> msg("clear.empty"), false);
 			return 0;

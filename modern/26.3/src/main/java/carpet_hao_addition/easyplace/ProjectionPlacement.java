@@ -132,7 +132,7 @@ public final class ProjectionPlacement {
 		if (codec == null) {
 			return baseState;
 		}
-		BlockState restored = codec.decode(bits, baseState, context);
+		BlockState restored = codec.unpack(bits, baseState, context);
 		if (restored != null) {
 			baseState = restored;
 		}

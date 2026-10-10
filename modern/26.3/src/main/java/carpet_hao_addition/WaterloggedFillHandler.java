@@ -109,22 +109,22 @@ public final class WaterloggedFillHandler {
 				switch (payload.kind()) {
 					case WaterloggedFillPayload.KIND_WATERLOG -> {
 						// 只记下"待补水格",随后由每 tick 轮询在方块落下时补。
-						markPending(PENDING_WATERLOG, player, payload.positions(), now);
+						markAsPending(PENDING_WATERLOG, player, payload.positions(), now);
 						prunePending(PENDING_WATERLOG, now);
 					}
 					case WaterloggedFillPayload.KIND_LAVA_CAULDRON -> {
 						// 只记下"待灌岩浆的炼药锅格",炼药锅本身交给正常放置流程。
-						markPending(PENDING_LAVA_CAULDRON, player, payload.positions(), now);
+						markAsPending(PENDING_LAVA_CAULDRON, player, payload.positions(), now);
 						prunePending(PENDING_LAVA_CAULDRON, now);
 					}
 					case WaterloggedFillPayload.KIND_WATER -> {
 						// 记为"待放水源格":原版会把占位方块(冰)真放下去,等它落下后由 tryPlaceWater 换成水。
-						markPending(PENDING_WATER, player, payload.positions(), now);
+						markAsPending(PENDING_WATER, player, payload.positions(), now);
 						prunePending(PENDING_WATER, now);
 					}
 					case WaterloggedFillPayload.KIND_LAVA -> {
 						// 同上,占位方块是岩浆块。
-						markPending(PENDING_LAVA, player, payload.positions(), now);
+						markAsPending(PENDING_LAVA, player, payload.positions(), now);
 						prunePending(PENDING_LAVA, now);
 					}
 					default -> {
@@ -167,7 +167,7 @@ public final class WaterloggedFillHandler {
 
 	private interface PendingAction {
 		/** @return true 表示这一格已处理完,可以从名单里移除。 */
-		boolean apply(ServerPlayer player, ServerLevel world, BlockPos pos);
+		boolean applyTo(ServerPlayer player, ServerLevel world, BlockPos pos);
 	}
 
 	private static void processPending(MinecraftServer server, Map<UUID, Map<BlockPos, Long>> table,
@@ -195,7 +195,7 @@ public final class WaterloggedFillHandler {
 					pendingIterator.remove();
 					continue;
 				}
-				if (action.apply(player, world, pending.getKey())) {
+				if (action.applyTo(player, world, pending.getKey())) {
 					pendingIterator.remove();
 					if (onePerTick) {
 						return; // 本 tick 已处理一格,剩下的留到下一 tick
@@ -361,7 +361,7 @@ public final class WaterloggedFillHandler {
 		return consumeOne(player, Items.FIRE_CHARGE) || damageOne(player, Items.FLINT_AND_STEEL);
 	}
 
-	private static void markPending(Map<UUID, Map<BlockPos, Long>> table, ServerPlayer player,
+	private static void markAsPending(Map<UUID, Map<BlockPos, Long>> table, ServerPlayer player,
 			List<BlockPos> positions, long now) {
 		Map<BlockPos, Long> pending = table.computeIfAbsent(player.getUUID(), key -> new HashMap<>());
 		for (BlockPos pos : positions) {

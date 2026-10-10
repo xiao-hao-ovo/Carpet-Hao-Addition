@@ -22,7 +22,7 @@ public interface PlacementCodec {
 	 * @param bits  已累积的协议位（可能已被同一方块的前几个编解码器写过）
 	 * @return 新的协议位
 	 */
-	int encode(BlockState state, int bits);
+	int pack(BlockState state, int bits);
 
 	/**
 	 * 从协议位还原状态。
@@ -32,7 +32,7 @@ public interface PlacementCodec {
 	 * @param context 放置上下文（个别编解码器需要查世界或点击位置）
 	 * @return 还原后的状态；返回 {@code null} 表示本编解码器不改变状态
 	 */
-	BlockState decode(int bits, BlockState state, BlockPlaceContext context);
+	BlockState unpack(int bits, BlockState state, BlockPlaceContext context);
 
 	/**
 	 * 该方块是否需要「连续右键点几次才叠到目标」。

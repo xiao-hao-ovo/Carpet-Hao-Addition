@@ -30,7 +30,7 @@ public final class SignColorMemory {
 	private SignColorMemory() {
 	}
 
-	private static String key(boolean clientSide, BlockPos pos, String slot) {
+	private static String cacheKey(boolean clientSide, BlockPos pos, String slot) {
 		return (clientSide ? "C" : "S") + pos.asLong() + ":" + slot;
 	}
 
@@ -40,12 +40,12 @@ public final class SignColorMemory {
 			return;
 		}
 		if (COLORS.size() < MAX_ENTRIES) {
-			COLORS.put(key(clientSide, pos, slot), color);
+			COLORS.put(cacheKey(clientSide, pos, slot), color);
 		}
 	}
 
 	/** 取该位置记过的颜色;没记过返回 null。 */
 	public static @Nullable DyeColor recall(boolean clientSide, BlockPos pos, String slot) {
-		return COLORS.get(key(clientSide, pos, slot));
+		return COLORS.get(cacheKey(clientSide, pos, slot));
 	}
 }

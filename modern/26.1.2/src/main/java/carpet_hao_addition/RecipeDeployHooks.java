@@ -26,7 +26,7 @@ import java.nio.file.Path;
  * 3. 仅状态变化时触发 reload,幂等。
  */
 public final class RecipeDeployHooks {
-	private static final Logger LOGGER = LoggerFactory.getLogger("carpet-hao-addition");
+	private static final Logger HAO_LOGGER = LoggerFactory.getLogger("carpet-hao-addition");
 	private static final String PACK_NAME = "carpet-hao-addition_terracotta_uncolor";
 	private static final String PACK_ID = "file/" + PACK_NAME;
 	/**
@@ -83,18 +83,18 @@ public final class RecipeDeployHooks {
 			if (wantEnabled && packManager.getPack(PACK_ID) != null && !enabled) {
 				packManager.addPack(PACK_ID);
 				changed = true;
-				LOGGER.info("Enabled datapack '{}' (terracotta/glazed uncolor recipes).", PACK_NAME);
+				HAO_LOGGER.info("Enabled datapack '{}' (terracotta/glazed uncolor recipes).", PACK_NAME);
 			} else if (!wantEnabled && enabled) {
 				packManager.removePack(PACK_ID);
 				changed = true;
-				LOGGER.info("Disabled datapack '{}' (rule terracottaUncolor is off).", PACK_NAME);
+				HAO_LOGGER.info("Disabled datapack '{}' (rule terracottaUncolor is off).", PACK_NAME);
 			}
 
 			if (changed) {
 				server.reloadResources(packManager.getSelectedIds());
 			}
 		} catch (IOException e) {
-			LOGGER.error("Failed to deploy terracotta-uncolor datapack", e);
+			HAO_LOGGER.error("Failed to deploy terracotta-uncolor datapack", e);
 		}
 	}
 

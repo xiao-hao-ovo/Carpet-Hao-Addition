@@ -31,7 +31,7 @@ public final class RocketShulkerCommands {
 	private RocketShulkerCommands() {
 	}
 
-	public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+	public static void registerCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
 		dispatcher.register(literal("rocketShulker")
 				.executes(context -> show(context.getSource()))
 				.then(literal("offhand")
@@ -52,7 +52,7 @@ public final class RocketShulkerCommands {
 		if (player == null) {
 			return 0;
 		}
-		RocketShulkerSettings.Target target = RocketShulkerSettings.target(player.getUUID());
+		RocketShulkerSettings.Target target = RocketShulkerSettings.targetRef(player.getUUID());
 		Messenger.m(source, "w " + tr("status", String.valueOf(RocketShulkerSettings.isEnabled()),
 				target.name().toLowerCase()));
 		if (target == RocketShulkerSettings.Target.MAINHAND) {

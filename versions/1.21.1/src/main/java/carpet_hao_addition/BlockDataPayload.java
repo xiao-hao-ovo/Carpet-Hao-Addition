@@ -12,7 +12,7 @@ import net.minecraft.util.math.BlockPos;
  */
 public record BlockDataPayload(BlockPos pos, NbtCompound nbt) implements CustomPayload {
 	public static final CustomPayload.Id<BlockDataPayload> ID =
-			new CustomPayload.Id<>(Identifier.of(CarpetHaoAdditionExtension.MOD_ID, "easy_place_nbt"));
+			new CustomPayload.Id<>(Identifier.of(CarpetHaoAdditionExtension.HAO_MOD_ID, "easy_place_nbt"));
 
 	public static final PacketCodec<RegistryByteBuf, BlockDataPayload> CODEC =
 			PacketCodec.of(

@@ -33,7 +33,7 @@ public record WaterloggedFillPayload(boolean active, int kind, List<BlockPos> po
 	public static final int KIND_WATERLOG = 4;
 
 	public static final CustomPacketPayload.Type<WaterloggedFillPayload> ID =
-			new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(CarpetHaoAdditionExtension.MOD_ID, "easy_place_active"));
+			new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(CarpetHaoAdditionExtension.HAO_MOD_ID, "easy_place_active"));
 
 	public static final StreamCodec<RegistryFriendlyByteBuf, WaterloggedFillPayload> CODEC =
 			StreamCodec.of(

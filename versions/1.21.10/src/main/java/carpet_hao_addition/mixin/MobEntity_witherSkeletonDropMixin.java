@@ -27,7 +27,7 @@ public abstract class MobEntity_witherSkeletonDropMixin {
 					target = "Lnet/minecraft/entity/mob/MobEntity;getEquippedStack(Lnet/minecraft/entity/EquipmentSlot;)Lnet/minecraft/item/ItemStack;"))
 	private ItemStack hao$removeWitherSkeletonSword(MobEntity self, EquipmentSlot slot, Operation<ItemStack> original) {
 		ItemStack stack = original.call(self, slot);
-		if (self instanceof WitherSkeletonEntity && WitherSkeletonDropReductionSettings.remove("sword")
+		if (self instanceof WitherSkeletonEntity && WitherSkeletonDropReductionSettings.removeEntry("sword")
 				&& stack.isOf(Items.STONE_SWORD)) {
 			return ItemStack.EMPTY;
 		}

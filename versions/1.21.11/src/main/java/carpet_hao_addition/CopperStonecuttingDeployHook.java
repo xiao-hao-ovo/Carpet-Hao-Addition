@@ -42,7 +42,7 @@ import java.util.Map;
  * 3. 仅内容变化时触发 reload,幂等。
  */
 public final class CopperStonecuttingDeployHook {
-	private static final Logger LOGGER = LoggerFactory.getLogger("carpet-hao-addition");
+	private static final Logger HAO_LOGGER = LoggerFactory.getLogger("carpet-hao-addition");
 	private static final String PACK_NAME = "hao-copper-cut";
 	private static final String PACK_ID = "file/" + PACK_NAME;
 	private static final int PACK_FORMAT = 94; // Minecraft 1.21.11 数据包格式
@@ -136,7 +136,7 @@ public final class CopperStonecuttingDeployHook {
 						if (vanillaAlreadyHas(prefix, fromId, toId)) {
 							continue; // 原版切石机已有该方向(比例与本表一致),不重复生成
 						}
-						hao$add(recipes,
+						hao$addEntry(recipes,
 								recipeJson("minecraft:" + fromId, "minecraft:" + toId, fromValue / toValue));
 					}
 				}
@@ -151,7 +151,7 @@ public final class CopperStonecuttingDeployHook {
 						}
 						String fromId = shapeId(fromPrefix, shape);
 						String toId = shapeId(toPrefix, shape);
-						hao$add(recipes,
+						hao$addEntry(recipes,
 								recipeJson("minecraft:" + fromId, "minecraft:" + toId, 1));
 					}
 				}
@@ -168,7 +168,7 @@ public final class CopperStonecuttingDeployHook {
 					for (int to = 1; to < SHAPE_COUNT; to++) {
 						// 目标从 1 开始:目标是"铜块"的情形属于同形态跨变体,第 2 组已覆盖。
 						String toId = shapeId(toPrefix, to);
-						hao$add(recipes,
+						hao$addEntry(recipes,
 								recipeJson("minecraft:" + fromId, "minecraft:" + toId,
 										BLOCK_VALUE / SHAPE_VALUES[to]));
 					}
@@ -195,19 +195,19 @@ public final class CopperStonecuttingDeployHook {
 			if (wantEnabled && packManager.getProfile(PACK_ID) != null && !enabled) {
 				packManager.enable(PACK_ID);
 				changed = true;
-				LOGGER.info("Enabled datapack '{}' ({} copper stonecutting recipes).",
+				HAO_LOGGER.info("Enabled datapack '{}' ({} copper stonecutting recipes).",
 						PACK_NAME, recipes.size());
 			} else if (!wantEnabled && enabled) {
 				packManager.disable(PACK_ID);
 				changed = true;
-				LOGGER.info("Disabled datapack '{}' (rule copperStonecuttingRecipes is off).", PACK_NAME);
+				HAO_LOGGER.info("Disabled datapack '{}' (rule copperStonecuttingRecipes is off).", PACK_NAME);
 			}
 
 			if (changed) {
 				server.reloadResources(packManager.getEnabledIds());
 			}
 		} catch (IOException e) {
-			LOGGER.error("Failed to deploy copper-stonecutting datapack", e);
+			HAO_LOGGER.error("Failed to deploy copper-stonecutting datapack", e);
 		}
 	}
 
@@ -260,7 +260,7 @@ public final class CopperStonecuttingDeployHook {
 	 * 整个路径会超过 Windows 的 260 字符上限 —— 备份/回档在清理临时目录时会报 WinError 3 而失败。
 	 * 配方内容自带 ingredient/result,文件名取什么都一样,所以压到最短最稳。
 	 */
-	private static void hao$add(Map<String, String> recipes, String json) {
+	private static void hao$addEntry(Map<String, String> recipes, String json) {
 		recipes.put(String.format("r%04d.json", recipes.size() + 1), json);
 	}
 

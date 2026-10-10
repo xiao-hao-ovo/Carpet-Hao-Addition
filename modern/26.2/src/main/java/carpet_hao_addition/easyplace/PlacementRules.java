@@ -71,7 +71,7 @@ import static carpet_hao_addition.easyplace.PlacementCodecs.facingByOrdinal;
 import static carpet_hao_addition.easyplace.PlacementCodecs.facing4;
 import static carpet_hao_addition.easyplace.PlacementCodecs.facing4Marked;
 import static carpet_hao_addition.easyplace.PlacementCodecs.intProp;
-import static carpet_hao_addition.easyplace.PlacementCodecs.stack;
+import static carpet_hao_addition.easyplace.PlacementCodecs.stackOf;
 import static carpet_hao_addition.easyplace.PlacementCodecs.stepped;
 
 /**
@@ -145,7 +145,7 @@ public final class PlacementRules {
 		// 墙挂变体：朝向按 ordinal 直存（投影端约定 NORTH=2 … WEST=5）
 		stateCodec(WallSignBlock.class, facingByOrdinal(BlockStateProperties.HORIZONTAL_FACING, 0, 3));
 		// 悬挂告示牌的站立变体多一个「已挂到方块上」标记（bit4）
-		stateCodec(CeilingHangingSignBlock.class, stack(
+		stateCodec(CeilingHangingSignBlock.class, stackOf(
 				intProp(CeilingHangingSignBlock.ROTATION, 4, 0),
 				boolProp(CeilingHangingSignBlock.ATTACHED, 4)));
 		stateCodec(WallHangingSignBlock.class, facingByOrdinal(BlockStateProperties.HORIZONTAL_FACING, 0, 3));
@@ -167,22 +167,22 @@ public final class PlacementRules {
 		// 营火：水平朝向占低 2 位 + 点燃标记占 bit4。
 		// 注意此处不登记 HorizontalFacingBlock —— 活板门/门/栅栏门都继承它，
 		// 按基类接管会覆盖投影原生对这些方块的轻松放置（曾导致活板门 half/open 丢失）。
-		stateCodec(CampfireBlock.class, stack(
+		stateCodec(CampfireBlock.class, stackOf(
 				facing4(),
 				boolProp(CampfireBlock.LIT, 4)));
 
 		// 比较器：水平朝向占低 2 位 + 减法模式占 bit2
-		stateCodec(ComparatorBlock.class, stack(
+		stateCodec(ComparatorBlock.class, stackOf(
 				facing4(),
 				enumProp(ComparatorBlock.MODE, 2, 1, 0)));
 
 		// 命令方块：六向朝向（低 3 位，值 +1）+ 条件模式（bit4）
-		stateCodec(CommandBlock.class, stack(
+		stateCodec(CommandBlock.class, stackOf(
 				allFacing(),
 				boolProp(BlockStateProperties.CONDITIONAL, 4)));
 
 		// 漏斗：六向朝向（低 3 位）+ 禁用标记（bit3：禁用才置位）
-		stateCodec(HopperBlock.class, stack(
+		stateCodec(HopperBlock.class, stackOf(
 				allFacing(),
 				custom(state -> state.hasProperty(HopperBlock.ENABLED)
 								&& !state.getValue(HopperBlock.ENABLED) ? 0b1000 : 0,
@@ -195,15 +195,15 @@ public final class PlacementRules {
 		stateCodec(CrafterBlock.class, enumProp(BlockStateProperties.ORIENTATION, 0, 4, -1));
 
 		// 钟：水平朝向 + 挂载方式（bit4-5）
-		stateCodec(BellBlock.class, stack(
+		stateCodec(BellBlock.class, stackOf(
 				facing4Marked(),
 				enumProp(BellBlock.ATTACHMENT, 4, 2, 0)));
 
 		// 拉杆 / 墙面按钮：水平朝向 + 贴面（bit4-5）[+ 拉杆的开关状态 bit6]
-		stateCodec(FaceAttachedHorizontalDirectionalBlock.class, stack(
+		stateCodec(FaceAttachedHorizontalDirectionalBlock.class, stackOf(
 				facing4Marked(),
 				enumProp(FaceAttachedHorizontalDirectionalBlock.FACE, 4, 2, 0)));
-		stateCodec(LeverBlock.class, stack(
+		stateCodec(LeverBlock.class, stackOf(
 				facing4Marked(),
 				enumProp(FaceAttachedHorizontalDirectionalBlock.FACE, 4, 2, 0),
 				boolProp(LeverBlock.POWERED, 6)));
@@ -211,7 +211,7 @@ public final class PlacementRules {
 		// ---------- 台阶与楼梯 ----------
 
 		// 楼梯：朝向低 2 位、上下半 bit2、形状 bit3-5（与投影约定一致，不可改）
-		stateCodec(StairBlock.class, stack(
+		stateCodec(StairBlock.class, stackOf(
 				custom(state -> state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)
 								? (state.getValue(BlockStateProperties.HORIZONTAL_FACING).ordinal() - 2) & 0b11
 								: 0,
@@ -292,7 +292,7 @@ public final class PlacementRules {
 		// ---------- 开关类 ----------
 
 		// 铜灯：点亮 bit0、通电 bit1（与投影端一致，不可对调）
-		stateCodec(CopperBulbBlock.class, stack(
+		stateCodec(CopperBulbBlock.class, stackOf(
 				boolProp(CopperBulbBlock.LIT, 0),
 				boolProp(CopperBulbBlock.POWERED, 1)));
 
@@ -311,7 +311,7 @@ public final class PlacementRules {
 		// ---------- 位域类 ----------
 
 		// 巨型蘑菇：N/E/S/W/UP/DOWN 依次占 bit0-5（与投影端一致，不可改序）
-		stateCodec(HugeMushroomBlock.class, stack(
+		stateCodec(HugeMushroomBlock.class, stackOf(
 				boolProp(HugeMushroomBlock.NORTH, 0),
 				boolProp(HugeMushroomBlock.EAST, 1),
 				boolProp(HugeMushroomBlock.SOUTH, 2),
@@ -320,7 +320,7 @@ public final class PlacementRules {
 				boolProp(HugeMushroomBlock.DOWN, 5)));
 
 		// 墙：四向 WallSide 各占 2 位、柱高 bit8
-		stateCodec(WallBlock.class, stack(
+		stateCodec(WallBlock.class, stackOf(
 				enumProp(WallBlock.NORTH, 0, 2, 0),
 				enumProp(WallBlock.EAST, 2, 2, 0),
 				enumProp(WallBlock.SOUTH, 4, 2, 0),
@@ -345,7 +345,7 @@ public final class PlacementRules {
 				}));
 
 		// 铁轨：形状低 4 位；bit4 标记「不要自动改形状」
-		stateCodec(RailBlock.class, stack(
+		stateCodec(RailBlock.class, stackOf(
 				enumProp(RailBlock.SHAPE, 0, 4, 0),
 				custom(state -> 0b0001_0000,
 						(bits, state, ctx) -> {

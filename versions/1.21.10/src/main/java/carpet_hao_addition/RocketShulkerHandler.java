@@ -48,7 +48,7 @@ public final class RocketShulkerHandler {
 			return;
 		}
 		for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-			if (RocketShulkerSettings.target(player.getUuid()) == RocketShulkerSettings.Target.OFFHAND) {
+			if (RocketShulkerSettings.targetRef(player.getUuid()) == RocketShulkerSettings.Target.OFFHAND) {
 				hao$refillOffhand(player);
 			} else {
 				hao$refillHotbar(player);

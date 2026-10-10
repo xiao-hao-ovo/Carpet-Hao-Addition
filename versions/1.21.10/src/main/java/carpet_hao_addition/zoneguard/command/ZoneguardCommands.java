@@ -48,17 +48,17 @@ public final class ZoneguardCommands {
 
 	private static final String MSG = "zoneguard.commands.";
 
-	public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+	public static void registerCommand(CommandDispatcher<ServerCommandSource> dispatcher) {
 		dispatcher.register(literal("zoneguard")
 				.requires(ZoneguardPermissions::canUse)
-				.executes(ZoneguardCommands::view)
+				.executes(ZoneguardCommands::viewRef)
 				.then(literal("set")
 						.then(argument("id", IntegerArgumentType.integer(0))
 								.then(argument("from", BlockPosArgumentType.blockPos())
 										.then(argument("to", BlockPosArgumentType.blockPos())
 												.executes(ZoneguardCommands::setRegion)))))
 				.then(literal("view")
-						.executes(ZoneguardCommands::view))
+						.executes(ZoneguardCommands::viewRef))
 				.then(literal("help")
 						.executes(ZoneguardCommands::help))
 				.then(literal("clear")
@@ -94,7 +94,7 @@ public final class ZoneguardCommands {
 		return 1;
 	}
 
-	private static int view(CommandContext<ServerCommandSource> context) {
+	private static int viewRef(CommandContext<ServerCommandSource> context) {
 		ZoneguardSavedData data = ZoneguardSavedData.get(context.getSource().getServer());
 		if (data.regions().isEmpty()) {
 			context.getSource().sendFeedback(() -> msg("view.empty"), false);

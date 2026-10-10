@@ -33,7 +33,7 @@ public class SchematicPlacementEncoder {
         Block block = stateSchematic.getBlock();
 
         PlacementCodec codec = PlacementRules.codec(block);
-        int bits = codec == null ? 0 : codec.encode(stateSchematic, 0);
+        int bits = codec == null ? 0 : codec.pack(stateSchematic, 0);
 
         ItemDataCodec itemCodec = PlacementRules.itemData(block);
         if (itemCodec != null) {
@@ -74,7 +74,7 @@ public class SchematicPlacementEncoder {
         // 完整 NBT(含标牌文字等)走独立通道单独发送 —— 协议值装不下这些。
         NbtCompound fullNbt = schematicBlockEntityNbt(pos, stateSchematic);
         if (fullNbt != null) {
-            BlockDataChannel.send(pos, fullNbt);
+            BlockDataChannel.sendPacket(pos, fullNbt);
         }
         HaoDebug.log("[hao-easyplace]   投影NBT=" + (fullNbt == null ? "null" : fullNbt));
         int fromNbt = codec.encodeNbt(fullNbt);

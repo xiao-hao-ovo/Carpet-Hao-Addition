@@ -60,7 +60,7 @@ public class RocketShulkerSettings {
 	}
 
 	/** 该玩家的补给位置(没设置过按副手)。 */
-	public static Target target(UUID playerId) {
+	public static Target targetRef(UUID playerId) {
 		Prefs prefs = PREFERENCES.get(playerId);
 		return prefs == null ? Prefs.DEFAULT.target() : prefs.target();
 	}

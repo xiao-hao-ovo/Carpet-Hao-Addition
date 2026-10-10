@@ -27,7 +27,7 @@ public final class PendingDirectDropTicks {
 	/** 归属多保留的宽限刻数,避免因调度延迟抖动而丢归属。 */
 	private static final long GRACE_TICKS = 20L;
 
-	private static final Map<ServerWorld, WorldEntries> PENDING = new WeakHashMap<>();
+	private static final Map<ServerWorld, WorldEntries> HAO_PENDING = new WeakHashMap<>();
 
 	private PendingDirectDropTicks() {}
 
@@ -40,10 +40,10 @@ public final class PendingDirectDropTicks {
 		if (world == null || pos == null || block == null || player == null) {
 			return;
 		}
-		WorldEntries entries = PENDING.get(world);
+		WorldEntries entries = HAO_PENDING.get(world);
 		if (entries == null) {
 			entries = new WorldEntries();
-			PENDING.put(world, entries);
+			HAO_PENDING.put(world, entries);
 		}
 		long now = world.getTime();
 		entries.cleanupIfDue(now);
@@ -60,7 +60,7 @@ public final class PendingDirectDropTicks {
 		if (world == null || pos == null || block == null) {
 			return null;
 		}
-		WorldEntries entries = PENDING.get(world);
+		WorldEntries entries = HAO_PENDING.get(world);
 		if (entries == null) {
 			return null;
 		}
@@ -68,7 +68,7 @@ public final class PendingDirectDropTicks {
 		entries.cleanupIfDue(now);
 		Entry entry = entries.entries.remove(new Key(pos, block));
 		if (entries.entries.isEmpty()) {
-			PENDING.remove(world);
+			HAO_PENDING.remove(world);
 		}
 		if (entry == null || entry.expiresAt < now) {
 			return null;
@@ -77,8 +77,8 @@ public final class PendingDirectDropTicks {
 	}
 
 	/** 规则关闭或服务器切换时清空全部登记。 */
-	public static void clearAll() {
-		PENDING.clear();
+	public static void clearAllPending() {
+		HAO_PENDING.clear();
 	}
 
 	private static final class WorldEntries {

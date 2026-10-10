@@ -29,12 +29,12 @@ public final class PlacementCodecs {
 	public static PlacementCodec none() {
 		return new PlacementCodec() {
 			@Override
-			public int encode(BlockState state, int bits) {
+			public int pack(BlockState state, int bits) {
 				return 0;
 			}
 
 			@Override
-			public BlockState decode(int bits, BlockState state, ItemPlacementContext context) {
+			public BlockState unpack(int bits, BlockState state, ItemPlacementContext context) {
 				return state;
 			}
 		};
@@ -48,7 +48,7 @@ public final class PlacementCodecs {
 	public static PlacementCodec facing4() {
 		return new PlacementCodec() {
 			@Override
-			public int encode(BlockState state, int bits) {
+			public int pack(BlockState state, int bits) {
 				Property<Direction> prop = horizontalProperty(state);
 				if (prop == null) {
 					return 0;
@@ -57,7 +57,7 @@ public final class PlacementCodecs {
 			}
 
 			@Override
-			public BlockState decode(int bits, BlockState state, ItemPlacementContext context) {
+			public BlockState unpack(int bits, BlockState state, ItemPlacementContext context) {
 				Property<Direction> prop = horizontalProperty(state);
 				if (prop == null) {
 					return state;
@@ -75,7 +75,7 @@ public final class PlacementCodecs {
 	public static PlacementCodec facing4Marked() {
 		return new PlacementCodec() {
 			@Override
-			public int encode(BlockState state, int bits) {
+			public int pack(BlockState state, int bits) {
 				Property<Direction> prop = horizontalProperty(state);
 				if (prop == null) {
 					return 0;
@@ -84,7 +84,7 @@ public final class PlacementCodecs {
 			}
 
 			@Override
-			public BlockState decode(int bits, BlockState state, ItemPlacementContext context) {
+			public BlockState unpack(int bits, BlockState state, ItemPlacementContext context) {
 				int index = (bits & 0b111) - 1;
 				Property<Direction> prop = horizontalProperty(state);
 				if (prop == null || index < 0 || index > 3) {
@@ -103,7 +103,7 @@ public final class PlacementCodecs {
 	public static PlacementCodec allFacing() {
 		return new PlacementCodec() {
 			@Override
-			public int encode(BlockState state, int bits) {
+			public int pack(BlockState state, int bits) {
 				Property<Direction> prop = anyDirectionProperty(state);
 				if (prop == null) {
 					return 0;
@@ -112,7 +112,7 @@ public final class PlacementCodecs {
 			}
 
 			@Override
-			public BlockState decode(int bits, BlockState state, ItemPlacementContext context) {
+			public BlockState unpack(int bits, BlockState state, ItemPlacementContext context) {
 				int index = (bits & 0b111) - 1;
 				Property<Direction> prop = anyDirectionProperty(state);
 				if (prop == null || index < 0 || index > 5) {
@@ -133,7 +133,7 @@ public final class PlacementCodecs {
 		int mask = (1 << width) - 1;
 		return new PlacementCodec() {
 			@Override
-			public int encode(BlockState state, int bits) {
+			public int pack(BlockState state, int bits) {
 				if (!state.contains(property)) {
 					return 0;
 				}
@@ -141,7 +141,7 @@ public final class PlacementCodecs {
 			}
 
 			@Override
-			public BlockState decode(int bits, BlockState state, ItemPlacementContext context) {
+			public BlockState unpack(int bits, BlockState state, ItemPlacementContext context) {
 				if (!state.contains(property)) {
 					return state;
 				}
@@ -162,7 +162,7 @@ public final class PlacementCodecs {
 		int mask = (1 << width) - 1;
 		return new PlacementCodec() {
 			@Override
-			public int encode(BlockState state, int bits) {
+			public int pack(BlockState state, int bits) {
 				if (!state.contains(property)) {
 					return 0;
 				}
@@ -171,7 +171,7 @@ public final class PlacementCodecs {
 			}
 
 			@Override
-			public BlockState decode(int bits, BlockState state, ItemPlacementContext context) {
+			public BlockState unpack(int bits, BlockState state, ItemPlacementContext context) {
 				if (!state.contains(property)) {
 					return state;
 				}
@@ -186,12 +186,12 @@ public final class PlacementCodecs {
 		int mask = (1 << width) - 1;
 		return new PlacementCodec() {
 			@Override
-			public int encode(BlockState state, int bits) {
+			public int pack(BlockState state, int bits) {
 				return state.contains(property) ? (state.get(property) & mask) : 0;
 			}
 
 			@Override
-			public BlockState decode(int bits, BlockState state, ItemPlacementContext context) {
+			public BlockState unpack(int bits, BlockState state, ItemPlacementContext context) {
 				if (!state.contains(property)) {
 					return state;
 				}
@@ -210,7 +210,7 @@ public final class PlacementCodecs {
 	public static PlacementCodec boolProp(BooleanProperty property, int shift) {
 		return new PlacementCodec() {
 			@Override
-			public int encode(BlockState state, int bits) {
+			public int pack(BlockState state, int bits) {
 				if (!state.contains(property)) {
 					return 0;
 				}
@@ -218,7 +218,7 @@ public final class PlacementCodecs {
 			}
 
 			@Override
-			public BlockState decode(int bits, BlockState state, ItemPlacementContext context) {
+			public BlockState unpack(int bits, BlockState state, ItemPlacementContext context) {
 				if (!state.contains(property)) {
 					return state;
 				}
@@ -228,22 +228,22 @@ public final class PlacementCodecs {
 	}
 
 	/** 线性叠加多个编解码器：编码按顺序写入同一位域，解码按顺序应用。 */
-	public static PlacementCodec stack(PlacementCodec... parts) {
+	public static PlacementCodec stackOf(PlacementCodec... parts) {
 		return new PlacementCodec() {
 			@Override
-			public int encode(BlockState state, int bits) {
+			public int pack(BlockState state, int bits) {
 				int acc = bits;
 				for (PlacementCodec part : parts) {
-					acc |= part.encode(state, 0);
+					acc |= part.pack(state, 0);
 				}
 				return acc;
 			}
 
 			@Override
-			public BlockState decode(int bits, BlockState state, ItemPlacementContext context) {
+			public BlockState unpack(int bits, BlockState state, ItemPlacementContext context) {
 				BlockState acc = state;
 				for (PlacementCodec part : parts) {
-					BlockState next = part.decode(bits, acc, context);
+					BlockState next = part.unpack(bits, acc, context);
 					if (next != null) {
 						acc = next;
 					}
@@ -264,14 +264,14 @@ public final class PlacementCodecs {
 	public static PlacementCodec stepped(Decoder decoder, StepCounter counter, StepBits stepBits) {
 		return new PlacementCodec() {
 			@Override
-			public int encode(BlockState state, int bits) {
+			public int pack(BlockState state, int bits) {
 				// 堆叠类不进「一次性编码」通道：协议值由 stepBits 逐次给出
 				return 0;
 			}
 
 			@Override
-			public BlockState decode(int bits, BlockState state, ItemPlacementContext context) {
-				return decoder.apply(bits, state, context);
+			public BlockState unpack(int bits, BlockState state, ItemPlacementContext context) {
+				return decoder.applyTo(bits, state, context);
 			}
 
 			@Override
@@ -305,21 +305,21 @@ public final class PlacementCodecs {
 	public static PlacementCodec custom(Function<BlockState, Integer> encoder, Decoder decoder) {
 		return new PlacementCodec() {
 			@Override
-			public int encode(BlockState state, int bits) {
+			public int pack(BlockState state, int bits) {
 				Integer v = encoder.apply(state);
 				return v == null ? 0 : v;
 			}
 
 			@Override
-			public BlockState decode(int bits, BlockState state, ItemPlacementContext context) {
-				return decoder.apply(bits, state, context);
+			public BlockState unpack(int bits, BlockState state, ItemPlacementContext context) {
+				return decoder.applyTo(bits, state, context);
 			}
 		};
 	}
 
 	@FunctionalInterface
 	public interface Decoder {
-		BlockState apply(int bits, BlockState state, ItemPlacementContext context);
+		BlockState applyTo(int bits, BlockState state, ItemPlacementContext context);
 	}
 
 	// ==================== 内部工具 ====================
