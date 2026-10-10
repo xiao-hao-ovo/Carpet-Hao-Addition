@@ -31,11 +31,6 @@ public final class ProjectionPlacement {
 
 	/** 铁轨：别让原版按邻居自动改形状。 */
 	public static final long EASY_PLACE_RAIL_BLOCK_NO_SHAPE_UPDATE = 1L;
-	/** 活塞：别触发方块更新。 */
-	public static final long EASY_PLACE_PISTON_NO_UPDATE = 1L << 1;
-	/** 活塞：连活塞头一起放。 */
-	public static final long EASY_PLACE_PISTON_PLACE_HEAD = 1L << 3;
-
 	private ProjectionPlacement() {
 	}
 

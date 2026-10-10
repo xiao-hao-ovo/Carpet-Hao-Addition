@@ -30,7 +30,6 @@ import net.minecraft.block.LeverBlock;
 import net.minecraft.block.LightBlock;
 import net.minecraft.block.MushroomBlock;
 import net.minecraft.block.NoteBlock;
-import net.minecraft.block.PistonBlock;
 import net.minecraft.block.RailBlock;
 import net.minecraft.block.RedstoneLampBlock;
 import net.minecraft.block.RedstoneWireBlock;
@@ -189,38 +188,6 @@ public final class PlacementRules {
 						(bits, state, ctx) -> state.contains(HopperBlock.ENABLED)
 								? state.with(HopperBlock.ENABLED, (bits & 0b1000) == 0)
 								: state)));
-
-		// 活塞：朝向占 bit5-7（值 +1），伸出状态占 bit4
-		rule(PistonBlock.class, custom(
-				state -> (state.contains(Properties.FACING)
-						? ((state.get(Properties.FACING).ordinal() + 1) & 0b111) << 5
-						: 0)
-						| (state.contains(PistonBlock.EXTENDED) && state.get(PistonBlock.EXTENDED) ? 0b0001_0000 : 0),
-				(bits, state, ctx) -> {
-					BlockState out = state;
-					boolean extended = (bits & 0b0001_0000) != 0;
-					if (state.contains(PistonBlock.EXTENDED)) {
-						out = out.with(PistonBlock.EXTENDED, extended);
-					}
-					if (state.contains(Properties.FACING)) {
-						int index = ((bits >>> 5) & 0b111) - 1;
-						if (index >= 0 && index <= 5) {
-							Direction facing = Direction.values()[index];
-							if (Properties.FACING.getValues().contains(facing)) {
-								out = out.with(Properties.FACING, facing);
-							}
-						}
-					}
-					if (extended) {
-						// 投影要的是「已经伸出去」的活塞：放置时别触发更新，
-						// 带 bit8 时连活塞头一起摆上。
-						ProjectionPlacement.setPlaceFlag(ProjectionPlacement.EASY_PLACE_PISTON_NO_UPDATE);
-						if ((bits & 0b1_0000_0000) != 0) {
-							ProjectionPlacement.setPlaceFlag(ProjectionPlacement.EASY_PLACE_PISTON_PLACE_HEAD);
-						}
-					}
-					return out;
-				}));
 
 		// 拼图方块 / 合成器：朝向用 ORIENTATION 的 ordinal（低 4 位，值 +1，共 12 种）
 		rule(JigsawBlock.class, enumProp(JigsawBlock.ORIENTATION, 0, 4, -1));
