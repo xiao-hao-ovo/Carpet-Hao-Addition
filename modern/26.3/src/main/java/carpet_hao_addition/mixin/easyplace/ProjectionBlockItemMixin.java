@@ -4,7 +4,6 @@ import carpet_hao_addition.HaoDebug;
 
 import carpet_hao_addition.ProjectionPlacementSettings;
 import carpet_hao_addition.easyplace.ProjectionPlacement;
-import carpet_hao_addition.easyplace.PendingWaxState;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -145,12 +144,6 @@ public abstract class ProjectionBlockItemMixin {
         boolean result = original.call(instance, pos, level, player, newStack, state);
         double relativeHitZ = hitOffsetZ(context.getClickLocation(), PlacementBitTools.clickedPos(context));
         int protocolValue = readBits(relativeHitZ);
-        if ((protocolValue & 0b100_0000_0000) != 0) {
-            BlockEntity be = level.getBlockEntity(pos);
-            if (be instanceof SignBlockEntity sbe) {
-                ((PendingWaxState) sbe).hao$setPendingWaxed(true);
-            }
-        }
         return result;
     }
 }

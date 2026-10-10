@@ -5,7 +5,6 @@ import net.minecraft.core.BlockPos;
 import org.spongepowered.asm.mixin.gen.Invoker;
 import org.spongepowered.asm.mixin.Mixin;
 
-
 @Mixin(EasyPlaceUtils.class)
 public interface SchematicUtilsInvoker {
     @Invoker("cacheEasyPlacePosition")

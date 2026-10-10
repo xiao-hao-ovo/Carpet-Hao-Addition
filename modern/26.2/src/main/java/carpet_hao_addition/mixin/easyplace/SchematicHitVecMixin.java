@@ -1,6 +1,5 @@
 package carpet_hao_addition.mixin.easyplace;
 
-
 import carpet_hao_addition.easyplace.ProjectionPlacement;
 import carpet_hao_addition.easyplace.SchematicPlacementEncoder;
 import carpet_hao_addition.easyplace.PlacementBitTools;

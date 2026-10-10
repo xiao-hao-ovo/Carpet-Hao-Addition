@@ -106,7 +106,6 @@ public final class PlacementRules {
 	private static final Direction[] VINE_DIRECTIONS =
 			java.util.Arrays.stream(Direction.values()).filter(d -> d != Direction.DOWN).toArray(Direction[]::new);
 
-
 	private PlacementRules() {
 	}
 

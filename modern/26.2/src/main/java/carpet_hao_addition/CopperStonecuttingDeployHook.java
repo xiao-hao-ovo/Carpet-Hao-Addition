@@ -278,7 +278,6 @@ public final class CopperStonecuttingDeployHook {
 				""".formatted(PACK_FORMAT_MIN, PACK_FORMAT_MAX);
 	}
 
-
 	private static String recipeJson(String ingredient, String result, int count) {
 		return """
 				{

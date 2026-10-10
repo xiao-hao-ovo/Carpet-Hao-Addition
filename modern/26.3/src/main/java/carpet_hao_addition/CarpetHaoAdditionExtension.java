@@ -159,7 +159,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
                 if (srv != null)
                 {
                     // Turn the recipe datapack on/off (and reload) right away.
-                    RecipeDeployHooks.ensureDeployed(srv);
+                    RecipeDeployHooks.ensureDeployed(srv);
                 }
                 return;
             }

@@ -1,6 +1,5 @@
 package carpet_hao_addition.mixin.easyplace;
 
-
 import carpet_hao_addition.easyplace.ProjectionPlacement;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;

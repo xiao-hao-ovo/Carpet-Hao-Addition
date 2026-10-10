@@ -1,6 +1,5 @@
 package carpet_hao_addition.easyplace;
 
-
 import carpet_hao_addition.BlockDataChannel;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.schematic.LitematicaSchematic;

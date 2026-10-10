@@ -306,7 +306,6 @@ public abstract class WorldUtils_entityPlacementMixin {
 				+ String.format("%.1f,%.1f,%.1f", spawn.x(), spawn.y(), spawn.z()));
 	}
 
-
 	/** "位置 + 类型"的粗粒度键:同一处的多个同类实体算同一组。 */
 	@Unique
 	private static String hao$positionKey(EntitySpawn spawn) {
