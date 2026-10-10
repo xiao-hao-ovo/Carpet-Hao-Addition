@@ -40,7 +40,7 @@ public final class ZoneguardPermissions {
 			return true;
 		}
 
-		return ZoneguardSavedData.get(server).isOperator(profile.getId());
+		return ZoneguardSavedData.getData(server).isOperator(profile.getId());
 	}
 
 	public static boolean canManageOperators(ServerCommandSource source) {

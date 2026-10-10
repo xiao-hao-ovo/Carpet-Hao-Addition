@@ -37,7 +37,7 @@ public abstract class SchematicHitVecMixin {
             require = 0,
             cancellable = true)
     private static void hao$encodeProtocolBits(BlockPos pos, BlockState state, Vec3 hitVecIn, CallbackInfoReturnable<Vec3> cir) {
-        if (ProjectionPlacement.enabled()) {
+        if (ProjectionPlacement.ruleEnabled()) {
             Vec3 out = SchematicPlacementEncoder.encodeSchematicItemData(cir.getReturnValue(), pos, state);
             HaoDebug.log("[hao-easyplace] [CarpetVec] pos=" + pos + " in=" + cir.getReturnValue() + " out=" + out);
             cir.setReturnValue(out);
@@ -58,7 +58,7 @@ public abstract class SchematicHitVecMixin {
             require = 0,
             cancellable = true)
     private static void hao$encodeProtocolBitsV3(BlockPos pos, BlockState state, Vec3 hitVecIn, CallbackInfoReturnable<Vec3> cir) {
-        if (!ProjectionPlacement.enabled()) {
+        if (!ProjectionPlacement.ruleEnabled()) {
             return;
         }
         Vec3 encoded = SchematicPlacementEncoder.encodeSchematicItemData(cir.getReturnValue(), pos, state);

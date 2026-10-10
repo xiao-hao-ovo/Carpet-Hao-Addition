@@ -24,7 +24,7 @@ public final class ZoneguardHooks {
 	 * @return 成功重启的侦测器对数
 	 */
 	public static int refreshAllRegions(MinecraftServer server) {
-		ZoneguardSavedData data = ZoneguardSavedData.get(server);
+		ZoneguardSavedData data = ZoneguardSavedData.getData(server);
 		int refreshed = 0;
 		for (DetectorRegion region : data.regions().values()) {
 			ServerWorld world = server.getWorld(region.dimension());

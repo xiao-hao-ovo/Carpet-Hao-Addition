@@ -18,7 +18,7 @@ public final class HaoDebug {
 	}
 
 	/** 调试输出是否开启(热路径可先判断它以避免拼接字符串)。 */
-	public static boolean enabled() {
+	public static boolean ruleEnabled() {
 		return ENABLED;
 	}
 

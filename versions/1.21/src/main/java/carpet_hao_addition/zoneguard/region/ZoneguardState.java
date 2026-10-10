@@ -25,6 +25,6 @@ public final class ZoneguardState {
 			return false;
 		}
 
-		return ZoneguardSavedData.get(world.getServer()).disablesObserver(world, pos);
+		return ZoneguardSavedData.getData(world.getServer()).disablesObserver(world, pos);
 	}
 }

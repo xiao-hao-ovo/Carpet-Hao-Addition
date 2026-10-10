@@ -26,7 +26,7 @@ import java.util.Map;
 public class SchematicPlacementEncoder {
 
     public static Vec3 encodeSchematicItemData(Vec3 hitPos, BlockPos pos, BlockState stateSchematic) {
-        if (!ProjectionPlacement.enabled()) {
+        if (!ProjectionPlacement.ruleEnabled()) {
             return hitPos;
         }
         Block block = stateSchematic.getBlock();
@@ -73,7 +73,7 @@ public class SchematicPlacementEncoder {
         // 完整 NBT(含标牌文字等)走独立通道单独发送 —— 协议值装不下这些。
         CompoundTag fullNbt = schematicBlockEntityNbt(pos, stateSchematic);
         if (fullNbt != null) {
-            BlockDataChannel.sendPacket(pos, fullNbt);
+            BlockDataChannel.dispatchPacket(pos, fullNbt);
         }
         System.out.println("[hao-easyplace]   投影NBT=" + (fullNbt == null ? "null" : fullNbt));
         int fromNbt = codec.encodeNbt(fullNbt);

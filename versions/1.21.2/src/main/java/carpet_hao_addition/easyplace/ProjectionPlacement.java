@@ -34,7 +34,7 @@ public final class ProjectionPlacement {
 	private ProjectionPlacement() {
 	}
 
-	public static boolean enabled() {
+	public static boolean ruleEnabled() {
 		return ProjectionPlacementSettings.isEnabled();
 	}
 
@@ -86,7 +86,7 @@ public final class ProjectionPlacement {
 	 * @return 还原后的状态；规则没开时返回 {@code null}
 	 */
 	public static BlockState decodeSchematicState(Block block, ItemPlacementContext context, BlockState baseState) {
-		if (!enabled()) {
+		if (!ruleEnabled()) {
 			return null;
 		}
 		if (baseState == null) {
@@ -104,7 +104,7 @@ public final class ProjectionPlacement {
 	 */
 	public static BlockState decodeHangingState(Block standingBlock, Block wallBlock,
 														   ItemPlacementContext context) {
-		if (!enabled()) {
+		if (!ruleEnabled()) {
 			return null;
 		}
 		BlockState baseState = null;
@@ -147,7 +147,7 @@ public final class ProjectionPlacement {
 
 	/** 服务端真正放置前调用：把协议位写回手持物。返回 {@code null} 表示不用管。 */
 	public static ItemStack applySchematicItemData(ItemStack stack, ItemPlacementContext context) {
-		if (!enabled()) {
+		if (!ruleEnabled()) {
 			return null;
 		}
 		if (!(stack.getItem() instanceof BlockItem blockItem)) {

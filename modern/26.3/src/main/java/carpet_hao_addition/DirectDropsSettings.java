@@ -33,12 +33,12 @@ public class DirectDropsSettings {
 
 	/** 方块掉落直入背包是否开启。 */
 	public static boolean blockDropsEnabled() {
-		return enabled(BLOCK_RULE_NAME);
+		return ruleEnabled(BLOCK_RULE_NAME);
 	}
 
 	/** 实体掉落直入背包是否开启。 */
 	public static boolean entityDropsEnabled() {
-		return enabled(ENTITY_RULE_NAME);
+		return ruleEnabled(ENTITY_RULE_NAME);
 	}
 
 	/** 任一规则开启即为 true;此时才需要维护掉落归属上下文。 */
@@ -47,7 +47,7 @@ public class DirectDropsSettings {
 	}
 
 	/** 权威读取:carpet 默认管理器中该规则当前是否为 true。 */
-	private static boolean enabled(String ruleName) {
+	private static boolean ruleEnabled(String ruleName) {
 		CarpetRule<?> rule = CarpetServer.settingsManager.getCarpetRule(ruleName);
 		return rule != null && rule.value() instanceof Boolean value && value;
 	}

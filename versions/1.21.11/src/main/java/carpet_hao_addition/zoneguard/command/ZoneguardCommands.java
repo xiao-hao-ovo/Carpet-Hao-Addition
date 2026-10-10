@@ -88,14 +88,14 @@ public final class ZoneguardCommands {
 		BlockPos from = BlockPosArgumentType.getBlockPos(context, "from");
 		BlockPos to = BlockPosArgumentType.getBlockPos(context, "to");
 
-		DetectorRegion region = ZoneguardSavedData.get(source.getServer()).setRegion(id, world, from, to);
+		DetectorRegion region = ZoneguardSavedData.getData(source.getServer()).setRegion(id, world, from, to);
 		source.sendFeedback(() -> msg("set.success",
 				String.valueOf(id), regionDimension(region), formatPos(region.min()), formatPos(region.max())), true);
 		return 1;
 	}
 
 	private static int viewRef(CommandContext<ServerCommandSource> context) {
-		ZoneguardSavedData data = ZoneguardSavedData.get(context.getSource().getServer());
+		ZoneguardSavedData data = ZoneguardSavedData.getData(context.getSource().getServer());
 		if (data.regions().isEmpty()) {
 			context.getSource().sendFeedback(() -> msg("view.empty"), false);
 			return 0;
@@ -133,7 +133,7 @@ public final class ZoneguardCommands {
 	private static int clearRegion(CommandContext<ServerCommandSource> context) {
 		ServerCommandSource source = context.getSource();
 		int id = IntegerArgumentType.getInteger(context, "id");
-		ZoneguardSavedData data = ZoneguardSavedData.get(source.getServer());
+		ZoneguardSavedData data = ZoneguardSavedData.getData(source.getServer());
 		return data.removeRegion(id).map(region -> {
 			ServerWorld world = source.getServer().getWorld(region.dimension());
 			int startedPairs = world == null ? 0 : RegionObserverRefresh.startLoadedFaceToFacePairs(world, region);
@@ -150,7 +150,7 @@ public final class ZoneguardCommands {
 	private static int addOperator(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
 		ServerCommandSource source = context.getSource();
 		Collection<PlayerConfigEntry> entries = GameProfileArgumentType.getProfileArgument(context, "player");
-		ZoneguardSavedData data = ZoneguardSavedData.get(source.getServer());
+		ZoneguardSavedData data = ZoneguardSavedData.getData(source.getServer());
 		int added = 0;
 
 		for (PlayerConfigEntry entry : entries) {
@@ -168,7 +168,7 @@ public final class ZoneguardCommands {
 	private static int removeOperator(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
 		ServerCommandSource source = context.getSource();
 		Collection<PlayerConfigEntry> entries = GameProfileArgumentType.getProfileArgument(context, "player");
-		ZoneguardSavedData data = ZoneguardSavedData.get(source.getServer());
+		ZoneguardSavedData data = ZoneguardSavedData.getData(source.getServer());
 		int removed = 0;
 
 		for (PlayerConfigEntry entry : entries) {
@@ -192,7 +192,7 @@ public final class ZoneguardCommands {
 	}
 
 	private static int listOperators(CommandContext<ServerCommandSource> context) {
-		ZoneguardSavedData data = ZoneguardSavedData.get(context.getSource().getServer());
+		ZoneguardSavedData data = ZoneguardSavedData.getData(context.getSource().getServer());
 		if (data.operators().isEmpty()) {
 			context.getSource().sendFeedback(() -> msg("op.list.empty"), false);
 			return 0;

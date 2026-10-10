@@ -36,8 +36,8 @@ public final class PendingDirectDropTicks {
 	 *
 	 * @param delay 该方块 tick 被调度的延迟(刻);用于推算过期时间
 	 */
-	public static void record(ServerWorld world, BlockPos pos, Block block, int delay, ServerPlayerEntity player) {
-		if (world == null || pos == null || block == null || player == null) {
+	public static void record(ServerWorld world, BlockPos tickPos, Block block, int delay, ServerPlayerEntity player) {
+		if (world == null || tickPos == null || block == null || player == null) {
 			return;
 		}
 		WorldEntries entries = HAO_PENDING.get(world);
@@ -47,7 +47,7 @@ public final class PendingDirectDropTicks {
 		}
 		long now = world.getTime();
 		entries.cleanupIfDue(now);
-		Key key = new Key(pos, block);
+		Key key = new Key(tickPos, block);
 		// 原版对相同的方块 tick 会去重,因此第一次登记的归属也应优先保留。
 		if (entries.entries.containsKey(key)) {
 			return;
@@ -56,8 +56,8 @@ public final class PendingDirectDropTicks {
 	}
 
 	/** 取出并移除该坐标的归属;无归属或已过期时返回 null。 */
-	public static ServerPlayerEntity consume(ServerWorld world, BlockPos pos, Block block) {
-		if (world == null || pos == null || block == null) {
+	public static ServerPlayerEntity consume(ServerWorld world, BlockPos tickPos, Block block) {
+		if (world == null || tickPos == null || block == null) {
 			return null;
 		}
 		WorldEntries entries = HAO_PENDING.get(world);
@@ -66,7 +66,7 @@ public final class PendingDirectDropTicks {
 		}
 		long now = world.getTime();
 		entries.cleanupIfDue(now);
-		Entry entry = entries.entries.remove(new Key(pos, block));
+		Entry entry = entries.entries.remove(new Key(tickPos, block));
 		if (entries.entries.isEmpty()) {
 			HAO_PENDING.remove(world);
 		}
@@ -110,11 +110,11 @@ public final class PendingDirectDropTicks {
 	}
 
 	private static final class Key {
-		private final BlockPos pos;
+		private final BlockPos tickPos;
 		private final Block block;
 
-		private Key(BlockPos pos, Block block) {
-			this.pos = pos.toImmutable();
+		private Key(BlockPos tickPos, Block block) {
+			this.tickPos = tickPos.toImmutable();
 			this.block = block;
 		}
 
@@ -126,12 +126,12 @@ public final class PendingDirectDropTicks {
 			if (!(object instanceof Key other)) {
 				return false;
 			}
-			return this.block == other.block && this.pos.equals(other.pos);
+			return this.block == other.block && this.tickPos.equals(other.tickPos);
 		}
 
 		@Override
 		public int hashCode() {
-			return 31 * this.pos.hashCode() + System.identityHashCode(this.block);
+			return 31 * this.tickPos.hashCode() + System.identityHashCode(this.block);
 		}
 	}
 }

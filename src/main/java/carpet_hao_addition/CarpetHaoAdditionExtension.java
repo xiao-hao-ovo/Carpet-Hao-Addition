@@ -25,7 +25,7 @@ import static net.minecraft.server.command.CommandManager.literal;
  * <p>
  * The extension registers itself through the Fabric {@link ModInitializer} entrypoint
  * (see fabric.mod.json). Carpet calls {@link CarpetServer#onGameStarted()} from its own
- * client/server entrypoints, which run after ModInitializers, so by then this extension
+ * client/haoServer entrypoints, which run after ModInitializers, so by then this extension
  * is already registered and its {@link #onGameStarted()} callback will be invoked.
  * <p>
  * User-visible text is internationalized: chat messages use MC translatable keys that
@@ -43,7 +43,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
 
     private final String modVersion;
     private final SettingsManager settingsManager;
-    private MinecraftServer server;
+    private MinecraftServer haoServer;
     private boolean zoneguardObserverRegistered;
 
     public CarpetHaoAdditionExtension()
@@ -92,25 +92,25 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
     }
 
     @Override
-    public void onServerLoaded(MinecraftServer server)
+    public void onServerLoaded(MinecraftServer haoServer)
     {
-        this.server = server;
+        this.haoServer = haoServer;
         // Deploy & enable the terracotta-uncolor datapack right after startup (deferred to
         // the first tick so the level is fully loaded), so recipes work without /reload.
-        server.execute(() -> RecipeDeployHooks.ensureDeployed(server));
+        haoServer.execute(() -> RecipeDeployHooks.ensureDeployed(haoServer));
         // Same treatment for the copper-stonecutter datapack (door / trapdoor / bulb).
-        server.execute(() -> ensureCopperStonecutting(server));
-        server.execute(() -> ensureTrimTemplates(server));
+        haoServer.execute(() -> ensureCopperStonecutting(haoServer));
+        haoServer.execute(() -> ensureTrimTemplates(haoServer));
     }
 
     @Override
-    public void onReload(MinecraftServer server)
+    public void onReload(MinecraftServer haoServer)
     {
         // Ensure the terracotta-uncolor stonecutter recipes are deployed to the world
         // datapack and enabled (fabric-loader does not auto-load mod data/ as a datapack).
-        RecipeDeployHooks.ensureDeployed(server);
-        ensureCopperStonecutting(server);
-        ensureTrimTemplates(server);
+        RecipeDeployHooks.ensureDeployed(haoServer);
+        ensureCopperStonecutting(haoServer);
+        ensureTrimTemplates(haoServer);
     }
 
     private void registerZoneguardRuleObserver()
@@ -138,7 +138,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
                 MinecraftServer srv = source != null ? source.getServer() : null;
                 if (srv == null)
                 {
-                    srv = this.server;
+                    srv = this.haoServer;
                 }
                 if (srv != null)
                 {
@@ -153,7 +153,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
                 MinecraftServer srv = source != null ? source.getServer() : null;
                 if (srv == null)
                 {
-                    srv = this.server;
+                    srv = this.haoServer;
                 }
                 if (srv != null)
                 {
@@ -167,7 +167,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
                 MinecraftServer srv = source != null ? source.getServer() : null;
                 if (srv == null)
                 {
-                    srv = this.server;
+                    srv = this.haoServer;
                 }
                 if (srv != null)
                 {
@@ -188,7 +188,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
             MinecraftServer srv = source != null ? source.getServer() : null;
             if (srv == null)
             {
-                srv = this.server;
+                srv = this.haoServer;
             }
             if (srv == null)
             {
@@ -273,13 +273,13 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
      * 与 {@link #ensureCopperStonecutting} 同理用反射:该层没有
      * {@code TrimTemplateRecipeDeployHook} 时静默跳过,其他层照常编译。
      */
-    private static void ensureTrimTemplates(MinecraftServer server)
+    private static void ensureTrimTemplates(MinecraftServer haoServer)
     {
         try
         {
             Class.forName("carpet_hao_addition.TrimTemplateRecipeDeployHook")
                     .getMethod("ensureDeployed", MinecraftServer.class)
-                    .invoke(null, server);
+                    .invoke(null, haoServer);
         }
         catch (Throwable ignored)
         {
@@ -293,13 +293,13 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
      * 这里用反射调用:该层没有 {@code CopperStonecuttingDeployHook} 时静默跳过,
      * 这样 1.21 ~ 1.21.6 等层依然可以正常编译(它们本来就没有这个功能)。
      */
-    private static void ensureCopperStonecutting(MinecraftServer server)
+    private static void ensureCopperStonecutting(MinecraftServer haoServer)
     {
         try
         {
             Class.forName("carpet_hao_addition.CopperStonecuttingDeployHook")
                     .getMethod("ensureDeployed", MinecraftServer.class)
-                    .invoke(null, server);
+                    .invoke(null, haoServer);
         }
         catch (Throwable ignored)
         {

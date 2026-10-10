@@ -50,8 +50,8 @@ public class ZoneguardSavedData extends SavedData {
 		this.operators.putAll(operators);
 	}
 
-	public static ZoneguardSavedData get(MinecraftServer server) {
-		return server.getLevel(Level.OVERWORLD).getDataStorage().computeIfAbsent(TYPE);
+	public static ZoneguardSavedData getData(MinecraftServer haoServer) {
+		return haoServer.getLevel(Level.OVERWORLD).getDataStorage().computeIfAbsent(TYPE);
 	}
 
 	public Map<String, DetectorRegion> regions() {

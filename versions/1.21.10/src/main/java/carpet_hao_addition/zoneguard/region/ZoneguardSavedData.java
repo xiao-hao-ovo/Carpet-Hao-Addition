@@ -49,8 +49,8 @@ public class ZoneguardSavedData extends PersistentState {
 		this.operators.putAll(operators);
 	}
 
-	public static ZoneguardSavedData get(MinecraftServer server) {
-		return server.getOverworld().getPersistentStateManager().getOrCreate(TYPE);
+	public static ZoneguardSavedData getData(MinecraftServer haoServer) {
+		return haoServer.getOverworld().getPersistentStateManager().getOrCreate(TYPE);
 	}
 
 	public Map<String, DetectorRegion> regions() {

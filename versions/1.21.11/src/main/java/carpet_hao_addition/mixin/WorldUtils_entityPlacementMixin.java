@@ -132,7 +132,7 @@ public abstract class WorldUtils_entityPlacementMixin {
 		}
 		hao$recentEntityRequests.entrySet().removeIf(entry -> tick - entry.getValue() > HAO_ENTITY_REQUEST_TTL);
 		hao$recentEntityRequests.put(key, tick);
-		hao$sendPacket(candidates.getFirst(), player);
+		hao$dispatchPacket(candidates.getFirst(), player);
 	}
 
 	/** 视线射线命中的、还没放过的投影实体,由近到远。 */
@@ -297,7 +297,7 @@ public abstract class WorldUtils_entityPlacementMixin {
 	}
 
 	@Unique
-	private static void hao$sendPacket(EntitySpawn spawn, PlayerEntity player) {
+	private static void hao$dispatchPacket(EntitySpawn spawn, PlayerEntity player) {
 		int count = EasyPlaceEntitySettings.count(player.getUuid());
 		EntityPlacementHandler.registerPayloadType();
 		EntityPlacementHandler.registerPayloadType();

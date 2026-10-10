@@ -60,7 +60,7 @@ public final class BlockDataChannel {
 
 	/** 客户端:把该位置的完整 NBT 发给服务端(同内容不重复发)。 */
 	@Environment(EnvType.CLIENT)
-	public static void sendPacket(BlockPos pos, CompoundTag nbt) {
+	public static void dispatchPacket(BlockPos pos, CompoundTag nbt) {
 		registerPayloadType();
 		// 不做节流:该函数只在真正放置时调用,节流会吞包导致文字错位。
 		boolean canSend = net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.canSend(BlockDataPayload.ID);
