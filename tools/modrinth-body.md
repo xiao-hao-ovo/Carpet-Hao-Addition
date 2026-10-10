@@ -51,7 +51,7 @@
 | `snowyCalcite` | false | 雪地刷石机产出方解石（雪/水与岩浆相接时生成方解石） |
 | `noEndPortalTeleport` | false | 末地传送门传送控制：配合 `/playerNoEndPortalTeleport` 的名单与 `globalMode` 决定哪些玩家不被传送 |
 | `terracottaUncolor` | false | 切石机把染色陶瓦 / 染色釉陶瓦还原为普通陶瓦；启用时自动向世界部署数据包配方并随规则启停 |
-| `haoBedrockMines` | false | 基岩可被挖掘：默认按黑曜石硬度，掉落 1 块基岩；与 Carpet-AMS-Addition 的 `commandCustomBlockHardness` 同时开启时遵循其对 `minecraft:bedrock` 的自定义硬度 |
+| `haoBedrockMines` | false | 基岩可被挖掘：默认按黑曜石硬度，掉落 1 块基岩；与 其它扩展的 `commandCustomBlockHardness` 同时开启时遵循其对 `minecraft:bedrock` 的自定义硬度 |
 
 ### 选项规则
 
@@ -155,4 +155,4 @@ cd modern/26.2
 ## 致谢
 
 - 基于 [fabric-carpet-extension-example-mod](https://github.com/gnembon/fabric-carpet-extension-example-mod) 改造。
-- 部分规则思路参考社区扩展：Carpet-AMS-Addition、Carpet-FGA-Addition 等。
+- 部分规则思路参考社区扩展：其它扩展、其它扩展 等。

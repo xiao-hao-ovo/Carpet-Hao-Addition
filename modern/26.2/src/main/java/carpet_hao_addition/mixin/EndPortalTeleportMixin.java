@@ -22,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * EndPortalBlock.onEntityCollision 是末地传送门的传送入口。规则开启时按
  * {@link PlayerNoEndPortalTeleportList} 判定:全局模式下所有玩家不被传送,
  * 否则名单内玩家不被传送;其它实体(物品、矿车等)与未命中玩家保持原版行为。
- * 该设计仿照 Carpet-AMS-Addition 的 NoNetherPortalTeleport(黑名单 + globalMode)。
+ * 该设计仿照 其它扩展的 NoNetherPortalTeleport(黑名单 + globalMode)。
  */
 @Mixin(EndPortalBlock.class)
 public class EndPortalTeleportMixin {

@@ -71,7 +71,7 @@
   "carpet.rule.haoProjectionPlacement.name": "投影精准放置",
   "carpet.rule.haoProjectionPlacement.desc": "照投影轻松放置时,让带朝向、开关、颜色、方块实体数据等复杂状态的方块也按投影正确放下。需要安装 Litematica。含水方块请用 easyPlaceWaterlogged。取值:false=关闭(默认);true=开启,但不还原堆肥桶层数;with_composter_level=开启,连堆肥桶层数也一起还原。",
   "carpet.rule.haoEnhancedWorldEaterProMax.name": "增强世界吞噬者ProMax",
-  "carpet.rule.haoEnhancedWorldEaterProMax.desc": "让含水方块也能被爆炸炸掉。原版算抗性时取 max(方块抗性, 流体抗性),水的流体抗性是 100,所以含水的台阶/珊瑚扇等炸不动;开启后水的流体抗性按 0 算。只负责这一件事 —— 高抗性方块(黑曜石/铁块等)请用 Carpet-AMS-Addition 的 enhancedWorldEater。默认关闭。",
+  "carpet.rule.haoEnhancedWorldEaterProMax.desc": "让含水方块也能被爆炸炸掉。原版算抗性时取 max(方块抗性, 流体抗性),水的流体抗性是 100,所以含水的台阶/珊瑚扇等炸不动;开启后水的流体抗性按 0 算。只负责这一件事 —— 高抗性方块(黑曜石/铁块等)请用 其它扩展的 enhancedWorldEater。默认关闭。",
   "carpet.rule.haoCraftableTrimTemplates.name": "可合成纹饰模板",
   "carpet.rule.haoCraftableTrimTemplates.desc": "开启后 19 种纹饰/升级模板都能合成：7 个钻石 + 1 个该模板获取地点的代表物品。默认关闭。",
   "carpet.rule.easyPlaceEntity.name": "轻松放置实体",

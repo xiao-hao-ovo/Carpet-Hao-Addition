@@ -20,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.At;
  * <p>
  * 为什么客户端要单独做一份:{@link BlockState_bedrockCanBeMinedMixin} 是在
  * {@code BlockStateBase.getDestroyProgress} 的 RETURN 处兜底,但其它扩展(典型是
- * Carpet-AMS-Addition 的 {@code commandCustomBlockHardness})会在该方法 <b>HEAD</b> 处
+ * 其它扩展的 {@code commandCustomBlockHardness})会在该方法 <b>HEAD</b> 处
  * 直接设置返回值并取消,方法提前返回,Return 注入被整段跳过。
  * <p>
  * 而挖掘进度是<b>客户端驱动</b>的:客户端算不出进度就不会发挖掘包,服务端再兜底也没用,

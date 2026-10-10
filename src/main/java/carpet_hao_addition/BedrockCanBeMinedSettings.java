@@ -5,7 +5,7 @@ import carpet.api.settings.CarpetRule;
 import carpet.api.settings.Rule;
 
 /**
- * 基岩可挖掘规则(移植自 Carpet CuO Addition 的 bedrockCanBeMined)。
+ * 基岩可挖掘规则。
  * <p>
  * 开启后,基岩(bedrock)可被挖掘:挖掘时硬度等同黑曜石,
  * 挖碎后掉落基岩物品;关闭时恢复原版(基岩不可破坏)。默认关闭。
@@ -14,7 +14,7 @@ import carpet.api.settings.Rule;
  * 判断是否开启请用 {@link #isEnabled()}(读取 carpet 管理器的权威值)。
  */
 public class BedrockCanBeMinedSettings {
-	/** Carpet 规则名(注册在 carpet 默认管理器)。与 Carpet-CuO-Addition 的同名规则区分,故不用 bedrockCanBeMined。 */
+	/** Carpet 规则名(注册在 carpet 默认管理器)。与 其它扩展的同名规则区分,故不用 bedrockCanBeMined。 */
 	public static final String RULE_NAME = "haoBedrockMines";
 
 	@Rule(categories = {"Hao"})

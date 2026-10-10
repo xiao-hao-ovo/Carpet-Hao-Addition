@@ -5,7 +5,7 @@ import carpet.api.settings.CarpetRule;
 import carpet.api.settings.Rule;
 
 /**
- * 掉落物直入背包规则(仿 Carpet-DDS-Addition 的 directBlockDrops 并扩展出实体版本)。
+ * 掉落物直入背包规则。
  * <p>
  * 两条规则各自独立、默认关闭:
  * <ul>

@@ -5,11 +5,11 @@ import carpet.api.settings.CarpetRule;
 import carpet.api.settings.Rule;
 
 /**
- * 掉落物直入背包规则 —— {@code directBlockDrops} 参考 Carpet-DDS-Addition 的同名规则,
+ * 掉落物直入背包规则 —— {@code directBlockDrops} 参考 其它扩展的同名规则,
  * 本扩展在其基础上补出了实体掉落版本 {@code directEntityDrops}。
  * <p>
- * 参考实现:<a href="https://github.com/x-oOvOo-x/Carpet-DDS-Addition">x-oOvOo-x/Carpet-DDS-Addition</a>
- * (该扩展的 {@code directBlockDrops} 只处理方块掉落物,实体掉落由本扩展新增)。
+ * 
+ * ({@code directBlockDrops} 只处理方块掉落物,实体掉落由本扩展新增)。
  * <p>
  * 两条规则各自独立、默认关闭:
  * <ul>

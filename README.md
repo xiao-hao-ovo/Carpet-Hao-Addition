@@ -56,5 +56,5 @@ Java 21+（26.x 需要 Java 25）。
 ## 致谢
 
 - 基于 [fabric-carpet-extension-example-mod](https://github.com/gnembon/fabric-carpet-extension-example-mod) 改造。
-- 部分规则思路参考社区扩展：Carpet-AMS-Addition、Carpet-FGA-Addition 等。
+- 部分规则思路参考社区扩展：其它扩展、其它扩展 等。
 

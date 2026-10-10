@@ -19,9 +19,9 @@ import org.spongepowered.asm.mixin.injection.At;
  * haoBedrockMines:在服务器挖掘推进的<b>调用点</b>把基岩的挖掘进度固定为黑曜石。
  * <p>
  * 选择在 ServerPlayerGameMode 的 calcBlockBreakingDelta 调用处包装,而不是
- * 直接注入 calcBlockBreakingDelta 本体:这样即使其它扩展(如 Carpet-AMS-Addition 的
+ * 直接注入 calcBlockBreakingDelta 本体:这样即使其它扩展(如 其它扩展的
  * commandCustomBlockHardness)也在该方法上做取消型注入/自定义硬度,只要本规则开启,
- * 基岩的挖掘进度仍按黑曜石计算(本规则优先);未开启时不干预(AMS 等照常工作)。
+ * 基岩的挖掘进度仍按黑曜石计算(本规则优先);未开启时不干预(其它扩展 等照常工作)。
  */
 @Mixin(ServerPlayerGameMode.class)
 public abstract class ServerPlayerInteractionManager_bedrockMinesMixin {
@@ -50,7 +50,7 @@ public abstract class ServerPlayerInteractionManager_bedrockMinesMixin {
 
 	private static float hao$bedrockDelta(BlockState state, Player player, BlockGetter world, BlockPos pos,
 			Operation<Float> original) {
-		// 先取当前实际挖掘进度(可能已被 AMS customBlockHardness 等设置为自定义硬度,
+		// 先取当前实际挖掘进度(可能已被 其它扩展 customBlockHardness 等设置为自定义硬度,
 		// 0 也是合法可挖值,必须保留)。
 		float delta = original.call(state, player, world, pos);
 		if (BedrockCanBeMinedSettings.isEnabled() && state.is(Blocks.BEDROCK) && delta <= 0f) {

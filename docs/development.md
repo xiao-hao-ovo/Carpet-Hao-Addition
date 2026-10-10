@@ -134,4 +134,4 @@ python tools/publish_modrinth.py publish                # 把项目提交公开�
 本项目以 **GNU LGPL-3.0** 授权，见 [LICENSE](../LICENSE)。
 
 - 基于 [fabric-carpet-extension-example-mod](https://github.com/gnembon/fabric-carpet-extension-example-mod) 改造。
-- 部分规则思路参考社区扩展：Carpet-AMS-Addition、Carpet-FGA-Addition 等。
+- 部分规则思路参考社区扩展：其它扩展、其它扩展 等。

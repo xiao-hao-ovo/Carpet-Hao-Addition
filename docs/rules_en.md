@@ -123,7 +123,7 @@ When on, all 19 trim/upgrade smithing templates become craftable: 7 diamonds + 1
 
 ## Enhanced World Eater ProMax (haoEnhancedWorldEaterProMax)
 
-Lets waterlogged blocks be destroyed by explosions. Vanilla takes max(block resistance, fluid resistance) and water has a fluid resistance of 100, so waterlogged slabs/coral fans etc. survive TNT; when on, water's fluid resistance counts as 0. This only covers waterlogged blocks - for high-resistance blocks (obsidian/iron block/...) use Carpet-AMS-Addition's enhancedWorldEater. Off by default.
+Lets waterlogged blocks be destroyed by explosions. Vanilla takes max(block resistance, fluid resistance) and water has a fluid resistance of 100, so waterlogged slabs/coral fans etc. survive TNT; when on, water's fluid resistance counts as 0. This only covers waterlogged blocks - for high-resistance blocks (obsidian/iron block/...) use 其它扩展's enhancedWorldEater. Off by default.
 
 - Type: `boolean`
 - Default: `false`

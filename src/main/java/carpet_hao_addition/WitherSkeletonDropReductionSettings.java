@@ -5,7 +5,7 @@ import carpet.api.settings.CarpetRule;
 import carpet.api.settings.Rule;
 
 /**
- * 凋零骷髅掉落物自定义去除规则(移植自 Carpet-FGA-Addition 的
+ * 凋零骷髅掉落物自定义去除规则(移植自 其它扩展的
  * zombifiedPiglinDropReduction 思路,针对凋零骷髅)。
  * <p>
  * 选项(默认 false):

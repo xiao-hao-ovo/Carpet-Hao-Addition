@@ -134,4 +134,4 @@ The root `build.gradle` aggregates the version sub-modules; layer code is merged
 This project is licensed under the **GNU LGPL-3.0** — see [LICENSE](../LICENSE).
 
 - Based on [fabric-carpet-extension-example-mod](https://github.com/gnembon/fabric-carpet-extension-example-mod).
-- Some rule ideas reference community extensions: Carpet-AMS-Addition, Carpet-FGA-Addition, and others.
+- Some rule ideas reference community extensions: 其它扩展, 其它扩展, and others.
