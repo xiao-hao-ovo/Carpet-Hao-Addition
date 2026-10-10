@@ -26,7 +26,7 @@ public abstract class EasyPlaceUtilsMixin {
 			at = @At(value = "RETURN"),
 			require = 0,
 			cancellable = true)
-	private static void hao_replaceHitPos(BlockPos pos, BlockState state, Vec3 hitVecIn, CallbackInfoReturnable<Vec3> cir) {
+	private static void hao$encodeProtocolBits(BlockPos pos, BlockState state, Vec3 hitVecIn, CallbackInfoReturnable<Vec3> cir) {
 		if (BetterEasyPlaceProtocolHandler.isRuleEnabled()) {
 			Vec3 out = ClientEasyPlaceProtocolHelper.encodeHitPosItemData(cir.getReturnValue(), pos, state);
 			System.out.println("[hao-easyplace] [CarpetVec] pos=" + pos + " in=" + cir.getReturnValue() + " out=" + out);
@@ -39,7 +39,7 @@ public abstract class EasyPlaceUtilsMixin {
 			at = @At(value = "RETURN"),
 			require = 0,
 			cancellable = true)
-	private static void hao_replaceHitPosV3(BlockPos pos, BlockState state, Vec3 hitVecIn, CallbackInfoReturnable<Vec3> cir) {
+	private static void hao$encodeProtocolBitsV3(BlockPos pos, BlockState state, Vec3 hitVecIn, CallbackInfoReturnable<Vec3> cir) {
 		if (!BetterEasyPlaceProtocolHandler.isRuleEnabled()) {
 			return;
 		}

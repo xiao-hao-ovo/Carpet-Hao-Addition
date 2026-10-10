@@ -61,7 +61,7 @@ public abstract class BlockItemMixin {
     }
 
     @Inject(method = "getPlacementState", at = @At("HEAD"), cancellable = true)
-    private void hao_betterEasyPlaceProtocolDecode(ItemPlacementContext context, CallbackInfoReturnable<BlockState> cir) {
+    private void hao$decodePlacementState(ItemPlacementContext context, CallbackInfoReturnable<BlockState> cir) {
         double relativeHitZ = getRelativeHitZ(context.getHitPos(), EasyPlaceExtraProtocolHelper.getClickedPos(context));
         System.out.println("[hao-easyplace] [getPlacementState] 规则="
                 + BetterEasyPlaceProtocolHandler.isRuleEnabled()
@@ -89,7 +89,7 @@ public abstract class BlockItemMixin {
     }
 
     @WrapMethod(method = "place(Lnet/minecraft/item/ItemPlacementContext;)Lnet/minecraft/util/ActionResult;")
-    private ActionResult hao_setPlaceState(ItemPlacementContext context, Operation<ActionResult> original) {
+    private ActionResult hao$setPlacementState(ItemPlacementContext context, Operation<ActionResult> original) {
         if (BetterEasyPlaceProtocolHandler.isRuleEnabled()
                 && isProtocol(getRelativeHitX(context.getHitPos(), EasyPlaceExtraProtocolHelper.getClickedPos(context)))) {
             BetterEasyPlaceProtocolHandler.setEasyPlaceState(true);
@@ -110,7 +110,7 @@ public abstract class BlockItemMixin {
              method = "place",
              at = @At(value = "INVOKE", target = "Lnet/minecraft/item/BlockItem;postPlacement(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/world/World;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/item/ItemStack;Lnet/minecraft/block/BlockState;)Z")
      )
-    private boolean hao_betterEasyPlaceProtocolItemStack(BlockItem instance, BlockPos pos, World level, PlayerEntity player, ItemStack stack, BlockState state, Operation<Boolean> original, @Local(argsOnly = true) ItemPlacementContext context)
+    private boolean hao$applyItemData(BlockItem instance, BlockPos pos, World level, PlayerEntity player, ItemStack stack, BlockState state, Operation<Boolean> original, @Local(argsOnly = true) ItemPlacementContext context)
     {
         // 优先使用「完整 NBT 通道」送来的数据。
         carpet_hao_addition.EasyPlaceNbtHandler.PendingData data = carpet_hao_addition.EasyPlaceNbtHandler.take(player, pos);

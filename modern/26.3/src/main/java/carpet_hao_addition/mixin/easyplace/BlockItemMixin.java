@@ -193,7 +193,7 @@ public abstract class BlockItemMixin {
     }
 
     @Inject(method = "getPlacementState", at = @At("HEAD"), cancellable = true)
-    private void hao_betterEasyPlaceProtocolDecode(BlockPlaceContext context, CallbackInfoReturnable<BlockState> cir) {
+    private void hao$decodePlacementState(BlockPlaceContext context, CallbackInfoReturnable<BlockState> cir) {
         double relativeHitZ = getRelativeHitZ(context.getClickLocation(), EasyPlaceExtraProtocolHelper.getClickedPos(context));
         HaoDebug.log("[hao-easyplace] [getPlacementState] 规则="
                 + BetterEasyPlaceProtocolHandler.isRuleEnabled()
@@ -221,7 +221,7 @@ public abstract class BlockItemMixin {
     }
 
     @WrapMethod(method = "place(Lnet/minecraft/world/item/context/BlockPlaceContext;)Lnet/minecraft/world/InteractionResult;")
-    private InteractionResult hao_setPlaceState(BlockPlaceContext context, Operation<InteractionResult> original) {
+    private InteractionResult hao$setPlacementState(BlockPlaceContext context, Operation<InteractionResult> original) {
         if (BetterEasyPlaceProtocolHandler.isRuleEnabled()
                 && isProtocol(getRelativeHitX(context.getClickLocation(), EasyPlaceExtraProtocolHelper.getClickedPos(context)))) {
             BetterEasyPlaceProtocolHandler.setEasyPlaceState(true);
@@ -247,7 +247,7 @@ public abstract class BlockItemMixin {
              method = "place",
              at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/BlockItem;updateCustomBlockEntityTag(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/item/ItemStack;)Z")
      )
-    private static boolean hao_betterEasyPlaceProtocolItemStack(Level level, Player player, BlockPos pos, ItemStack stack,
+    private static boolean hao$applyItemData(Level level, Player player, BlockPos pos, ItemStack stack,
                                                                 Operation<Boolean> original,
                                                                 @Local(argsOnly = true) BlockPlaceContext context)
     {

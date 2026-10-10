@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.Mixin;
 @Mixin(value = BulbBlock.class, priority = 900)
 public abstract class CopperBulbBlockMixin {
     @Inject(method = "onPlace", at = @At("HEAD"), cancellable = true)
-    private void hao_cancelOnPlace(BlockState state, World world, BlockPos pos, BlockState oldState, boolean movedByPiston, CallbackInfo ci) {
+    private void hao$skipOnPlace(BlockState state, World world, BlockPos pos, BlockState oldState, boolean movedByPiston, CallbackInfo ci) {
         if (!BetterEasyPlaceProtocolHandler.isEasyPlaceState()) {
             return;
         }
@@ -23,7 +23,7 @@ public abstract class CopperBulbBlockMixin {
     }
 
     @Inject(method = "neighborChanged", at = @At("HEAD"), cancellable = true)
-    private void hao_cancelNeighborUpdate(BlockState state, World world, BlockPos pos, Block block, net.minecraft.block.enums.Orientation orientation, boolean isMoving, CallbackInfo ci) {
+    private void hao$skipNeighborUpdate(BlockState state, World world, BlockPos pos, Block block, net.minecraft.block.enums.Orientation orientation, boolean isMoving, CallbackInfo ci) {
         if (!BetterEasyPlaceProtocolHandler.isEasyPlaceState()) {
             return;
         }

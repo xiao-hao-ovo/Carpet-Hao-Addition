@@ -33,7 +33,7 @@ public abstract class WorldUtilsMixin {
             at = @At(value = "RETURN"),
             require = 0,
             cancellable = true)
-    private static void hao_replaceHitPos(BlockPos pos, BlockState state, Vec3d hitVecIn, CallbackInfoReturnable<Vec3d> cir) {
+    private static void hao$encodeProtocolBits(BlockPos pos, BlockState state, Vec3d hitVecIn, CallbackInfoReturnable<Vec3d> cir) {
         if (BetterEasyPlaceProtocolHandler.isRuleEnabled()) {
             Vec3d out = ClientEasyPlaceProtocolHelper.encodeHitPosItemData(cir.getReturnValue(), pos, state);
             System.out.println("[hao-easyplace] [CarpetVec] pos=" + pos + " in=" + cir.getReturnValue() + " out=" + out);
@@ -54,7 +54,7 @@ public abstract class WorldUtilsMixin {
             at = @At(value = "RETURN"),
             require = 0,
             cancellable = true)
-    private static void hao_replaceHitPosV3(BlockPos pos, BlockState state, Vec3d hitVecIn, CallbackInfoReturnable<Vec3d> cir) {
+    private static void hao$encodeProtocolBitsV3(BlockPos pos, BlockState state, Vec3d hitVecIn, CallbackInfoReturnable<Vec3d> cir) {
         if (!BetterEasyPlaceProtocolHandler.isRuleEnabled()) {
             return;
         }
