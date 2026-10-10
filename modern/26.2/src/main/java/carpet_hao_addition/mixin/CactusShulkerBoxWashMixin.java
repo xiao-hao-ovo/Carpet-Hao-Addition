@@ -22,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * useDyeOnShulkerBox(洗色那半):**潜行**手持**仙人掌**右键**有颜色的潜影盒** → 洗回无色潜影盒,
+ * haoUseDyeOnShulkerBox(洗色那半):**潜行**手持**仙人掌**右键**有颜色的潜影盒** → 洗回无色潜影盒,
  * 盒内物品与自定义名称原样保留,且**不消耗仙人掌**。
  * <p>
  * <b>为什么注入 {@code BlockItem} 而不是 {@code Item}:</b>仙人掌是方块物品({@code BlockItem}),

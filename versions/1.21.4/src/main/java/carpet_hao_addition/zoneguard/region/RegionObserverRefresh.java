@@ -1,4 +1,4 @@
-package carpet_hao_addition.zoneguard.region;
+package carpet_hao_addition.haoZoneguard.region;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;

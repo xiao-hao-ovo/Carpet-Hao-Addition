@@ -11,10 +11,10 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.commands.CommandSourceStack;
 
-import carpet_hao_addition.zoneguard.ZoneguardHooks;
-import carpet_hao_addition.zoneguard.ZoneguardSettings;
+import carpet_hao_addition.haoZoneguard.ZoneguardHooks;
+import carpet_hao_addition.haoZoneguard.ZoneguardSettings;
 import carpet_hao_addition.portal.PlayerNoEndPortalTeleportCommands;
-import carpet_hao_addition.zoneguard.command.ZoneguardCommands;
+import carpet_hao_addition.haoZoneguard.command.ZoneguardCommands;
 
 import java.util.Map;
 
@@ -38,8 +38,8 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
     /** Identifier of the settings manager, also the name of its command: /haoaddition */
     public static final String MANAGER_ID = "haoaddition";
     public static final String MOD_NAME = "Carpet-Hao-Addition";
-    /** Rule name of the zoneguard toggle, registered with Carpet's default manager. */
-    public static final String ZONEGUARD_RULE = "zoneguard";
+    /** Rule name of the haoZoneguard toggle, registered with Carpet's default manager. */
+    public static final String ZONEGUARD_RULE = "haoZoneguard";
 
     private final String modVersion;
     private final SettingsManager settingsManager;
@@ -66,7 +66,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
     {
         // parseSettingsClass internally refreshes carpet's translations first, which
         // collects the keys returned by canHasTranslations() (see below), so the rule
-        // parser always finds the required "carpet.rule.zoneguard.desc" key.
+        // parser always finds the required "carpet.rule.haoZoneguard.desc" key.
         settingsManager.parseSettingsClass(CarpetHaoAdditionSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(ZoneguardSettings.class);
 		CarpetServer.settingsManager.parseSettingsClass(WackoBeaconsSettings.class);
@@ -123,7 +123,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         this.zoneguardObserverRegistered = true;
 
         // Toggling rules must take effect immediately for online players:
-        // command-gating rules refresh the command tree, and terracottaUncolor
+        // command-gating rules refresh the command tree, and haoTerracottaUncolor
         // enables/disables the recipe datapack (so the UI entries appear/disappear).
         CarpetServer.settingsManager.registerRuleObserver((source, changedRule, userInput) ->
         {
@@ -199,7 +199,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
 
             if (!enabled && zoneguardRule)
             {
-                // Turning the zoneguard rule OFF also restores observers frozen while ON.
+                // Turning the haoZoneguard rule OFF also restores observers frozen while ON.
                 ZoneguardHooks.refreshAllRegions(srv);
             }
             // Clients cache the command tree at login; re-send it so the gated commands
@@ -228,17 +228,17 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
             return 1;
         }));
 
-        // /zoneguard command tree lives in the versioned layer (versions/<mc>/src),
+        // /haoZoneguard command tree lives in the versioned layer (versions/<mc>/src),
         // keeping per-Minecraft-version APIs out of this shared entry point.
         ZoneguardCommands.registerCommand(dispatcher);
 
-        // /playerNoEndPortalTeleport — manages the noEndPortalTeleport blacklist/global mode.
+        // /playerNoEndPortalTeleport — manages the haoNoEndPortalTeleport blacklist/global mode.
         PlayerNoEndPortalTeleportCommands.registerCommand(dispatcher);
 
-        // /easyPlaceEntityCount、/easyPlaceEntityUi — easyPlaceEntity 的每玩家设置。
+        // /easyPlaceEntityCount、/easyPlaceEntityUi — haoProjectionEntity 的每玩家设置。
         EasyPlaceEntityCommands.registerCommand(dispatcher);
 
-        // /rocketShulker — 每玩家的火箭潜影盒补给位置。
+        // /haoRocketShulker — 每玩家的火箭潜影盒补给位置。
         RocketShulkerCommands.registerCommand(dispatcher);
     }
 

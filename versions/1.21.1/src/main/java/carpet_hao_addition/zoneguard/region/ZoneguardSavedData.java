@@ -1,4 +1,4 @@
-package carpet_hao_addition.zoneguard.region;
+package carpet_hao_addition.haoZoneguard.region;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.Codec;
@@ -20,7 +20,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * zoneguard 存档数据:侦测器禁用区域(序号 -&gt; 区域)与权限玩家(uuid -&gt; 名字)。
+ * haoZoneguard 存档数据:侦测器禁用区域(序号 -&gt; 区域)与权限玩家(uuid -&gt; 名字)。
  * <p>
  * 1.21.4 使用旧版持久化 API:{@link PersistentState.Type} + writeNbt/fromNbt
  * (1.21.6 起才改为 PersistentStateType 体系)。

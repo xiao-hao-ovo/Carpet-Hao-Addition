@@ -24,7 +24,7 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 /**
  * /playerNoEndPortalTeleport — 管理“末地门不传送”名单(仿 其它扩展的
- * /playerNoNetherPortalTeleport)。仅在规则 noEndPortalTeleport 开启时可见/可用。
+ * /playerNoNetherPortalTeleport)。仅在规则 haoNoEndPortalTeleport 开启时可见/可用。
  * <p>
  * 子命令:
  * - globalMode [true|false]  全局模式:true=所有玩家不被末地门传送;false=仅名单内玩家

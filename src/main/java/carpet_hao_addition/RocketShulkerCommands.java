@@ -13,26 +13,26 @@ import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 /**
- * /rocketShulker —— 设置**自己**的火箭潜影盒补给位置(每个玩家各一份,互不影响)。
+ * /haoRocketShulker —— 设置**自己**的火箭潜影盒补给位置(每个玩家各一份,互不影响)。
  * <p>
  * 用法:
  * <ul>
- *   <li>{@code /rocketShulker} —— 查看自己的设置;</li>
- *   <li>{@code /rocketShulker offhand} —— 补到自己的副手;</li>
- *   <li>{@code /rocketShulker mainhand [1-9]} —— 补到自己的主手快捷栏第 1-9 格。</li>
+ *   <li>{@code /haoRocketShulker} —— 查看自己的设置;</li>
+ *   <li>{@code /haoRocketShulker offhand} —— 补到自己的副手;</li>
+ *   <li>{@code /haoRocketShulker mainhand [1-9]} —— 补到自己的主手快捷栏第 1-9 格。</li>
  * </ul>
- * 总开关是 Carpet 规则 {@code /carpet rocketShulker true|false};设置只存在内存里。
+ * 总开关是 Carpet 规则 {@code /carpet haoRocketShulker true|false};设置只存在内存里。
  * 命令对所有人开放(只能改自己的设置),不需要 OP。
  */
 public final class RocketShulkerCommands {
 	/** 语言键前缀(与 lang 文件里的键对应)。 */
-	private static final String MSG = "rocketShulker.commands.";
+	private static final String MSG = "haoRocketShulker.commands.";
 
 	private RocketShulkerCommands() {
 	}
 
 	public static void registerCommand(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("rocketShulker")
+		dispatcher.register(literal("haoRocketShulker")
 				.executes(context -> show(context.getSource()))
 				.then(literal("offhand")
 						.executes(context -> setTarget(context.getSource(),

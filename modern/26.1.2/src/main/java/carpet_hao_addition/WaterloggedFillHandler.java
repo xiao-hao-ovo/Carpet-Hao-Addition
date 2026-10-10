@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * easyPlaceWaterlogged 的注册与结算。
+ * haoProjectionWaterlogged 的注册与结算。
  * <p>
  * 三类东西在投影里出现,但都没有"直接可放"的物品形式,原版与 Litematica 都不会正确落下:
  * <ul>

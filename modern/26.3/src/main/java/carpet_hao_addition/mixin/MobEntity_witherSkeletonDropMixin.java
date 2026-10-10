@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * witherSkeletonDropReduction:去除凋零骷髅死亡时掉落的手持石剑装备。
+ * haoWitherSkeletonDrop:去除凋零骷髅死亡时掉落的手持石剑装备。
  * <p>
  * 26.2 的装备掉落不再逐槽调用 getItemBySlot,故改为在 Mob.dropCustomDeathLoot(装备掉落入口)
  * 的 HEAD 处:命中 sword 选项时先把主手石剑清空,使其不参与后续掉落计算。

@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 /**
- * lavaDepthStrider:让岩浆中的玩家走 {@code LivingEntity.travel} 的<b>水中分支</b>。
+ * haoLavaDepthStrider:让岩浆中的玩家走 {@code LivingEntity.travel} 的<b>水中分支</b>。
  * <p>
  * 原版 {@code travel} 的两段流体逻辑是互斥的:
  * <pre>

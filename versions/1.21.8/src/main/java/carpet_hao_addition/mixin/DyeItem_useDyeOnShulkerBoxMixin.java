@@ -20,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * useDyeOnShulkerBox(染色那半):手持**染料**右键**潜影盒** → 染成该染料的颜色,
+ * haoUseDyeOnShulkerBox(染色那半):手持**染料**右键**潜影盒** → 染成该染料的颜色,
  * **盒内物品与自定义名称原样保留**,并消耗 1 个染料。
  * <p>
  * <b>为什么是 {@code @Mixin(Item.class)} 而不是 {@code DyeItem}:</b>

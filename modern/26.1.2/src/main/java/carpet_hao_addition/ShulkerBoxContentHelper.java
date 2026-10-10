@@ -15,7 +15,7 @@ import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * useDyeOnShulkerBox(染料染色 / 仙人掌洗色)两个 mixin 共用的逻辑。
+ * haoUseDyeOnShulkerBox(染料染色 / 仙人掌洗色)两个 mixin 共用的逻辑。
  * <p>
  * <b>为什么放在普通类里而不是 mixin 里:</b>Mixin 要求 mixin 类中除 {@code @Inject}/{@code @Shadow}
  * 等特殊方法外的普通方法必须是 {@code private},而两个 mixin 都要复用这段逻辑,

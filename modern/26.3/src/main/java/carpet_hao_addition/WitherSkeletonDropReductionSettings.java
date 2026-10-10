@@ -19,10 +19,10 @@ import carpet.api.settings.Rule;
  */
 public class WitherSkeletonDropReductionSettings {
 	/** Carpet 规则名(注册在 carpet 默认管理器)。 */
-	public static final String RULE_NAME = "witherSkeletonDropReduction";
+	public static final String RULE_NAME = "haoWitherSkeletonDrop";
 
 	@Rule(categories = {"Hao"}, options = {"false", "bone", "coal", "skull", "sword", "all"})
-	public static String witherSkeletonDropReduction = "false";
+	public static String haoWitherSkeletonDrop = "false";
 
 	/** 权威读取:carpet 默认管理器中该规则当前值(缺失/异常按 false)。 */
 	public static String storedValue() {

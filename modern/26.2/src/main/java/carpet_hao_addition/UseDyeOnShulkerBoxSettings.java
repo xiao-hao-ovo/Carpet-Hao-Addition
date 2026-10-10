@@ -5,7 +5,7 @@ import carpet.api.settings.CarpetRule;
 import carpet.api.settings.Rule;
 
 /**
- * 「潜影盒染色」规则(移植自 plusls-carpet-addition 的 {@code useDyeOnShulkerBox}):
+ * 「潜影盒染色」规则(移植自 plusls-carpet-addition 的 {@code haoUseDyeOnShulkerBox}):
  * <ul>
  *   <li>手持**染料**右键**潜影盒** → 把盒子染成该染料的颜色;</li>
  *   <li>潜行手持**仙人掌**右键**有颜色的潜影盒** → 洗回无色潜影盒(不消耗仙人掌);</li>
@@ -18,10 +18,10 @@ import carpet.api.settings.Rule;
  */
 public class UseDyeOnShulkerBoxSettings {
 	/** Carpet 规则名(注册在 carpet 默认管理器)。 */
-	public static final String RULE_NAME = "useDyeOnShulkerBox";
+	public static final String RULE_NAME = "haoUseDyeOnShulkerBox";
 
 	@Rule(categories = {"Hao"})
-	public static boolean useDyeOnShulkerBox = false;
+	public static boolean haoUseDyeOnShulkerBox = false;
 
 	/** 权威读取:是否启用(缺失/异常按 false)。 */
 	public static boolean isEnabled() {

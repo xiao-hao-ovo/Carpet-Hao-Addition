@@ -114,7 +114,7 @@ python tools/publish_modrinth.py publish                # 把项目提交公开�
   - `assets/carpet-hao-addition/lang/{en_us,zh_cn}.json` — 全部用户可见文案（规则名/描述/命令消息）
 - `versions/<mc>/`（1.21.x 各层）
   - `gradle.properties` — 该版本的 minecraft / yarn / loader / carpet 版本
-  - `src/main/java/carpet_hao_addition/` — 版本专用实现：mixin、`zoneguard/`、`portal/`、`RecipeDeployHooks` 等
+  - `src/main/java/carpet_hao_addition/` — 版本专用实现：mixin、`haoZoneguard/`、`portal/`、`RecipeDeployHooks` 等
   - `src/main/resources/carpet-hao-addition.mixins.json` — 该版本的 mixin 列表
 - `modern/<mc>/`（26.x 三层，独立子工程）
 

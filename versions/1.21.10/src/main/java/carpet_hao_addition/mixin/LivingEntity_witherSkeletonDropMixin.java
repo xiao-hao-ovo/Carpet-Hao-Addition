@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import java.util.function.Consumer;
 
 /**
- * witherSkeletonDropReduction:过滤凋零骷髅死亡掉落(loot 表:骨头/煤炭/头颅)。
+ * haoWitherSkeletonDrop:过滤凋零骷髅死亡掉落(loot 表:骨头/煤炭/头颅)。
  * <p>
  * 1.21.10 的实体死亡掉落由 dropLoot 委托到 LivingEntity.generateLoot(ServerWorld,
  * DamageSource, boolean, RegistryKey, Consumer),其内部调

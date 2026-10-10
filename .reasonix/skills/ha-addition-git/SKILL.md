@@ -18,10 +18,10 @@ description: Carpet-Hao-Addition 的 git 提交规范:改完代码一律不提�
 - 风格对照现有历史(禁止发明前缀符号):
 
 ```
-新增规则 snowyCalcite:雪地群系刷石机产出方解石
-zoneguard:新增 /zoneguard help 用法说明并补充注释,版本升至 0.1.2
+新增规则 haoSnowyCalcite:雪地群系刷石机产出方解石
+haoZoneguard:新增 /haoZoneguard help 用法说明并补充注释,版本升至 0.1.2
 新增 Minecraft 1.21.10 版本支持,构建 0.1.2+1.21.10 jar
-noEndPortalTeleport 增加黑名单 + globalMode,新增 /playerNoEndPortalTeleport(仿 其它扩展)
+haoNoEndPortalTeleport 增加黑名单 + globalMode,新增 /playerNoEndPortalTeleport(仿 其它扩展)
 ```
 
 - 单行放不下时用 body 补细节(中文,写动机/仿照对象/影响范围),首行保持 ≤ 50 字左右概括。

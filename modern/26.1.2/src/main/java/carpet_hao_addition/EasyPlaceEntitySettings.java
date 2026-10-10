@@ -13,7 +13,7 @@ import java.util.UUID;
  * (矿车、漏斗矿车、盔甲架、船、物品展示框等)也一并放出来 —— 这些实体没有"可放置的方块形式",
  * 原版与 Litematica 的轻松放置都不会放下它们。
  * <p>
- * 这条规则**只是总开关**({@code /carpet easyPlaceEntity true|false});
+ * 这条规则**只是总开关**({@code /carpet haoProjectionEntity true|false});
  * **一次放几个由每个玩家自己设置**,用命令:
  * <ul>
  *   <li>{@code /easyPlaceEntityCount &lt;1-64&gt;} —— 设置自己的放置数量;</li>
@@ -28,14 +28,14 @@ import java.util.UUID;
  */
 public class EasyPlaceEntitySettings {
 	/** 规则名(是否放实体)。 */
-	public static final String RULE_NAME = "easyPlaceEntity";
+	public static final String RULE_NAME = "haoProjectionEntity";
 	/** 一次最多放几个。 */
 	public static final int MAX_COUNT = 64;
 	/** 默认数量。 */
 	public static final int DEFAULT_COUNT = 1;
 
 	@Rule(categories = {"Hao"})
-	public static boolean easyPlaceEntity = false;
+	public static boolean haoProjectionEntity = false;
 
 	/** 各玩家自己的"一次放几个"(内存;没设置过的玩家按 {@link #DEFAULT_COUNT})。 */
 	private static final Map<UUID, Integer> COUNTS = new HashMap<>();

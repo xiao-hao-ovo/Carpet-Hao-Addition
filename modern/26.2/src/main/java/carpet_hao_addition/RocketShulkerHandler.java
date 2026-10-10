@@ -17,12 +17,12 @@ import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 
 /**
- * rocketShulker 规则的服务端实现。
+ * haoRocketShulker 规则的服务端实现。
  * <p>
  * 每 tick 检查在线玩家:目标格空出来(烟花用光)时,就从背包里名称正好是 {@code rocket} 的潜影盒中
  * 取一组(最多 64 个)烟花火箭放进去;盒子里的烟花拿完后会自动尝试下一个火箭盒。
- * 目标格由命令设置:{@code /rocketShulker offhand}(副手,默认)或
- * {@code /rocketShulker mainhand <1-9>}(主手快捷栏第 N 格),设置只存在内存里。
+ * 目标格由命令设置:{@code /haoRocketShulker offhand}(副手,默认)或
+ * {@code /haoRocketShulker mainhand <1-9>}(主手快捷栏第 N 格),设置只存在内存里。
  * 目标格拿着别的物品(不是烟花)时不会去动它。
  * <p>
  * 只通过潜影盒的 container 组件读写,不依赖任何客户端 mod。

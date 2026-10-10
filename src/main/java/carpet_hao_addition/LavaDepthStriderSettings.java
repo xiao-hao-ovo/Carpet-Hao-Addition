@@ -16,10 +16,10 @@ import carpet.api.settings.Rule;
  */
 public class LavaDepthStriderSettings {
 	/** Carpet 规则名(注册在 carpet 默认管理器)。 */
-	public static final String RULE_NAME = "lavaDepthStrider";
+	public static final String RULE_NAME = "haoLavaDepthStrider";
 
 	@Rule(categories = {"Hao"})
-	public static boolean lavaDepthStrider = false;
+	public static boolean haoLavaDepthStrider = false;
 
 	/** 权威读取:carpet 默认管理器中该规则当前是否为 true(缺失/异常按 false)。 */
 	public static boolean isEnabled() {

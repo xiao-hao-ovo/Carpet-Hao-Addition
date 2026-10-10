@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * directEntityDrops:玩家近战攻击时标记掉落归属,覆盖非生物实体。
+ * haoDirectEntityDrops:玩家近战攻击时标记掉落归属,覆盖非生物实体。
  * <p>
  * 矿车、船、画、物品展示框这类实体不走 {@code dropAllDeathLoot},而是在各自被
  * 「打坏」时直接掉落。它们全部经由玩家近战攻击触发,所以在 {@code attack} 的调用栈内

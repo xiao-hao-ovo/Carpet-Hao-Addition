@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * directBlockDrops(跨 tick 部分):登记方块 tick 的掉落归属。
+ * haoDirectBlockDrops(跨 tick 部分):登记方块 tick 的掉落归属。
  * <p>
  * 玩家破坏方块时,原版会为受影响的方块(含失去支撑的相邻方块)排队一个方块 tick,这些排队
  * 调用都发生在玩家操作的同一调用栈内 —— 此时 {@link DirectDropContext} 上仍有玩家,于是把

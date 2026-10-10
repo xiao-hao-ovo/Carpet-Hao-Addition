@@ -17,10 +17,10 @@ import carpet.api.settings.Rule;
  */
 public class CopperStonecuttingSettings {
 	/** Carpet 规则名(注册在 carpet 默认管理器)。 */
-	public static final String RULE_NAME = "copperStonecuttingRecipes";
+	public static final String RULE_NAME = "haoCopperStonecutting";
 
 	@Rule(categories = {"Hao"})
-	public static boolean copperStonecuttingRecipes = false;
+	public static boolean haoCopperStonecutting = false;
 
 	/** 权威读取:carpet 默认管理器中该规则当前是否为 true。 */
 	public static boolean isEnabled() {

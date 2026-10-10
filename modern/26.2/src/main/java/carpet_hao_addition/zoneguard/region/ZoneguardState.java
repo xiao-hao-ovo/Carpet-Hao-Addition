@@ -1,6 +1,6 @@
-package carpet_hao_addition.zoneguard.region;
+package carpet_hao_addition.haoZoneguard.region;
 
-import carpet_hao_addition.zoneguard.ZoneguardSettings;
+import carpet_hao_addition.haoZoneguard.ZoneguardSettings;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -20,7 +20,7 @@ public final class ZoneguardState {
 			return false;
 		}
 
-		// Rule gate: /carpet zoneguard true|false (authoritative Carpet rule value)
+		// Rule gate: /carpet haoZoneguard true|false (authoritative Carpet rule value)
 		if (!ZoneguardSettings.isEnabled()) {
 			return false;
 		}

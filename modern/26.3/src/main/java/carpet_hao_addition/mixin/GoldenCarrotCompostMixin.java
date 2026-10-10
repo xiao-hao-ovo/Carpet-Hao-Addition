@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * 金胡萝卜堆肥规则(goldenCarrotCompost)的行为接入点。
+ * 金胡萝卜堆肥规则(haoGoldenCarrotCompost)的行为接入点。
  * <p>
  * 原理:原版 ComposterBlock.onUseWithItem 会查询静态表
  * {@link ComposterBlock#ITEM_TO_LEVEL_INCREASE_CHANCE} 决定物品能否堆肥及成功率;

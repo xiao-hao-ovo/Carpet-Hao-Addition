@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * easyPlaceWaterlogged 的自定义包。三样信息合并在一个包里:
+ * haoProjectionWaterlogged 的自定义包。三样信息合并在一个包里:
  * <ul>
  *   <li>{@code active} —— 客户端表明「此刻正在轻松放置照投影施工」;</li>
  *   <li>{@code kind} —— 本次请求要在 {@code positions} 上放什么({@link #KIND_WATER} /

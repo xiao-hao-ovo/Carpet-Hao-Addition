@@ -1,4 +1,4 @@
-package carpet_hao_addition.zoneguard.region;
+package carpet_hao_addition.haoZoneguard.region;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -18,7 +18,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * zoneguard 存档数据:侦测器禁用区域(序号 -&gt; 区域)与权限玩家(uuid -&gt; 名字)。
+ * haoZoneguard 存档数据:侦测器禁用区域(序号 -&gt; 区域)与权限玩家(uuid -&gt; 名字)。
  * <p>
  * 按当前工程架构放在 versions 层:1.21.8 用 {@link PersistentStateType} + codec 持久化
  * (参考实现的 MC 26.2 SavedDataType 同款体系,此处以 1.21.8 yarn API 适配)。

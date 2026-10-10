@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.Set;
 
 /**
- * terracottaUncolor 规则的产出门控。
+ * haoTerracottaUncolor 规则的产出门控。
  * <p>
  * 16 条"染色陶瓦→陶瓦"的切石配方以数据包形式常驻,界面始终可见;
  * 规则关闭时,在切石机中放入染色陶瓦后点选还原应<b>无产出、不消耗</b>,

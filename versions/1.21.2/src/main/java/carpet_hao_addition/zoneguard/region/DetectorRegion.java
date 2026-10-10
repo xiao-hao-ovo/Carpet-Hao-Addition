@@ -1,4 +1,4 @@
-package carpet_hao_addition.zoneguard.region;
+package carpet_hao_addition.haoZoneguard.region;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -12,7 +12,7 @@ import net.minecraft.world.World;
  * 一个立方的侦测器禁用区域(维度 + 最小/最大角)。
  * <p>
  * 版本相关代码(依赖 Minecraft 类型与 codec),位于 versions 层。
- * 语义与参考实现(MC 26.2 zoneguard)等价:contains/volume/fromCorners 行为一致。
+ * 语义与参考实现(MC 26.2 haoZoneguard)等价:contains/volume/fromCorners 行为一致。
  */
 public record DetectorRegion(RegistryKey<World> dimension, BlockPos min, BlockPos max) {
 	public static final Codec<DetectorRegion> CODEC = RecordCodecBuilder.create(instance -> instance.group(

@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * easyPlaceEntity(客户端):照投影轻松放置时,把玩家**真正指着**的投影实体报给服务端生成。
+ * haoProjectionEntity(客户端):照投影轻松放置时,把玩家**真正指着**的投影实体报给服务端生成。
  * <p>
  * 候选判定照 QuickCraft 的做法(而不是估算距离/夹角):
  * <ol>
@@ -79,12 +79,12 @@ public abstract class WorldUtils_entityPlacementMixin {
 	 * 最近请求过的目标格 → 请求时的 tick。
 	 * <p>
 	 * 按住轻松放置键时 {@code doEasyPlaceAction} 每个 tick 都会被调用,只挡"同一 tick 重复"不够 ——
-	 * 跨 tick 会反复发包、反复生成。这里与 easyPlaceWaterlogged 一样给个 TTL,短时间内同一格只放一次。
+	 * 跨 tick 会反复发包、反复生成。这里与 haoProjectionWaterlogged 一样给个 TTL,短时间内同一格只放一次。
 	 */
 	@Unique
 	private static final Map<Long, Long> hao$recentEntityRequests = new java.util.HashMap<>();
 
-	/** 同一格在此期间内只生成一次(2 秒,与 easyPlaceWaterlogged 的请求 TTL 一致)。 */
+	/** 同一格在此期间内只生成一次(2 秒,与 haoProjectionWaterlogged 的请求 TTL 一致)。 */
 	@Unique
 	private static final long HAO_ENTITY_REQUEST_TTL = 40L;
 

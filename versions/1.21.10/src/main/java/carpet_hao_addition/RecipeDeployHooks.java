@@ -13,7 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * 把切石机“还原”配方自动部署到当前世界的数据包,并按 terracottaUncolor 规则启停。
+ * 把切石机“还原”配方自动部署到当前世界的数据包,并按 haoTerracottaUncolor 规则启停。
  * <p>
  * 配方(共 32 条,规则开启时才对玩家可见):
  * - 16 色染色陶瓦 → 原色陶瓦(terracotta);
@@ -67,7 +67,7 @@ public final class RecipeDeployHooks {
 			} else if (!wantEnabled && enabled) {
 				packManager.disable(PACK_ID);
 				changed = true;
-				HAO_LOGGER.info("Disabled datapack '{}' (rule terracottaUncolor is off).", PACK_NAME);
+				HAO_LOGGER.info("Disabled datapack '{}' (rule haoTerracottaUncolor is off).", PACK_NAME);
 			}
 
 			if (changed) {

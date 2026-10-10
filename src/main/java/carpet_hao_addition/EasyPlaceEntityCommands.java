@@ -21,12 +21,12 @@ import static net.minecraft.server.command.CommandManager.literal;
  *   <li>{@code /easyPlaceEntityCount &lt;1-64&gt;} —— 设置自己的数量;</li>
  *   <li>{@code /easyPlaceEntityCount} —— 查看自己当前的数量。</li>
  * </ul>
- * 总开关是 Carpet 规则 {@code /carpet easyPlaceEntity true|false};数量只存在内存里。
+ * 总开关是 Carpet 规则 {@code /carpet haoProjectionEntity true|false};数量只存在内存里。
  * 命令对所有人开放(只能改自己的设置),不需要 OP。
  */
 public final class EasyPlaceEntityCommands {
 	/** 语言键前缀(与 lang 文件里的键对应)。 */
-	private static final String MSG = "easyPlaceEntity.commands.";
+	private static final String MSG = "haoProjectionEntity.commands.";
 
 	private EasyPlaceEntityCommands() {
 	}

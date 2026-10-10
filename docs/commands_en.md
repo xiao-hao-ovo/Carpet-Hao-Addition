@@ -12,28 +12,28 @@ Commands are registered in Carpet's default command tree. Except for `/hao`, eve
 
 - Prints the current values of the two example rules (`exampleBoolean` / `exampleString`)
 
-## Zone Guard (`/zoneguard`)
+## Zone Guard (`/haoZoneguard`)
 
-Requires `/carpet zoneguard true`; while the rule is off the whole command tree (including `help`) is invisible.
+Requires `/carpet haoZoneguard true`; while the rule is off the whole command tree (including `help`) is invisible.
 
 ### Syntax
 
-- `/zoneguard set <id> <from> <to>` — define a cubic disabled region
-- `/zoneguard view` — list the configured regions
-- `/zoneguard clear <id>` — remove a region
-- `/zoneguard op add|remove <player>` — add/remove a whitelisted player
-- `/zoneguard op list` — show the whitelist
-- `/zoneguard help` — show usage
+- `/haoZoneguard set <id> <from> <to>` — define a cubic disabled region
+- `/haoZoneguard view` — list the configured regions
+- `/haoZoneguard clear <id>` — remove a region
+- `/haoZoneguard op add|remove <player>` — add/remove a whitelisted player
+- `/haoZoneguard op list` — show the whitelist
+- `/haoZoneguard help` — show usage
 
 ### Effect
 
 - `set` turns the cuboid between the two opposite corners `<from>` and `<to>` into a disabled region (the corners are normalised, so order does not matter). Regions persist with the world save.
 - `clear` deletes the region and then schedules one tick for every "face-to-face observer pair" stuck in the loaded chunks of that region, so they resume working (the feedback reports how many pairs were revived; `0` means none were loaded).
-- See the output of `/zoneguard help` for the exact shorthand forms.
+- See the output of `/haoZoneguard help` for the exact shorthand forms.
 
 ## No End Portal Teleport (`/playerNoEndPortalTeleport`)
 
-Visible and usable while the rule `/carpet noEndPortalTeleport true` is on.
+Visible and usable while the rule `/carpet haoNoEndPortalTeleport true` is on.
 
 ### Syntax
 
@@ -49,15 +49,15 @@ Visible and usable while the rule `/carpet noEndPortalTeleport true` is on.
 - `globalMode true`: **no** player is teleported by end portals; `globalMode false`: only players on the **list** are not teleported.
 - The list and the global mode live in **memory** and are cleared when the server restarts.
 
-## Rocket Shulker refill slot (`/rocketShulker`)
+## Rocket Shulker refill slot (`/haoRocketShulker`)
 
-Sets **your own** refill slot for the rocket shulker (one setting per player, independent of each other). Used together with the rule `/carpet rocketShulker true`.
+Sets **your own** refill slot for the rocket shulker (one setting per player, independent of each other). Used together with the rule `/carpet haoRocketShulker true`.
 
 ### Syntax
 
-- `/rocketShulker` — show your current setting
-- `/rocketShulker offhand` — refill into your off hand
-- `/rocketShulker mainhand <1-9>` — refill into hotbar slot 1–9 of your main hand
+- `/haoRocketShulker` — show your current setting
+- `/haoRocketShulker offhand` — refill into your off hand
+- `/haoRocketShulker mainhand <1-9>` — refill into hotbar slot 1–9 of your main hand
 
 ### Effect
 
@@ -66,7 +66,7 @@ Sets **your own** refill slot for the rocket shulker (one setting per player, in
 
 ## Easy Place Entities (`/easyPlaceEntityCount` `/easyPlaceEntityUi`)
 
-Used together with the rule `/carpet easyPlaceEntity true`.
+Used together with the rule `/carpet haoProjectionEntity true`.
 
 ### Syntax
 

@@ -34,7 +34,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 /**
- * easyPlaceWaterlogged 的注册与结算(与 1.21.8 版行为一致,Mojang 名)。
+ * haoProjectionWaterlogged 的注册与结算(与 1.21.8 版行为一致,Mojang 名)。
  * <p>
  * 分工:客户端只表明「此刻正在轻松放置照投影施工」以及「哪些格该补什么」(见
  * {@link carpet_hao_addition.mixin.WorldUtils_waterloggedFillMixin}),<b>放置与扣材料都由服务端做</b>。

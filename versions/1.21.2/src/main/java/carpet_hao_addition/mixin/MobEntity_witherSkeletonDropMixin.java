@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 /**
- * witherSkeletonDropReduction:去除凋零骷髅死亡时掉落的手持石剑装备。
+ * haoWitherSkeletonDrop:去除凋零骷髅死亡时掉落的手持石剑装备。
  * <p>
  * 装备掉落位于 MobEntity.dropEquipment,其逐槽调用 getEquippedStack;用 @WrapOperation
  * (而非 @Redirect,兼容旧 mixinextras 0.5.4)在返回石剑时替换为空栈。

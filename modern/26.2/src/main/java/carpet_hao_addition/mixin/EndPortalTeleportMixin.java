@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * noEndPortalTeleport 规则的行为接入点。
+ * haoNoEndPortalTeleport 规则的行为接入点。
  * <p>
  * EndPortalBlock.onEntityCollision 是末地传送门的传送入口。规则开启时按
  * {@link PlayerNoEndPortalTeleportList} 判定:全局模式下所有玩家不被传送,
@@ -27,7 +27,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(EndPortalBlock.class)
 public class EndPortalTeleportMixin {
 	@Inject(method = "entityInside", at = @At("HEAD"), cancellable = true)
-	private void hao$noEndPortalTeleport(BlockState state, Level world, BlockPos pos, Entity entity,
+	private void hao$haoNoEndPortalTeleport(BlockState state, Level world, BlockPos pos, Entity entity,
 			InsideBlockEffectApplier collisionHandler, boolean flag, CallbackInfo ci) {
 		if (world.isClientSide() || !(entity instanceof ServerPlayer player)) {
 			return;

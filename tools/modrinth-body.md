@@ -46,18 +46,18 @@
 
 | 规则 | 默认 | 说明 |
 |---|---|---|
-| `zoneguard` | false | 在 `/zoneguard` 配置的立方区域内禁用侦测器（观察者）行为；关闭规则会恢复区域内侦测器 |
-| `goldenCarrotCompost` | false | 手持金胡萝卜右键堆肥桶可 100% 堆肥（消耗与满桶流程同普通可堆肥物品） |
-| `snowyCalcite` | false | 雪地刷石机产出方解石（雪/水与岩浆相接时生成方解石） |
-| `noEndPortalTeleport` | false | 末地传送门传送控制：配合 `/playerNoEndPortalTeleport` 的名单与 `globalMode` 决定哪些玩家不被传送 |
-| `terracottaUncolor` | false | 切石机把染色陶瓦 / 染色釉陶瓦还原为普通陶瓦；启用时自动向世界部署数据包配方并随规则启停 |
+| `haoZoneguard` | false | 在 `/haoZoneguard` 配置的立方区域内禁用侦测器（观察者）行为；关闭规则会恢复区域内侦测器 |
+| `haoGoldenCarrotCompost` | false | 手持金胡萝卜右键堆肥桶可 100% 堆肥（消耗与满桶流程同普通可堆肥物品） |
+| `haoSnowyCalcite` | false | 雪地刷石机产出方解石（雪/水与岩浆相接时生成方解石） |
+| `haoNoEndPortalTeleport` | false | 末地传送门传送控制：配合 `/playerNoEndPortalTeleport` 的名单与 `globalMode` 决定哪些玩家不被传送 |
+| `haoTerracottaUncolor` | false | 切石机把染色陶瓦 / 染色釉陶瓦还原为普通陶瓦；启用时自动向世界部署数据包配方并随规则启停 |
 | `haoBedrockMines` | false | 基岩可被挖掘：默认按黑曜石硬度，掉落 1 块基岩；与 其它扩展的 `commandCustomBlockHardness` 同时开启时遵循其对 `minecraft:bedrock` 的自定义硬度 |
 
 ### 选项规则
 
 | 规则 | 可选值 | 说明 |
 |---|---|---|
-| `witherSkeletonDropReduction` | `false` \| `bone` \| `coal` \| `skull` \| `sword` \| `all` | 自定义去除凋零骷髅掉落：骨头 / 煤炭 / 凋零骷髅头颅 / 掉落的手持石剑；`all` 为全部去除 |
+| `haoWitherSkeletonDrop` | `false` \| `bone` \| `coal` \| `skull` \| `sword` \| `all` | 自定义去除凋零骷髅掉落：骨头 / 煤炭 / 凋零骷髅头颅 / 掉落的手持石剑；`all` 为全部去除 |
 
 ### 示例规则
 
@@ -65,13 +65,13 @@
 
 ## 命令
 
-### `/zoneguard`
+### `/haoZoneguard`
 
-- `/zoneguard set <id> <from> <to>` — 新增/覆盖一个立方区域（`id` 为整数，`from`/`to` 为方块坐标）
-- `/zoneguard view` — 查看已配置区域
-- `/zoneguard clear <id>` — 删除指定区域
-- `/zoneguard op add|remove|list <player>` — 管理 ZoneGuard 权限（允许操作该命令的玩家）
-- `/zoneguard help` — 帮助
+- `/haoZoneguard set <id> <from> <to>` — 新增/覆盖一个立方区域（`id` 为整数，`from`/`to` 为方块坐标）
+- `/haoZoneguard view` — 查看已配置区域
+- `/haoZoneguard clear <id>` — 删除指定区域
+- `/haoZoneguard op add|remove|list <player>` — 管理 ZoneGuard 权限（允许操作该命令的玩家）
+- `/haoZoneguard help` — 帮助
 
 > 规则关闭时命令不可见（切换规则后会向在线玩家重新推送命令树）。
 
@@ -139,7 +139,7 @@ cd modern/26.2
   - `assets/carpet-hao-addition/lang/{en_us,zh_cn}.json` — 全部用户可见文案（规则名/描述/命令消息）
 - `versions/1.21.8/`、`versions/1.21.10/`
   - `gradle.properties` — 该版本的 minecraft / yarn / loader / carpet 版本
-  - `src/main/java/carpet_hao_addition/` — 版本专用实现：mixin、`zoneguard/`、`portal/`、`RecipeDeployHooks` 等
+  - `src/main/java/carpet_hao_addition/` — 版本专用实现：mixin、`haoZoneguard/`、`portal/`、`RecipeDeployHooks` 等
   - `src/main/resources/carpet-hao-addition.mixins.json` — 该版本的 mixin 列表
 
 根 `build.gradle` 汇总各版本子模块，版本层代码与共享层一起合并进对应版本的 jar。

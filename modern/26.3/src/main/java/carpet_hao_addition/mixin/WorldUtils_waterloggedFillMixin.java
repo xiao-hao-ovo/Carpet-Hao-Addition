@@ -40,7 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * easyPlaceWaterlogged(客户端):告诉服务端「正在轻松放置」以及「哪一格该补什么」。
+ * haoProjectionWaterlogged(客户端):告诉服务端「正在轻松放置」以及「哪一格该补什么」。
  * <p>
  * 三类东西没有对应的可放置物品,原版与 Litematica 都不会放下,所以由客户端把它们报给服务端:
  * 水源(含气泡柱)消耗冰、源岩浆消耗岩浆块、装岩浆的炼药锅按正常消耗炼药锅物品;材料不足就什么都不做。

@@ -114,7 +114,7 @@ Credential sources:
   - `assets/carpet-hao-addition/lang/{en_us,zh_cn}.json` — all user-visible text (rule names/descriptions/command messages)
 - `versions/<mc>/` (the 1.21.x layers)
   - `gradle.properties` — minecraft / yarn / loader / carpet versions for that layer
-  - `src/main/java/carpet_hao_addition/` — version-specific implementation: mixins, `zoneguard/`, `portal/`, `RecipeDeployHooks`, ...
+  - `src/main/java/carpet_hao_addition/` — version-specific implementation: mixins, `haoZoneguard/`, `portal/`, `RecipeDeployHooks`, ...
   - `src/main/resources/carpet-hao-addition.mixins.json` — that layer's mixin list
 - `modern/<mc>/` (the three 26.x sub-projects)
 

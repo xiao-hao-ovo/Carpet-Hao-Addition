@@ -20,13 +20,13 @@ import carpet.api.settings.Rule;
  */
 public class EasyPlaceWaterloggedSettings {
 	/** Carpet 规则名(注册在 carpet 默认管理器)。 */
-	public static final String RULE_NAME = "easyPlaceWaterlogged";
+	public static final String RULE_NAME = "haoProjectionWaterlogged";
 
 	@Rule(categories = {"Hao"})
-	public static boolean easyPlaceWaterlogged = false;
+	public static boolean haoProjectionWaterlogged = false;
 
 	/** 触发条件规则名:补料在玩家站立 / 蹲下时触发。 */
-	public static final String TRIGGER_RULE_NAME = "easyPlaceWaterloggedTrigger";
+	public static final String TRIGGER_RULE_NAME = "haoProjectionWaterloggedTrigger";
 
 	/** 触发条件。 */
 	public enum Trigger {
@@ -39,7 +39,7 @@ public class EasyPlaceWaterloggedSettings {
 	}
 
 	@Rule(categories = {"Hao"})
-	public static Trigger easyPlaceWaterloggedTrigger = Trigger.ALWAYS;
+	public static Trigger haoProjectionWaterloggedTrigger = Trigger.ALWAYS;
 
 	/** 权威读取:carpet 默认管理器中该规则当前是否为 true(缺失/异常按 false)。 */
 	public static boolean isEnabled() {

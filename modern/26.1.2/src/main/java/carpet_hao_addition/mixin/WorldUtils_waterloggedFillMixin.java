@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * easyPlaceWaterlogged(客户端,26.x):告诉服务端「正在轻松放置」以及「哪些格该补什么」。
+ * haoProjectionWaterlogged(客户端,26.x):告诉服务端「正在轻松放置」以及「哪些格该补什么」。
  * <p>
  * 钩子挂在 {@link PlacementHandler#applyPlacementProtocolToPlacementState}:它是 Litematica 轻松放置
  * 给每个待放方块计算最终状态时都会调用的方法,{@code UseContext.pos()} 就是本次目标位置。

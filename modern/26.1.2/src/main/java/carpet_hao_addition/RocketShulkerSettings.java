@@ -13,11 +13,11 @@ import java.util.UUID;
  * 就保证玩家指定的那一格一直有烟花可用 —— 那一格空了自动补上一组,用完继续补,
  * 直到盒内烟花耗尽。
  * <p>
- * 这条规则**只是总开关**({@code /carpet rocketShulker true|false});
+ * 这条规则**只是总开关**({@code /carpet haoRocketShulker true|false});
  * 补给位置**按玩家各自保存**,由玩家自己用命令设置:
  * <ul>
- *   <li>{@code /rocketShulker offhand} —— 补到副手(默认);</li>
- *   <li>{@code /rocketShulker mainhand [1-9]} —— 补到主手快捷栏第 1-9 格。</li>
+ *   <li>{@code /haoRocketShulker offhand} —— 补到副手(默认);</li>
+ *   <li>{@code /haoRocketShulker mainhand [1-9]} —— 补到主手快捷栏第 1-9 格。</li>
  * </ul>
  * 设置只保存在内存里(服务器重启后各玩家回到默认:副手、第 1 格),重跑一次命令即可。
  * <p>
@@ -25,7 +25,7 @@ import java.util.UUID;
  */
 public class RocketShulkerSettings {
 	/** Carpet 规则名(注册在 carpet 默认管理器)。 */
-	public static final String RULE_NAME = "rocketShulker";
+	public static final String RULE_NAME = "haoRocketShulker";
 
 	/** 视作"火箭盒"的潜影盒自定义名称(需完全一致)。 */
 	public static final String SHULKER_NAME = "rocket";
@@ -48,7 +48,7 @@ public class RocketShulkerSettings {
 	}
 
 	@Rule(categories = {"Hao"})
-	public static boolean rocketShulker = false;
+	public static boolean haoRocketShulker = false;
 
 	/** 各玩家自己的偏好(内存;没设置过的玩家按 {@link Prefs#DEFAULT})。 */
 	private static final Map<UUID, Prefs> PREFERENCES = new HashMap<>();

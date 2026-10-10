@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * directEntityDrops:生物(含盔甲架)被玩家击杀时标记掉落归属。
+ * haoDirectEntityDrops:生物(含盔甲架)被玩家击杀时标记掉落归属。
  * <p>
  * 走 {@code LivingEntity.dropLoot} —— 所有生物的死亡掉落都汇聚到这里,覆盖近战、箭矢、
  * 三叉戟、爆炸等各类致死方式:只要伤害来源能追溯到玩家,掉落就归该玩家。

@@ -18,7 +18,7 @@ description: Carpet-Hao-Addition 的国际化规范:所有用户可见文本必�
 1. Carpet 默认 manager 规则(category `Hao`,走 `/carpet`):
    - `carpet.rule.<ruleName>.name` / `carpet.rule.<ruleName>.desc`
    - 分类名:`carpet.category.Hao`
-   - 例:`carpet.rule.zoneguard.name`、`carpet.rule.snowyCalcite.desc`
+   - 例:`carpet.rule.haoZoneguard.name`、`carpet.rule.haoSnowyCalcite.desc`
 2. 自定义 manager 规则(走 `/haoaddition`):
    - `haoaddition.rule.<ruleName>.name` / `.desc` + `haoaddition.category.haoaddition`
    - 例:`haoaddition.rule.exampleBoolean.name`

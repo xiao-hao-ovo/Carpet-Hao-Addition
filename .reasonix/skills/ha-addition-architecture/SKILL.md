@@ -18,7 +18,7 @@ Carpet-Hao-Addition/
 │   │   ├── CarpetHaoAdditionExtension.java   # CarpetExtension 入口:注册各 Settings、canHasTranslations、转发命令注册
 │   │   ├── CarpetHaoAdditionSettings.java    # 自定义 manager(/haoaddition)示例规则
 │   │   ├── <功能>Settings.java                # 每个规则一个 Settings 类(共享层)
-│   │   └── <功能>/…                          # 复杂功能子包(见 zoneguard/)
+│   │   └── <功能>/…                          # 复杂功能子包(见 haoZoneguard/)
 │   └── resources/assets/carpet-hao-addition/ # 唯一 lang 真源(en_us.json / zh_cn.json)+ fabric.mod.json
 └── versions/<mc>/             # ★ 版本适配层(每 MC 版本一个 loom subproject)
     ├── build.gradle           # sourceSets 合并 rootProject src/main/java + 自身 java
@@ -41,7 +41,7 @@ Carpet-Hao-Addition/
 ## 模块拆分尺度(解耦,但不稀碎)
 
 - **简单规则 = 1 个 `<功能>Settings`(共享)+ 版本层若干 mixin/hooks**,不建多余子包。
-- **复杂功能 = 功能子包**,参照 `zoneguard/`:`Settings`(规则定义 + isEnabled)+ 版本层 `Hooks` + `command/`(Commands/Permissions)+ `region/`(领域逻辑:State/SavedData/Detector 等)。
+- **复杂功能 = 功能子包**,参照 `haoZoneguard/`:`Settings`(规则定义 + isEnabled)+ 版本层 `Hooks` + `command/`(Commands/Permissions)+ `region/`(领域逻辑:State/SavedData/Detector 等)。
 - 子包内再分目录的判据:同层文件约 5+ 且职责可一句话分开时才拆;**禁止**出现只含一个方法/一个字段的"碎片类"。
 - 一个功能一个 Settings 类,Settings 类是纯规则声明与门控,业务逻辑放版本层 Hooks/子包,互不耦合。
 

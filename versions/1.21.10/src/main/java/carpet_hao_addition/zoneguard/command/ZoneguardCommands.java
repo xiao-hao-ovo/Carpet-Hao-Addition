@@ -1,10 +1,10 @@
-package carpet_hao_addition.zoneguard.command;
+package carpet_hao_addition.haoZoneguard.command;
 
 import carpet.utils.Translations;
 
-import carpet_hao_addition.zoneguard.region.DetectorRegion;
-import carpet_hao_addition.zoneguard.region.RegionObserverRefresh;
-import carpet_hao_addition.zoneguard.region.ZoneguardSavedData;
+import carpet_hao_addition.haoZoneguard.region.DetectorRegion;
+import carpet_hao_addition.haoZoneguard.region.RegionObserverRefresh;
+import carpet_hao_addition.haoZoneguard.region.ZoneguardSavedData;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -26,30 +26,30 @@ import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 /**
- * /zoneguard 命令树(1.21.10 版;1.21.10 把玩家/名单类型换成 PlayerConfigEntry)。
+ * /haoZoneguard 命令树(1.21.10 版;1.21.10 把玩家/名单类型换成 PlayerConfigEntry)。
  * <p>
  * 文案在 assets/carpet-hao-addition/lang/{en_us,zh_cn}.json 中维护,由
  * canHasTranslations 并入 carpet 的翻译表。消息在<b>服务端</b>按 carpet 语言渲染成
  * 纯文本后再发送(见 {@link #msg(String, String...)}),因此客户端不装本 mod 也能
  * 正常显示,不会出现裸键名或“发送不了”的编码问题。
  * <p>
- * /zoneguard set &lt;id&gt; &lt;from&gt; &lt;to&gt;  - 设置立方禁用区域
- * /zoneguard view                       - 列出区域
- * /zoneguard help                       - 显示使用说明
- * /zoneguard clear &lt;id&gt;              - 清除区域并重启区域内面对面的侦测器对
- * /zoneguard op add|remove|list &lt;player&gt; - 管理白名单
+ * /haoZoneguard set &lt;id&gt; &lt;from&gt; &lt;to&gt;  - 设置立方禁用区域
+ * /haoZoneguard view                       - 列出区域
+ * /haoZoneguard help                       - 显示使用说明
+ * /haoZoneguard clear &lt;id&gt;              - 清除区域并重启区域内面对面的侦测器对
+ * /haoZoneguard op add|remove|list &lt;player&gt; - 管理白名单
  * <p>
  * 树根节点的 {@code requires(ZoneguardPermissions::canUse)} 同时负责权限与规则门控:
- * 只有 /carpet zoneguard true 开启后整棵树(含 help)才对玩家可见、可执行。
+ * 只有 /carpet haoZoneguard true 开启后整棵树(含 help)才对玩家可见、可执行。
  */
 public final class ZoneguardCommands {
 	private ZoneguardCommands() {
 	}
 
-	private static final String MSG = "zoneguard.commands.";
+	private static final String MSG = "haoZoneguard.commands.";
 
 	public static void registerCommand(CommandDispatcher<ServerCommandSource> dispatcher) {
-		dispatcher.register(literal("zoneguard")
+		dispatcher.register(literal("haoZoneguard")
 				.requires(ZoneguardPermissions::canUse)
 				.executes(ZoneguardCommands::viewRef)
 				.then(literal("set")

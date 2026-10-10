@@ -11,7 +11,7 @@ import carpet.api.settings.Rule;
  * 可放置物品,靠原版放不出来。开启本规则后由服务端按投影补齐,并从玩家那里消耗对应材料
  * (水→冰,岩浆→岩浆块,装岩浆的炼药锅→炼药锅+岩浆块,点火→火焰弹或打火石耐久)。
  * <p>
- * 原来的 {@code easyPlaceWaterlogged} 与 {@code easyPlaceWaterloggedShulker} 两条规则已合并为这一条:
+ * 原来的 {@code haoProjectionWaterlogged} 与 {@code easyPlaceWaterloggedShulker} 两条规则已合并为这一条:
  * 背包里没有材料时,是否从背包中的潜影盒取料、以及怎么取,由规则取值决定。
  * <p>
  * 取值:
@@ -25,7 +25,7 @@ import carpet.api.settings.Rule;
  */
 public class EasyPlaceWaterloggedSettings {
 	/** Carpet 规则名(注册在 carpet 默认管理器)。 */
-	public static final String RULE_NAME = "easyPlaceWaterlogged";
+	public static final String RULE_NAME = "haoProjectionWaterlogged";
 
 	/** 规则取值。 */
 	public enum Mode {
@@ -50,7 +50,7 @@ public class EasyPlaceWaterloggedSettings {
 	}
 
 	/** 触发条件规则名:补料在玩家站立 / 蹲下时触发。 */
-	public static final String TRIGGER_RULE_NAME = "easyPlaceWaterloggedTrigger";
+	public static final String TRIGGER_RULE_NAME = "haoProjectionWaterloggedTrigger";
 
 	/** 触发条件。 */
 	public enum Trigger {
@@ -63,7 +63,7 @@ public class EasyPlaceWaterloggedSettings {
 	}
 
 	@Rule(categories = {"Hao"})
-	public static Trigger easyPlaceWaterloggedTrigger = Trigger.ALWAYS;
+	public static Trigger haoProjectionWaterloggedTrigger = Trigger.ALWAYS;
 
 	/** 权威读取触发条件(缺失/异常按 {@link Trigger#ALWAYS})。 */
 	public static Trigger trigger() {
@@ -88,7 +88,7 @@ public class EasyPlaceWaterloggedSettings {
 	}
 
 	@Rule(categories = {"Hao"})
-	public static Mode easyPlaceWaterlogged = Mode.FALSE;
+	public static Mode haoProjectionWaterlogged = Mode.FALSE;
 
 	/** 权威读取规则取值(缺失/异常按 {@link Mode#FALSE})。 */
 	public static Mode mode() {

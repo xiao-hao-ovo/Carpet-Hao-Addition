@@ -10,9 +10,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * 服务端启动时注册 rocketShulker 的每 tick 检查(副手烟花自动补给)。
+ * 服务端启动时注册 haoRocketShulker 的每 tick 检查(副手烟花自动补给)。
  * <p>
- * 与 easyPlaceWaterlogged 一样用 mixin 而不是 entrypoint:该 handler 只存在于 1.21.8 这一层,
+ * 与 haoProjectionWaterlogged 一样用 mixin 而不是 entrypoint:该 handler 只存在于 1.21.8 这一层,
  * 而 {@code fabric.mod.json} 是各版本层共用的,不能在里面声明只属于个别层的入口类。
  */
 @Mixin(MinecraftServer.class)

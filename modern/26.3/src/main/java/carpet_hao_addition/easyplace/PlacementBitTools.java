@@ -11,7 +11,7 @@ import net.minecraft.world.phys.Vec3;
  * {@code ((int) z - 2) >>> 1}。于是 z 的小数位成了一个免费信道：既不占用任何方块状态属性，
  * 也不影响投影原本按坐标挑放置面的逻辑。
  *
- * <p>含水不走这条通道 —— 那是 {@code easyPlaceWaterlogged} 规则的事，
+ * <p>含水不走这条通道 —— 那是 {@code haoProjectionWaterlogged} 规则的事，
  * 由 {@code WaterloggedFillHandler} 经它自己的载荷传递。
  */
 public final class PlacementBitTools {

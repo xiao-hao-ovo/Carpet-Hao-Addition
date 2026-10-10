@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * directBlockDrops:在玩家破坏方块期间标记掉落归属。
+ * haoDirectBlockDrops:在玩家破坏方块期间标记掉落归属。
  * <p>
  * 只在 {@code destroyBlock} 的调用栈内标记,所以只有这次操作同步产生的掉落(方块本体、
  * 连锁破坏、失去支撑的相邻方块、被破坏容器内释放的物品)会进背包;世界后续 tick 里

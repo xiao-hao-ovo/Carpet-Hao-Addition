@@ -9,7 +9,7 @@ import net.minecraft.util.math.BlockPos;
 import java.util.List;
 
 /**
- * easyPlaceWaterlogged 的自定义包。三样信息合并在一个包里:
+ * haoProjectionWaterlogged 的自定义包。三样信息合并在一个包里:
  * <ul>
  *   <li>{@code active} —— 客户端表明「此刻正在轻松放置照投影施工」,服务端据此决定
  *       是否给刚放下的含水方块补水(位置由服务端从放置事件直接获得);</li>

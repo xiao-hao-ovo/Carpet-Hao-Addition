@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * snowyCalcite 规则:岩浆流动中“遇水生成石头”的生成点(对应 yarn 的
+ * haoSnowyCalcite 规则:岩浆流动中“遇水生成石头”的生成点(对应 yarn 的
  * LavaFluid.flow;仿 fabric-carpet renewableDeepslate 的 LavaFluid 注入)。
  * 在雪地生物群系且规则开启时,把即将生成的默认方块替换为方解石并播放熄灭事件。
  */

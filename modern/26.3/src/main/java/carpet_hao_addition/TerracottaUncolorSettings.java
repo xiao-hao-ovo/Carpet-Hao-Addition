@@ -14,10 +14,10 @@ import carpet.api.settings.Rule;
  */
 public class TerracottaUncolorSettings {
 	/** Carpet 规则名(注册在 carpet 默认管理器)。 */
-	public static final String RULE_NAME = "terracottaUncolor";
+	public static final String RULE_NAME = "haoTerracottaUncolor";
 
 	@Rule(categories = {"Hao"})
-	public static boolean terracottaUncolor = false;
+	public static boolean haoTerracottaUncolor = false;
 
 	/** 权威读取:carpet 默认管理器中该规则当前是否为 true。 */
 	public static boolean isEnabled() {

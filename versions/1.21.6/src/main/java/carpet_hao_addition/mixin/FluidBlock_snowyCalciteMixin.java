@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * snowyCalcite 规则:流体方块接收邻居流体并“生成圆石/石头”的生成点
+ * haoSnowyCalcite 规则:流体方块接收邻居流体并“生成圆石/石头”的生成点
  * (FluidBlock.receiveNeighborFluids 内的两处 getDefaultState 调用;仿 fabric-carpet
  * renewableDeepslate 的 LiquidBlock 注入)。雪地生物群系且规则开启时替换为方解石。
  */

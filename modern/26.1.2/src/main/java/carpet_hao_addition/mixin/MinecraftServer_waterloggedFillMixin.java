@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * 服务端启动时注册 easyPlaceWaterlogged / 增强轻松放置协议 的 payload 类型与接收端。
+ * 服务端启动时注册 haoProjectionWaterlogged / 增强轻松放置协议 的 payload 类型与接收端。
  */
 @Mixin(MinecraftServer.class)
 public abstract class MinecraftServer_waterloggedFillMixin {

@@ -1,8 +1,8 @@
-package carpet_hao_addition.zoneguard;
+package carpet_hao_addition.haoZoneguard;
 
-import carpet_hao_addition.zoneguard.region.DetectorRegion;
-import carpet_hao_addition.zoneguard.region.RegionObserverRefresh;
-import carpet_hao_addition.zoneguard.region.ZoneguardSavedData;
+import carpet_hao_addition.haoZoneguard.region.DetectorRegion;
+import carpet_hao_addition.haoZoneguard.region.RegionObserverRefresh;
+import carpet_hao_addition.haoZoneguard.region.ZoneguardSavedData;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.commands.Commands;
@@ -39,9 +39,9 @@ public final class ZoneguardHooks {
 	/**
 	 * 向所有在线玩家重新下发命令树。
 	 * <p>
-	 * 客户端登录时缓存命令树,之后 requires 不再满足的节点(例如 zoneguard
+	 * 客户端登录时缓存命令树,之后 requires 不再满足的节点(例如 haoZoneguard
 	 * 规则被关闭)不会自动从补全里消失;重推后按玩家权限过滤,未开启规则时
-	 * /zoneguard 会立即从客户端补全中移除(开启时则立即出现)。
+	 * /haoZoneguard 会立即从客户端补全中移除(开启时则立即出现)。
 	 */
 	public static void refreshCommandTree(MinecraftServer server) {
 		Commands commandManager = server.getCommands();

@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * directBlockDrops(跨 tick 部分):执行被赋予归属的方块 tick。
+ * haoDirectBlockDrops(跨 tick 部分):执行被赋予归属的方块 tick。
  * <p>
  * 在 {@code ServerLevel.tickBlock} 的 HEAD 取出归属并压入 {@link DirectDropContext},
  * 整个 tick 期间产生的掉落都归到当初破坏方块的玩家名下,RETURN 时弹栈。

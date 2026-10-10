@@ -59,7 +59,7 @@ public class ExampleNewRuleSettings {
 
 ---
 
-## 2. 多值规则（像 `easyPlaceWaterlogged` / `haoProjectionPlacement`）
+## 2. 多值规则（像 `haoProjectionWaterlogged` / `haoProjectionPlacement`）
 
 用 `enum` 做取值，`/carpet` 里会把枚举常量名转成小写显示，例如
 `WITH_COMPOSTER_LEVEL` → `with_composter_level`。

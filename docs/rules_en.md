@@ -4,7 +4,7 @@
 
 All rules are registered in Carpet's default settings manager. Set them with `/carpet <rule> <value>`.
 
-## Auto mending (new) (autoMending_new)
+## Auto mending (new) (haoAutoMending)
 
 Ported from Carpet WuHu Addition. Once a second, automatically spend the XP already accumulated in the level bar to repair damaged gear enchanted with Mending, repairing as much as that XP allows and deducting the same amount of XP (no free durability). Off by default.
 
@@ -13,7 +13,7 @@ Ported from Carpet WuHu Addition. Once a second, automatically spend the XP alre
 - Options: `false`, `true`
 - Categories: `Hao`
 
-## Copper stonecutting recipes (copperStonecuttingRecipes)
+## Copper stonecutting recipes (haoCopperStonecutting)
 
 Lets the stonecutter convert copper variants by equal material value: any variant can be cut in one step into any shape (cut/chiseled/grate/slab/stairs/door/trapdoor/bulb), equal-value shapes convert 1:1, downgrades use the exact ratio (copper block -> cut x4, -> slab x8). Strictly value-preserving, no infinite resource loop. Off by default.
 
@@ -22,7 +22,7 @@ Lets the stonecutter convert copper variants by equal material value: any varian
 - Options: `false`, `true`
 - Categories: `Hao`
 
-## Direct Block Drops (directBlockDrops)
+## Direct Block Drops (haoDirectBlockDrops)
 
 While enabled, drops produced by blocks the player breaks (including chain breaks, drops of blocks that lost support in the same tick, and items released from broken containers) go straight into that player's inventory; whatever does not fit still drops in the world as usual.
 
@@ -31,7 +31,7 @@ While enabled, drops produced by blocks the player breaks (including chain break
 - Options: `false`, `true`
 - Categories: `Hao`
 
-## Direct Entity Drops (directEntityDrops)
+## Direct Entity Drops (haoDirectEntityDrops)
 
 While enabled, drops produced by killing an entity (mobs and armor stands, as well as minecarts, boats, paintings and item frames) go straight into that player's inventory; whatever does not fit still drops in the world as usual.
 
@@ -40,7 +40,7 @@ While enabled, drops produced by killing an entity (mobs and armor stands, as we
 - Options: `false`, `true`
 - Categories: `Hao`
 
-## Easy Place Entities (easyPlaceEntity)
+## Easy Place Entities (haoProjectionEntity)
 
 While following a schematic with easy place, also spawns the schematic's entities (minecarts, boats, armor stands, item frames, paintings...) and consumes the matching items. Only entities with a matching item are supported; count is set by easyPlaceEntityCount. Spawns nothing if items are short. Off by default.
 
@@ -49,7 +49,7 @@ While following a schematic with easy place, also spawns the schematic's entitie
 - Options: `false`, `true`
 - Categories: `Hao`
 
-## Easy Place Fill (easyPlaceWaterlogged)
+## Easy Place Fill (haoProjectionWaterlogged)
 
 While following a schematic with easy place, fills in the schematic's water/lava/lava cauldron/fire: water consumes ice, lava consumes a magma block, igniting prefers a fire charge. Values: false = off; true = inventory only; shulker_direct = take from inside a shulker box; shulker_take = move the material into the inventory. If short on materials, only the block itself is placed. Requires Litematica.
 
@@ -58,7 +58,7 @@ While following a schematic with easy place, fills in the schematic's water/lava
 - Options: `FALSE`, `TRUE`, `SHULKER_DIRECT`, `SHULKER_TAKE`
 - Categories: `Hao`
 
-## Easy Place Fill Trigger (easyPlaceWaterloggedTrigger)
+## Easy Place Fill Trigger (haoProjectionWaterloggedTrigger)
 
 When the fill feature is allowed to run: always = both poses, standing or sneaking (default); standing = only while the player is not sneaking; sneaking = only while the player is sneaking (holding the sneak key).
 
@@ -85,7 +85,7 @@ Example string rule shipped with the Carpet extension template (foo / bar / baz)
 - Options: `foo`, `bar`, `baz`
 - Categories: `haoaddition`
 
-## Golden Carrot Composting (goldenCarrotCompost)
+## Golden Carrot Composting (haoGoldenCarrotCompost)
 
 While enabled, right-clicking a composter while holding a golden carrot composts it with 100% chance, exactly like a regular compostable item.
 
@@ -105,7 +105,7 @@ While enabled, bedrock can be mined (it mines like obsidian) and drops itself as
 
 ## Projection Placement (haoProjectionPlacement)
 
-When building from a schematic, places blocks with complex states (facing, toggle, color, block-entity data...) exactly as the schematic specifies. Requires Litematica. For waterlogged blocks use easyPlaceWaterlogged. Values: false = off (default); true = on, but a composter's fill level is not restored; with_composter_level = on, restores a composter's fill level too.
+When building from a schematic, places blocks with complex states (facing, toggle, color, block-entity data...) exactly as the schematic specifies. Requires Litematica. For waterlogged blocks use haoProjectionWaterlogged. Values: false = off (default); true = on, but a composter's fill level is not restored; with_composter_level = on, restores a composter's fill level too.
 
 - Type: `Mode`
 - Default: `FALSE`
@@ -139,7 +139,7 @@ Client-side beacon unlock: Regeneration selectable as a primary effect, and effe
 - Options: `false`, `true`
 - Categories: `Hao`
 
-## Lava Depth Strider (lavaDepthStrider)
+## Lava Depth Strider (haoLavaDepthStrider)
 
 While enabled, moving through lava no longer slows you down if you have Depth Strider: the water movement formula (and its water_movement_efficiency attribute) is applied to lava as well, so lava feels exactly like wearing Depth Strider boots in water. Higher enchantment levels move faster.
 
@@ -148,7 +148,7 @@ While enabled, moving through lava no longer slows you down if you have Depth St
 - Options: `false`, `true`
 - Categories: `Hao`
 
-## No End Portal Teleport (noEndPortalTeleport)
+## No End Portal Teleport (haoNoEndPortalTeleport)
 
 Enables the /playerNoEndPortalTeleport list management. The rule itself does not change teleporting: only players added to the blacklist (or with globalMode enabled) are not teleported by end portals; non-player entities are unaffected.
 
@@ -157,16 +157,16 @@ Enables the /playerNoEndPortalTeleport list management. The rule itself does not
 - Options: `false`, `true`
 - Categories: `Hao`
 
-## Rocket Shulker Auto Refill (rocketShulker)
+## Rocket Shulker Auto Refill (haoRocketShulker)
 
-For a shulker box named exactly 'rocket': when the chosen slot runs out of fireworks, refills one stack (up to 64) from the box, repeating until the box is empty. Set the slot with /rocketShulker offhand (default) or /rocketShulker mainhand <1-9>; kept in memory only. Never touches a slot holding something else. Off by default.
+For a shulker box named exactly 'rocket': when the chosen slot runs out of fireworks, refills one stack (up to 64) from the box, repeating until the box is empty. Set the slot with /haoRocketShulker offhand (default) or /haoRocketShulker mainhand <1-9>; kept in memory only. Never touches a slot holding something else. Off by default.
 
 - Type: `boolean`
 - Default: `false`
 - Options: `false`, `true`
 - Categories: `Hao`
 
-## Snowy Calcite (snowyCalcite)
+## Snowy Calcite (haoSnowyCalcite)
 
 While enabled, stone/cobblestone produced by lava+water generators in snowy (snow-precipitating) biomes becomes calcite.
 
@@ -175,7 +175,7 @@ While enabled, stone/cobblestone produced by lava+water generators in snowy (sno
 - Options: `false`, `true`
 - Categories: `Hao`
 
-## Terracotta Uncolor (terracottaUncolor)
+## Terracotta Uncolor (haoTerracottaUncolor)
 
 While enabled, the stonecutter can revert all 16 dyed terracotta to plain terracotta and all 16 glazed terracotta to their dyed terracotta; while disabled, these recipes do not appear in the stonecutter at all.
 
@@ -184,7 +184,7 @@ While enabled, the stonecutter can revert all 16 dyed terracotta to plain terrac
 - Options: `false`, `true`
 - Categories: `Hao`
 
-## Use dye on shulker box (useDyeOnShulkerBox)
+## Use dye on shulker box (haoUseDyeOnShulkerBox)
 
 Right-click a shulker box with dye to recolour it; sneak + right-click a coloured box while holding a cactus to wash it back to plain (the cactus is not consumed). Contents and custom name are preserved. Off by default.
 
@@ -193,7 +193,7 @@ Right-click a shulker box with dye to recolour it; sneak + right-click a coloure
 - Options: `false`, `true`
 - Categories: `Hao`
 
-## Wither Skeleton Drop Reduction (witherSkeletonDropReduction)
+## Wither Skeleton Drop Reduction (haoWitherSkeletonDrop)
 
 Removes selected drops from wither skeletons. Options: false=vanilla; bone=no bones; coal=no coal; skull=no wither skeleton skull; sword=no dropped stone sword; all=remove all of the above.
 
@@ -202,9 +202,9 @@ Removes selected drops from wither skeletons. Options: false=vanilla; bone=no bo
 - Options: `false`, `bone`, `coal`, `skull`, `sword`, `all`
 - Categories: `Hao`
 
-## zoneguard (zoneguard)
+## haoZoneguard (haoZoneguard)
 
-Disables observers inside the cubic regions configured with /zoneguard. Turning the rule off restores observers in those regions.
+Disables observers inside the cubic regions configured with /haoZoneguard. Turning the rule off restores observers in those regions.
 
 - Type: `boolean`
 - Default: `false`

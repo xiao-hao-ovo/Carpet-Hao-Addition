@@ -17,10 +17,10 @@ import carpet.api.settings.Rule;
  */
 public class NoEndPortalTeleportSettings {
 	/** Carpet 规则名(注册在 carpet 默认管理器)。 */
-	public static final String RULE_NAME = "noEndPortalTeleport";
+	public static final String RULE_NAME = "haoNoEndPortalTeleport";
 
 	@Rule(categories = {"Hao"})
-	public static boolean noEndPortalTeleport = false;
+	public static boolean haoNoEndPortalTeleport = false;
 
 	/** 权威读取:carpet 默认管理器中该规则当前是否为 true。 */
 	public static boolean isEnabled() {

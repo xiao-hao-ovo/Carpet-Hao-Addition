@@ -1,6 +1,6 @@
 package carpet_hao_addition.mixin;
 
-import carpet_hao_addition.zoneguard.region.ZoneguardState;
+import carpet_hao_addition.haoZoneguard.region.ZoneguardState;
 
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.ObserverBlock;
@@ -20,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * 在 zoneguard 规则开启且方块位于已配置区域时,取消侦测器(观察者)行为。
+ * 在 haoZoneguard 规则开启且方块位于已配置区域时,取消侦测器(观察者)行为。
  * <p>
  * 注入点按 1.21.8 yarn 的 {@link ObserverBlock} 实际方法逐一适配:
  * 参考实现(MC 26.2)的 tick/updateShape/updateNeighborsInFront/ownSignal/
@@ -32,49 +32,49 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ObserverBlock.class)
 public class ObserverBlockMixin {
 	@Inject(method = "tick", at = @At("HEAD"), cancellable = true)
-	private void zoneguard$cancelScheduledTick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random, CallbackInfo ci) {
+	private void haoZoneguard$cancelScheduledTick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random, CallbackInfo ci) {
 		if (ZoneguardState.disablesObserver(world, pos)) {
 			ci.cancel();
 		}
 	}
 
 	@Inject(method = "updateShape", at = @At("HEAD"), cancellable = true)
-	private void zoneguard$cancelStateForNeighborUpdate(BlockState state, LevelReader worldView, ScheduledTickAccess scheduledTickView, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random, CallbackInfoReturnable<BlockState> cir) {
+	private void haoZoneguard$cancelStateForNeighborUpdate(BlockState state, LevelReader worldView, ScheduledTickAccess scheduledTickView, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random, CallbackInfoReturnable<BlockState> cir) {
 		if (worldView instanceof Level world && ZoneguardState.disablesObserver(world, pos)) {
 			cir.setReturnValue(state);
 		}
 	}
 
 	@Inject(method = "updateNeighborsInFront", at = @At("HEAD"), cancellable = true)
-	private void zoneguard$cancelUpdateNeighbors(Level world, BlockPos pos, BlockState state, CallbackInfo ci) {
+	private void haoZoneguard$cancelUpdateNeighbors(Level world, BlockPos pos, BlockState state, CallbackInfo ci) {
 		if (ZoneguardState.disablesObserver(world, pos)) {
 			ci.cancel();
 		}
 	}
 
 	@Inject(method = "getSignal", at = @At("HEAD"), cancellable = true)
-	private void zoneguard$cancelWeakRedstonePower(BlockState state, BlockGetter blockView, BlockPos pos, Direction direction, CallbackInfoReturnable<Integer> cir) {
+	private void haoZoneguard$cancelWeakRedstonePower(BlockState state, BlockGetter blockView, BlockPos pos, Direction direction, CallbackInfoReturnable<Integer> cir) {
 		if (blockView instanceof Level world && ZoneguardState.disablesObserver(world, pos)) {
 			cir.setReturnValue(0);
 		}
 	}
 
 	@Inject(method = "getDirectSignal", at = @At("HEAD"), cancellable = true)
-	private void zoneguard$cancelStrongRedstonePower(BlockState state, BlockGetter blockView, BlockPos pos, Direction direction, CallbackInfoReturnable<Integer> cir) {
+	private void haoZoneguard$cancelStrongRedstonePower(BlockState state, BlockGetter blockView, BlockPos pos, Direction direction, CallbackInfoReturnable<Integer> cir) {
 		if (blockView instanceof Level world && ZoneguardState.disablesObserver(world, pos)) {
 			cir.setReturnValue(0);
 		}
 	}
 
 	@Inject(method = "onPlace", at = @At("HEAD"), cancellable = true)
-	private void zoneguard$cancelOnBlockAdded(BlockState state, Level world, BlockPos pos, BlockState oldState, boolean moved, CallbackInfo ci) {
+	private void haoZoneguard$cancelOnBlockAdded(BlockState state, Level world, BlockPos pos, BlockState oldState, boolean moved, CallbackInfo ci) {
 		if (ZoneguardState.disablesObserver(world, pos)) {
 			ci.cancel();
 		}
 	}
 
 	@Inject(method = "affectNeighborsAfterRemoval", at = @At("HEAD"), cancellable = true)
-	private void zoneguard$cancelOnStateReplaced(BlockState state, ServerLevel world, BlockPos pos, boolean moved, CallbackInfo ci) {
+	private void haoZoneguard$cancelOnStateReplaced(BlockState state, ServerLevel world, BlockPos pos, boolean moved, CallbackInfo ci) {
 		if (ZoneguardState.disablesObserver(world, pos)) {
 			ci.cancel();
 		}
