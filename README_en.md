@@ -48,3 +48,14 @@ In game, use `/carpet <rule> <value>` to view/toggle rules (or use Carpet's rule
 - [GitHub Releases](https://github.com/xiao-hao-ovo/Carpet-Hao-Addition/releases)
 
 > Each jar targets exactly one Minecraft version. Download the one matching your game version; a mismatch reports `Incompatible mods found!`.
+
+## License
+
+This project is licensed under the **GNU LGPL-3.0** — see [LICENSE](LICENSE).
+
+## Credits
+
+- Based on [fabric-carpet-extension-example-mod](https://github.com/gnembon/fabric-carpet-extension-example-mod).
+- **The easy-place implementation is ported from [上游扩展](https://github.com/upstreamxiaoyu1/上游扩展) (LGPL-3.0)**: this project's `easyplace` package (`*ProtocolAdapter`, `BetterEasyPlaceProtocolHandler`, `easyplace/*Mixin`, ...) is derived from it and rewritten. Copyright belongs to the original author; used under LGPL-3.0.
+- Some rule ideas reference community extensions: Carpet-AMS-Addition, Carpet-FGA-Addition, and others.
+

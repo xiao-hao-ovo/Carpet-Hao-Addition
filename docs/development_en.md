@@ -129,7 +129,10 @@ The root `build.gradle` aggregates the version sub-modules; layer code is merged
 - Rules with the same name as another Carpet extension **override each other** (Carpet's default manager indexes by rule name), so new rules should use this mod's own naming (e.g. `haoBedrockMines`).
 - **After changing the rule set, update** `docs/rules.md` / `docs/rules_en.md` (template: [new-rule-template.md](new-rule-template.md)).
 
-## Credits
+## License & Credits
+
+This project is licensed under the **GNU LGPL-3.0** — see [LICENSE](../LICENSE).
 
 - Based on [fabric-carpet-extension-example-mod](https://github.com/gnembon/fabric-carpet-extension-example-mod).
+- **The easy-place implementation is ported from [上游扩展](https://github.com/upstreamxiaoyu1/上游扩展) (LGPL-3.0)**: the `easyplace` package (`*ProtocolAdapter`, `BetterEasyPlaceProtocolHandler`, `easyplace/*Mixin`, ...) is derived from it and rewritten. Copyright belongs to the original author; used under LGPL-3.0.
 - Some rule ideas reference community extensions: Carpet-AMS-Addition, Carpet-FGA-Addition, and others.

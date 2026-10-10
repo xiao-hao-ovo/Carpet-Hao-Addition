@@ -129,7 +129,10 @@ python tools/publish_modrinth.py publish                # 把项目提交公开�
 - 与其它 Carpet 扩展**同名规则会互相覆盖**（Carpet 默认管理器按规则名索引），新增规则请使用本模组自有命名（如 `haoBedrockMines`）。
 - **改规则集后请同步** `docs/rules.md` / `docs/rules_en.md`（模板见 [new-rule-template.md](new-rule-template.md)）。
 
-## 致谢
+## 许可与致谢
+
+本项目以 **GNU LGPL-3.0** 授权，见 [LICENSE](../LICENSE)。
 
 - 基于 [fabric-carpet-extension-example-mod](https://github.com/gnembon/fabric-carpet-extension-example-mod) 改造。
+- **轻松放置（easyplace）相关实现移植自 [上游扩展](https://github.com/upstreamxiaoyu1/上游扩展)（LGPL-3.0）**：`easyplace` 包（`*ProtocolAdapter`、`BetterEasyPlaceProtocolHandler`、`easyplace/*Mixin` 等）是在其基础上改写而来，版权归原作者所有，按 LGPL-3.0 授权使用。
 - 部分规则思路参考社区扩展：Carpet-AMS-Addition、Carpet-FGA-Addition 等。

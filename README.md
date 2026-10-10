@@ -48,3 +48,14 @@ Java 21+（26.x 需要 Java 25）。
 - [GitHub Releases](https://github.com/xiao-hao-ovo/Carpet-Hao-Addition/releases)
 
 > 每个 jar 只对应一个 Minecraft 版本，请下载与你游戏版本完全一致的那个；装错会报 `Incompatible mods found!`。
+
+## 许可
+
+本项目以 **GNU LGPL-3.0** 授权，见 [LICENSE](LICENSE)。
+
+## 致谢
+
+- 基于 [fabric-carpet-extension-example-mod](https://github.com/gnembon/fabric-carpet-extension-example-mod) 改造。
+- **轻松放置（easyplace）相关实现移植自 [上游扩展](https://github.com/upstreamxiaoyu1/上游扩展)（LGPL-3.0）**：本项目的 `easyplace` 包（`*ProtocolAdapter`、`BetterEasyPlaceProtocolHandler`、`easyplace/*Mixin` 等）是在其基础上改写而来，版权归原作者所有，按 LGPL-3.0 授权使用。
+- 部分规则思路参考社区扩展：Carpet-AMS-Addition、Carpet-FGA-Addition 等。
+
