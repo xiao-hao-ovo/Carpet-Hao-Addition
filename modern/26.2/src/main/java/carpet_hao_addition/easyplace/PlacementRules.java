@@ -1,6 +1,6 @@
 package carpet_hao_addition.easyplace;
 
-import carpet_hao_addition.BetterEasyPlaceProtocolSettings;
+import carpet_hao_addition.ProjectionPlacementSettings;
 
 import net.minecraft.world.level.block.BannerBlock;
 import net.minecraft.world.level.block.BeaconBlock;
@@ -239,12 +239,12 @@ public final class PlacementRules {
 		// 可堆肥：层数 0-8，占低 4 位；仅当规则取 with_composter_level 时才编解码，
 		// 否则整项返回 0（等于「按原版放置」）
 		rule(ComposterBlock.class, custom(
-				state -> BetterEasyPlaceProtocolSettings.composterLevelEnabled()
+				state -> ProjectionPlacementSettings.composterLevelEnabled()
 						&& state.hasProperty(ComposterBlock.LEVEL)
 						? (state.getValue(ComposterBlock.LEVEL) & 0b1111)
 						: 0,
 				(bits, state, ctx) -> {
-					if (!BetterEasyPlaceProtocolSettings.composterLevelEnabled()
+					if (!ProjectionPlacementSettings.composterLevelEnabled()
 							|| !state.hasProperty(ComposterBlock.LEVEL)) {
 						return state;
 					}

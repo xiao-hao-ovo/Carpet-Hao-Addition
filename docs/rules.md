@@ -103,7 +103,7 @@ Carpet 扩展模板自带的字符串规则示例（可选 foo / bar / baz），
 - 参考选项: `false`, `true`
 - 分类: `Hao`
 
-## 增强轻松放置协议 (haoBetterEasyPlaceProtocol)
+## 投影精准放置 (haoProjectionPlacement)
 
 照投影轻松放置时,让带朝向、开关、颜色、方块实体数据等复杂状态的方块也按投影正确放下。需要安装 Litematica。含水方块请用 easyPlaceWaterlogged。取值:false=关闭(默认);true=开启,但不还原堆肥桶层数;with_composter_level=开启,连堆肥桶层数也一起还原。
 

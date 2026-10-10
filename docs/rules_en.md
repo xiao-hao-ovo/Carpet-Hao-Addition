@@ -103,7 +103,7 @@ While enabled, bedrock can be mined (it mines like obsidian) and drops itself as
 - Options: `false`, `true`
 - Categories: `Hao`
 
-## Better Easy Place Protocol (haoBetterEasyPlaceProtocol)
+## Projection Placement (haoProjectionPlacement)
 
 When building from a schematic, places blocks with complex states (facing, toggle, color, block-entity data...) exactly as the schematic specifies. Requires Litematica. For waterlogged blocks use easyPlaceWaterlogged. Values: false = off (default); true = on, but a composter's fill level is not restored; with_composter_level = on, restores a composter's fill level too.
 

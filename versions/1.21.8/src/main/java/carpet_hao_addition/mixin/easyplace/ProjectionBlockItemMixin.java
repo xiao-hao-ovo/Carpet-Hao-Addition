@@ -2,7 +2,7 @@ package carpet_hao_addition.mixin.easyplace;
 
 import carpet_hao_addition.HaoDebug;
 
-import carpet_hao_addition.BetterEasyPlaceProtocolSettings;
+import carpet_hao_addition.ProjectionPlacementSettings;
 import carpet_hao_addition.easyplace.ProjectionPlacement;
 import carpet_hao_addition.easyplace.PendingWaxState;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;

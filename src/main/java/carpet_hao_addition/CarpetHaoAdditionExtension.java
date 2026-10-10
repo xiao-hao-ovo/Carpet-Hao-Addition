@@ -83,7 +83,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         CarpetServer.settingsManager.parseSettingsClass(CopperStonecuttingSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(AutoMendingSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(EasyPlaceEntitySettings.class);
-        CarpetServer.settingsManager.parseSettingsClass(BetterEasyPlaceProtocolSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(ProjectionPlacementSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(CraftableTrimTemplateSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(WorldEaterProMaxSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(WackoBeaconsSettings.class);

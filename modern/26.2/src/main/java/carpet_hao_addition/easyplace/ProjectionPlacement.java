@@ -1,6 +1,6 @@
 package carpet_hao_addition.easyplace;
 
-import carpet_hao_addition.BetterEasyPlaceProtocolSettings;
+import carpet_hao_addition.ProjectionPlacementSettings;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.SculkShriekerBlock;
@@ -34,7 +34,7 @@ public final class ProjectionPlacement {
 	}
 
 	public static boolean enabled() {
-		return BetterEasyPlaceProtocolSettings.isEnabled();
+		return ProjectionPlacementSettings.isEnabled();
 	}
 
 	// ==================== 放置窗口（转发 PlacementWindow） ====================

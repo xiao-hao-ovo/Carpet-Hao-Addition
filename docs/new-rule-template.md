@@ -59,7 +59,7 @@ public class ExampleNewRuleSettings {
 
 ---
 
-## 2. 多值规则（像 `easyPlaceWaterlogged` / `haoBetterEasyPlaceProtocol`）
+## 2. 多值规则（像 `easyPlaceWaterlogged` / `haoProjectionPlacement`）
 
 用 `enum` 做取值，`/carpet` 里会把枚举常量名转成小写显示，例如
 `WITH_COMPOSTER_LEVEL` → `with_composter_level`。
@@ -133,7 +133,7 @@ public class ExampleNewRuleSettings {
 在 `parseSettingsClass(...)` 那一串里加一行即可（**根 src 的 + 26.x 每层各一处**）：
 
 ```java
-        CarpetServer.settingsManager.parseSettingsClass(BetterEasyPlaceProtocolSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(ProjectionPlacementSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(ExampleNewRuleSettings.class);   // ← 新增
         CarpetServer.settingsManager.parseSettingsClass(WackoBeaconsSettings.class);
 ```

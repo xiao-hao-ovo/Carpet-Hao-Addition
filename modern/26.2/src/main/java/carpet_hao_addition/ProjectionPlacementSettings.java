@@ -5,7 +5,7 @@ import carpet.api.settings.CarpetRule;
 import carpet.api.settings.Rule;
 
 /**
- * 增强轻松放置协议(haoBetterEasyPlaceProtocol)规则设置。
+ * 增强轻松放置协议(haoProjectionPlacement)规则设置。
  * <p>
  * 堆肥桶层数就并在这条规则里(原来单独的 {@code haoEasyPlaceComposterLevel} 已合并进来),取值:
  * <ul>
@@ -14,9 +14,9 @@ import carpet.api.settings.Rule;
  *   <li>{@code with_composter_level} —— 开启,连堆肥桶层数也一起按投影还原。</li>
  * </ul>
  */
-public class BetterEasyPlaceProtocolSettings {
+public class ProjectionPlacementSettings {
 	/** Carpet 规则名(注册在 carpet 默认管理器)。 */
-	public static final String RULE_NAME = "haoBetterEasyPlaceProtocol";
+	public static final String RULE_NAME = "haoProjectionPlacement";
 
 	/** 规则取值。 */
 	public enum Mode {
@@ -29,7 +29,7 @@ public class BetterEasyPlaceProtocolSettings {
 	}
 
 	@Rule(categories = {"Hao"})
-	public static Mode haoBetterEasyPlaceProtocol = Mode.FALSE;
+	public static Mode haoProjectionPlacement = Mode.FALSE;
 
 	/** 权威读取规则取值(缺失/异常按 {@link Mode#FALSE})。 */
 	public static Mode mode() {
