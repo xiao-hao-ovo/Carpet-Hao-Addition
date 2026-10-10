@@ -4,11 +4,11 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "ObserverBlockMixin",
-    "ComposterBlockMixin",
+    "GoldenCarrotCompostMixin",
     "LavaFluid_snowyCalciteMixin",
     "FluidBlock_snowyCalciteMixin",
     "FluidState_breakWaterloggedMixin",
-    "EndPortalBlockMixin",
+    "EndPortalTeleportMixin",
     "StonecutterScreenHandlerMixin",
     "Block_bedrockCanBeMinedMixin",
     "ServerPlayerInteractionManager_bedrockMinesMixin",
@@ -23,24 +23,24 @@
     "LivingEntity_lavaDepthStriderMixin",
     "ScheduledTickView_directDropsMixin",
     "ServerWorld_tickBlockMixin",
-    "MinecraftServer_easyPlaceWaterloggedMixin",
+    "MinecraftServer_waterloggedFillMixin",
     "MinecraftServer_rocketShulkerMixin",
     "DyeItem_useDyeOnShulkerBoxMixin",
     "CactusShulkerBoxWashMixin",
     "ServerPlayerEntity_autoMendingMixin",
-    "easyplace.BeaconBlockEntityAccessor",
-    "easyplace.SignItemMixin",
-    "easyplace.BlockItemMixin",
-    "easyplace.VerticallyAttachableBlockItemMixin",
-    "easyplace.SignBlockEntityInvoker"
+    "easyplace.BeaconEffectAccessor",
+    "easyplace.SignPlacementMixin",
+    "easyplace.ProjectionBlockItemMixin",
+    "easyplace.AttachableItemPlacementMixin",
+    "easyplace.SignListenerInvoker"
   ],
   "client": [
 		"WackoBeacons_BeaconButtonWidgetMixin",
 		"WackoBeacons_BeaconBlockEntityMixin",
-    "WorldUtils_easyPlaceWaterloggedMixin",
-    "WorldUtils_easyPlaceEntityMixin",
-    "easyplace.WorldUtilsMixin",
-    "easyplace.EasyPlaceUtilsInvoker"
+    "WorldUtils_waterloggedFillMixin",
+    "WorldUtils_entityPlacementMixin",
+    "easyplace.SchematicHitVecMixin",
+    "easyplace.SchematicUtilsInvoker"
   ],
   "injectors": {
     "defaultRequire": 1

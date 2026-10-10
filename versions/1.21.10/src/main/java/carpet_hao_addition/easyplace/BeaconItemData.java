@@ -1,0 +1,91 @@
+package carpet_hao_addition.easyplace;
+
+import carpet_hao_addition.mixin.easyplace.BeaconEffectAccessor;
+import net.minecraft.block.entity.BeaconBlockEntity;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.entry.RegistryEntry;
+
+/**
+ * 信标选中的效果 —— 主效果与副效果各占 7 位，主效果在高 7 位。
+ *
+ * <p>效果 id 存的是「注册表 id + 1」，0 表示这一半没选效果，所以两半都是 0 时
+ * 协议值就是 0，客户端也就能靠"没有位"表示"这是一台空信标"。
+ *
+ * <p>信标没有方块状态需要还原，因此只实现物品数据这一侧。
+ */
+public final class BeaconItemData implements ItemDataCodec {
+
+	private static final int HALF_BITS = 7;
+	private static final int HALF_MASK = 0x7F;
+	private static final String PRIMARY_KEY = "primary_effect";
+	private static final String SECONDARY_KEY = "secondary_effect";
+	private static final String BLOCK_ENTITY_ID = "minecraft:beacon";
+
+	@Override
+	public int encodeBlockEntity(BlockEntity blockEntity) {
+		if (!(blockEntity instanceof BeaconBlockEntity beacon)) {
+			return 0;
+		}
+		BeaconEffectAccessor accessor = (BeaconEffectAccessor) beacon;
+		return (effectId(accessor.hao$getPrimaryPower()) << HALF_BITS) | effectId(accessor.hao$getSecondaryPower());
+	}
+
+	@Override
+	public ItemStack decodeStack(int bits, ItemStack stack) {
+		int primary = (bits >>> HALF_BITS) & HALF_MASK;
+		int secondary = bits & HALF_MASK;
+		if (primary == 0 && secondary == 0) {
+			return stack;
+		}
+
+		NbtCompound tag = blockEntityTag(stack);
+		if (tag == null) {
+			tag = new NbtCompound();
+		}
+		if (tag.contains(PRIMARY_KEY) || tag.contains(SECONDARY_KEY)) {
+			return stack;
+		}
+
+		boolean touched = writeEffect(tag, PRIMARY_KEY, primary);
+		touched |= writeEffect(tag, SECONDARY_KEY, secondary);
+		if (!touched) {
+			return stack;
+		}
+		tag.putString("id", BLOCK_ENTITY_ID);
+
+		ItemStack restored = stack.copy();
+		restored.set(DataComponentTypes.BLOCK_ENTITY_DATA, ItemDataCodec.wrapBlockEntityData(tag));
+		return restored;
+	}
+
+	// ==================== 内部实现 ====================
+
+	/** 效果 → 注册表 id + 1；没效果就是 0。 */
+	private static int effectId(RegistryEntry<StatusEffect> effect) {
+		return effect == null ? 0 : Registries.STATUS_EFFECT.getRawId(effect.value()) + 1;
+	}
+
+	/** 把「id + 1」还原成效果名字写进 NBT；写了返回 true。 */
+	private static boolean writeEffect(NbtCompound tag, String key, int encodedId) {
+		if (encodedId == 0) {
+			return false;
+		}
+		Registry<StatusEffect> registry = Registries.STATUS_EFFECT;
+		StatusEffect effect = registry.get(encodedId - 1);
+		if (effect == null) {
+			return false;
+		}
+		tag.putString(key, registry.getId(effect).toString());
+		return true;
+	}
+
+	private static NbtCompound blockEntityTag(ItemStack stack) {
+		return ItemDataCodec.unwrapBlockEntityData(stack.get(DataComponentTypes.BLOCK_ENTITY_DATA));
+	}
+}
