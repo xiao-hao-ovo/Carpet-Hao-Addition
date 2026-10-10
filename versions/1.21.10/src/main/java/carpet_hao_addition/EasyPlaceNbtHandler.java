@@ -59,7 +59,7 @@ public final class EasyPlaceNbtHandler {
 			ServerPlayerEntity player = context.player();
 			context.server().execute(() -> {
 				System.out.println("[hao-easyplace] [服务端] 收到包: 位置=" + payload.pos()
-						+ " id=" + (payload.nbt() == null ? "null" : payload.nbt().getString("id"))
+						+ " id=" + (payload.nbt() == null ? "null" : payload.nbt().getString("id")));
 				PENDING.computeIfAbsent(player.getUuid(), ignored -> new HashMap<>())
 						.put(payload.pos(), new PendingData(payload.nbt()));
 			});

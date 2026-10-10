@@ -17,7 +17,7 @@ import java.util.UUID;
  * 完整 NBT 通道:客户端把投影里该位置的方块实体 NBT 发给服务端,放置时写入。
  * 覆盖协议值装不下的内容(标牌文字、命令方块指令等)。
  */
-public final class EasyPlaceNbtHandler {
+public final class BlockDataChannel {
 	private static boolean payloadRegistered = false;
 	private static boolean receiverRegistered = false;
 
@@ -36,7 +36,7 @@ public final class EasyPlaceNbtHandler {
 	@Environment(EnvType.CLIENT)
 	private static long lastSentTime = 0L;
 
-	private EasyPlaceNbtHandler() {
+	private BlockDataChannel() {
 	}
 
 	/** 注册 payload 类型(幂等)。 */
@@ -45,7 +45,7 @@ public final class EasyPlaceNbtHandler {
 			return;
 		}
 		payloadRegistered = true;
-		PayloadTypeRegistry.playC2S().register(EasyPlaceNbtPayload.ID, EasyPlaceNbtPayload.CODEC);
+		PayloadTypeRegistry.playC2S().register(BlockDataPayload.ID, BlockDataPayload.CODEC);
 	}
 
 	/** 注册服务端接收端(幂等)。 */
@@ -55,7 +55,7 @@ public final class EasyPlaceNbtHandler {
 			return;
 		}
 		receiverRegistered = true;
-		ServerPlayNetworking.registerGlobalReceiver(EasyPlaceNbtPayload.ID, (payload, context) -> {
+		ServerPlayNetworking.registerGlobalReceiver(BlockDataPayload.ID, (payload, context) -> {
 			ServerPlayerEntity player = context.player();
 			context.server().execute(() -> {
 				System.out.println("[hao-easyplace] [服务端] 收到包: 位置=" + payload.pos()
@@ -71,12 +71,12 @@ public final class EasyPlaceNbtHandler {
 	public static void send(BlockPos pos, NbtCompound nbt) {
 		registerPayloadType();
 		// 不做节流:该函数只在真正放置时调用,节流会吞包导致文字错位。
-		boolean canSend = net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.canSend(EasyPlaceNbtPayload.ID);
+		boolean canSend = net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.canSend(BlockDataPayload.ID);
 		System.out.println("[hao-easyplace] [客户端] 发包: 位置=" + pos + " canSend=" + canSend
 				+ " id=" + (nbt == null ? "null" : nbt.getString("id")));
 		if (canSend) {
 			net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(
-					new EasyPlaceNbtPayload(pos, nbt));
+					new BlockDataPayload(pos, nbt));
 		}
 	}
 
