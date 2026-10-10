@@ -30,17 +30,17 @@ import net.minecraft.util.math.Direction;
 public final class ProjectionPlacement {
 
 	/** 铁轨：别让原版按邻居自动改形状。 */
-	public static final long EASY_PLACE_RAIL_BLOCK_NO_SHAPE_UPDATE = 1L;
+	public static final long RAIL_KEEP_SHAPE = 1L;
 	private ProjectionPlacement() {
 	}
 
-	public static boolean isRuleEnabled() {
+	public static boolean enabled() {
 		return BetterEasyPlaceProtocolSettings.isEnabled();
 	}
 
 	// ==================== 放置窗口（转发 PlacementWindow） ====================
 
-	public static boolean isEasyPlaceState() {
+	public static boolean isProjected() {
 		return PlacementWindow.isOpen();
 	}
 
@@ -52,7 +52,7 @@ public final class ProjectionPlacement {
 		PlacementWindow.setFlags(value);
 	}
 
-	public static boolean hasPlaceFlag(long flag) {
+	public static boolean flagsContain(long flag) {
 		return PlacementWindow.hasFlag(flag);
 	}
 
@@ -86,7 +86,7 @@ public final class ProjectionPlacement {
 	 * @return 还原后的状态；规则没开时返回 {@code null}
 	 */
 	public static BlockState decodePlacementState(Block block, ItemPlacementContext context, BlockState baseState) {
-		if (!isRuleEnabled()) {
+		if (!enabled()) {
 			return null;
 		}
 		if (baseState == null) {
@@ -104,7 +104,7 @@ public final class ProjectionPlacement {
 	 */
 	public static BlockState decodeAttachablePlacementState(Block standingBlock, Block wallBlock,
 														   ItemPlacementContext context) {
-		if (!isRuleEnabled()) {
+		if (!enabled()) {
 			return null;
 		}
 		BlockState baseState = null;
@@ -147,7 +147,7 @@ public final class ProjectionPlacement {
 
 	/** 服务端真正放置前调用：把协议位写回手持物。返回 {@code null} 表示不用管。 */
 	public static ItemStack applyItemStackProtocolData(ItemStack stack, ItemPlacementContext context) {
-		if (!isRuleEnabled()) {
+		if (!enabled()) {
 			return null;
 		}
 		if (!(stack.getItem() instanceof BlockItem blockItem)) {

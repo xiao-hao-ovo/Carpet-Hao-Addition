@@ -27,7 +27,7 @@ import java.util.Map;
 public class SchematicPlacementEncoder {
 
     public static Vec3d encodeHitPosItemData(Vec3d hitPos, BlockPos pos, BlockState stateSchematic) {
-        if (!ProjectionPlacement.isRuleEnabled()) {
+        if (!ProjectionPlacement.enabled()) {
             return hitPos;
         }
         Block block = stateSchematic.getBlock();

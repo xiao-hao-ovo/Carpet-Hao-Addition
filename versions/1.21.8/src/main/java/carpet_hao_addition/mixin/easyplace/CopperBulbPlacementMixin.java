@@ -23,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class CopperBulbPlacementMixin {
 	@Inject(method = "update", at = @At("HEAD"), cancellable = true)
 	private void hao$cancelFlip(BlockState state, ServerWorld world, BlockPos pos, CallbackInfo ci) {
-		if (ProjectionPlacement.isEasyPlaceState()) {
+		if (ProjectionPlacement.isProjected()) {
 			ci.cancel();
 		}
 	}

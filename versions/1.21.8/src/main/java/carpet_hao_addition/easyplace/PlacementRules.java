@@ -67,8 +67,8 @@ import static carpet_hao_addition.easyplace.PlacementCodecs.boolProp;
 import static carpet_hao_addition.easyplace.PlacementCodecs.custom;
 import static carpet_hao_addition.easyplace.PlacementCodecs.enumProp;
 import static carpet_hao_addition.easyplace.PlacementCodecs.facingByOrdinal;
-import static carpet_hao_addition.easyplace.PlacementCodecs.horizontalFacing;
-import static carpet_hao_addition.easyplace.PlacementCodecs.horizontalFacingMarked;
+import static carpet_hao_addition.easyplace.PlacementCodecs.facing4;
+import static carpet_hao_addition.easyplace.PlacementCodecs.facing4Marked;
 import static carpet_hao_addition.easyplace.PlacementCodecs.intProp;
 import static carpet_hao_addition.easyplace.PlacementCodecs.stack;
 import static carpet_hao_addition.easyplace.PlacementCodecs.stepped;
@@ -167,12 +167,12 @@ public final class PlacementRules {
 		// 注意此处不登记 HorizontalFacingBlock —— 活板门/门/栅栏门都继承它，
 		// 按基类接管会覆盖投影原生对这些方块的轻松放置（曾导致活板门 half/open 丢失）。
 		rule(CampfireBlock.class, stack(
-				horizontalFacing(),
+				facing4(),
 				boolProp(CampfireBlock.LIT, 4)));
 
 		// 比较器：水平朝向占低 2 位 + 减法模式占 bit2
 		rule(ComparatorBlock.class, stack(
-				horizontalFacing(),
+				facing4(),
 				enumProp(ComparatorBlock.MODE, 2, 1, 0)));
 
 		// 命令方块：六向朝向（低 3 位，值 +1）+ 条件模式（bit4）
@@ -195,15 +195,15 @@ public final class PlacementRules {
 
 		// 钟：水平朝向 + 挂载方式（bit4-5）
 		rule(BellBlock.class, stack(
-				horizontalFacingMarked(),
+				facing4Marked(),
 				enumProp(BellBlock.ATTACHMENT, 4, 2, 0)));
 
 		// 拉杆 / 墙面按钮：水平朝向 + 贴面（bit4-5）[+ 拉杆的开关状态 bit6]
 		rule(WallMountedBlock.class, stack(
-				horizontalFacingMarked(),
+				facing4Marked(),
 				enumProp(WallMountedBlock.FACE, 4, 2, 0)));
 		rule(LeverBlock.class, stack(
-				horizontalFacingMarked(),
+				facing4Marked(),
 				enumProp(WallMountedBlock.FACE, 4, 2, 0),
 				boolProp(LeverBlock.POWERED, 6)));
 
@@ -350,7 +350,7 @@ public final class PlacementRules {
 						(bits, state, ctx) -> {
 							if ((bits & 0b0001_0000) != 0) {
 								ProjectionPlacement.setPlaceFlag(
-										ProjectionPlacement.EASY_PLACE_RAIL_BLOCK_NO_SHAPE_UPDATE);
+										ProjectionPlacement.RAIL_KEEP_SHAPE);
 							}
 							return state;
 						})));

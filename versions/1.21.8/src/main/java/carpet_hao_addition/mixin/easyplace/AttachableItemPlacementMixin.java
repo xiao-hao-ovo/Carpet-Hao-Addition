@@ -36,7 +36,7 @@ public abstract class AttachableItemPlacementMixin {
         if (baseState == null) {
             return;
         }
-        if (!ProjectionPlacement.isRuleEnabled()) {
+        if (!ProjectionPlacement.enabled()) {
             return;
         }
         double relativeHitZ = hitOffsetZ(context.getHitPos(), PlacementBitTools.clickedPos(context));

@@ -45,7 +45,7 @@ public final class PlacementCodecs {
 	 * 用于营火、比较器、水平朝向方块这类「本协议通道只为朝向而开」的方块 ——
 	 * 它们一定能拿到朝向，不需要区分「有没有编码」。
 	 */
-	public static PlacementCodec horizontalFacing() {
+	public static PlacementCodec facing4() {
 		return new PlacementCodec() {
 			@Override
 			public int encode(BlockState state, int bits) {
@@ -72,7 +72,7 @@ public final class PlacementCodecs {
 	 * 水平朝向（带标记型）：低 3 位存 idx+1，0 表示「本次没有编码朝向」。
 	 * 用于钟、墙面按钮、拉杆这类「朝向与其他属性共用位域」的方块。
 	 */
-	public static PlacementCodec horizontalFacingMarked() {
+	public static PlacementCodec facing4Marked() {
 		return new PlacementCodec() {
 			@Override
 			public int encode(BlockState state, int bits) {
@@ -127,7 +127,7 @@ public final class PlacementCodecs {
 	/**
 	 * 朝向按 {@link Direction#ordinal()} 原样存放 —— 既不 +1，也不折叠成水平四向。
 	 * 这是在跟投影端对齐：告示牌那类墙挂方块约定的就是 NORTH=2 … WEST=5。
-	 * （跟 {@link #horizontalFacing()} 的 0..3 不是一回事，别混用。）
+	 * （跟 {@link #facing4()} 的 0..3 不是一回事，别混用。）
 	 */
 	public static PlacementCodec facingByOrdinal(EnumProperty<Direction> property, int shift, int width) {
 		int mask = (1 << width) - 1;

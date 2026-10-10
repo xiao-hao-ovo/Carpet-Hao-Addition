@@ -19,7 +19,7 @@ public class SignPlacementMixin {
     @Inject(method = "postPlacement", at = @At("RETURN"), cancellable = true)
     private void hao$suppressSuccess(BlockPos pos, World world, PlayerEntity player, ItemStack stack,
                                      BlockState state, CallbackInfoReturnable<Boolean> cir) {
-        if (ProjectionPlacement.isEasyPlaceState()
+        if (ProjectionPlacement.isProjected()
                 && ProjectionPlacement.getPlaceTargetPos().equals(pos)
                 && world.getBlockState(pos).getBlock() instanceof SignBlock) {
             cir.setReturnValue(false);

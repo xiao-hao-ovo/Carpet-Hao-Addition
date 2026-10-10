@@ -65,12 +65,12 @@ public abstract class ProjectionBlockItemMixin {
     private void hao$restorePlacementState(ItemPlacementContext context, CallbackInfoReturnable<BlockState> cir) {
         double relativeHitZ = hitOffsetZ(context.getHitPos(), PlacementBitTools.clickedPos(context));
         HaoDebug.log("[hao-easyplace] [getPlacementState] 规则="
-                + ProjectionPlacement.isRuleEnabled()
+                + ProjectionPlacement.enabled()
                 + " hitPos=" + context.getHitPos() + " blockPos=" + PlacementBitTools.clickedPos(context)
                 + " relZ=" + String.format("%.3f", relativeHitZ)
                 + " isProtocol=" + isProtocolHit(relativeHitZ)
                 + " block=" + this.getBlock());
-        if (!ProjectionPlacement.isRuleEnabled()) return;
+        if (!ProjectionPlacement.enabled()) return;
         if (!isProtocolHit(relativeHitZ)) return;
 
         BlockState baseState = cir.getReturnValue();
@@ -91,7 +91,7 @@ public abstract class ProjectionBlockItemMixin {
 
     @WrapMethod(method = "place(Lnet/minecraft/item/ItemPlacementContext;)Lnet/minecraft/util/ActionResult;")
     private ActionResult hao$enterPlacementWindow(ItemPlacementContext context, Operation<ActionResult> original) {
-        if (ProjectionPlacement.isRuleEnabled()
+        if (ProjectionPlacement.enabled()
                 && isProtocolHit(hitOffsetX(context.getHitPos(), PlacementBitTools.clickedPos(context)))) {
             ProjectionPlacement.setEasyPlaceState(true);
             ProjectionPlacement.setPlaceTargetPos(PlacementBitTools.clickedPos(context));
