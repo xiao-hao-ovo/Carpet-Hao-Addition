@@ -98,5 +98,9 @@
   "haoRocketShulker.commands.status": "火箭潜影盒补给(你自己的设置):开关=%s,位置=%s",
   "haoRocketShulker.commands.status.slot": "主手快捷栏第 %s 格",
   "haoRocketShulker.commands.notEnabled": "提示:功能还没开启,需要管理员用 /carpet haoRocketShulker true 打开。",
-  "haoRocketShulker.commands.playerOnly": "这条命令需要由玩家执行(设置保存在玩家自己名下)。"
+  "haoRocketShulker.commands.playerOnly": "这条命令需要由玩家执行(设置保存在玩家自己名下)。",
+  "carpet.rule.exampleBoolean.name": "示例布尔值",
+  "carpet.rule.exampleBoolean.desc": "模板示例规则（布尔值），仅用于演示如何添加规则。",
+  "carpet.rule.exampleString.name": "示例字符串",
+  "carpet.rule.exampleString.desc": "模板示例规则（字符串），仅用于演示如何添加规则。"
 }

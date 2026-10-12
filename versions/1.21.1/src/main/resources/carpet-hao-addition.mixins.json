@@ -28,11 +28,12 @@
     "easyplace.SignPlacementMixin",
     "easyplace.ProjectionBlockItemMixin",
     "easyplace.AttachableItemPlacementMixin",
-    "easyplace.SignListenerInvoker"
+    "easyplace.SignListenerInvoker",
+    "easyplace.CopperBulbPlacementMixin"
   ],
   "client": [
-		"WackoBeacons_BeaconButtonWidgetMixin",
-		"WackoBeacons_BeaconBlockEntityMixin",
+    "WackoBeacons_BeaconButtonWidgetMixin",
+    "WackoBeacons_BeaconBlockEntityMixin",
     "WorldUtils_waterloggedFillMixin",
     "easyplace.SchematicHitVecMixin",
     "easyplace.SchematicUtilsInvoker"
