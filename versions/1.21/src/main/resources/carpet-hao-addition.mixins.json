@@ -40,7 +40,8 @@
     "WackoBeacons_BeaconBlockEntityMixin",
     "WorldUtils_waterloggedFillMixin",
     "easyplace.SchematicHitVecMixin",
-    "easyplace.SchematicUtilsInvoker"
+    "easyplace.SchematicUtilsInvoker",
+    "WorldUtils_entityPlacementMixin"
   ],
   "injectors": {
     "defaultRequire": 1
