@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import carpet_hao_addition.easyplace.PlacementBitTools;
+import carpet_hao_addition.HaoDebug;
 import static carpet_hao_addition.easyplace.PlacementBitTools.hitOffsetZ;
 import static carpet_hao_addition.easyplace.PlacementBitTools.isProtocolHit;
 
@@ -42,7 +43,7 @@ public abstract class AttachableItemPlacementMixin {
             return;
         }
         BlockState state = ProjectionPlacement.decodeSchematicState(baseState.getBlock(), context, baseState);
-        System.out.println("[hao-easyplace] [子类解码] block=" + hao$block()
+        HaoDebug.log("[hao-easyplace] [子类解码] block=" + hao$block()
                 + " 原=" + baseState + " 改=" + state
                 + " side=" + context.getClickedFace() + " hitPos=" + context.getClickLocation()
                 + " 世界该处=" + context.getLevel().getBlockState(context.getClickedPos()));

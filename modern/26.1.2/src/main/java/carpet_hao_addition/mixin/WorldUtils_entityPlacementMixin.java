@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import carpet_hao_addition.HaoDebug;
 /**
  * haoProjectionEntity(客户端,26.3):照投影轻松放置时,把玩家**真正指着**的投影实体报给服务端生成。
  * <p>
@@ -97,7 +98,7 @@ public abstract class WorldUtils_entityPlacementMixin {
 		try {
 			hao$handleEasyPlaceEntity(minecraft, cir);
 		} catch (Throwable throwable) {
-			System.out.println("[hao-entity] 出错(已忽略,不影响方块放置): " + throwable);
+			HaoDebug.log("[hao-entity] 出错(已忽略,不影响方块放置): " + throwable);
 		}
 	}
 
@@ -167,7 +168,7 @@ public abstract class WorldUtils_entityPlacementMixin {
 		found.removeIf(spawn ->
 				hao$countNearby(mc, spawn) >= projected.getOrDefault(hao$positionKey(spawn), 1));
 		if (!found.isEmpty()) {
-			System.out.println("[hao-entity] 候选 " + found.size() + " 个:" + found.stream()
+			HaoDebug.log("[hao-entity] 候选 " + found.size() + " 个:" + found.stream()
 					.map(spawn -> spawn.type() + "@" + String.format("%.1f,%.1f,%.1f",
 							spawn.x(), spawn.y(), spawn.z()))
 					.toList());
@@ -269,7 +270,7 @@ public abstract class WorldUtils_entityPlacementMixin {
 		int count = EasyPlaceEntitySettings.count(player.getUUID());
 		EntityPlacementHandler.registerPayloadType();
 		ClientPlayNetworking.send(new EntityPlacementPayload(List.of(spawn), count));
-		System.out.println("[hao-entity] 放置 " + spawn.type() + " @ "
+		HaoDebug.log("[hao-entity] 放置 " + spawn.type() + " @ "
 				+ String.format("%.1f,%.1f,%.1f", spawn.x(), spawn.y(), spawn.z()) + " x" + count);
 	}
 

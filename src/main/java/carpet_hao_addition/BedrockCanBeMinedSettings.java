@@ -14,7 +14,7 @@ import carpet.api.settings.Rule;
  * 判断是否开启请用 {@link #isEnabled()}(读取 carpet 管理器的权威值)。
  */
 public class BedrockCanBeMinedSettings {
-	/** Carpet 规则名(注册在 carpet 默认管理器)。与 其它扩展的同名规则区分,故不用 bedrockCanBeMined。 */
+	/** Carpet 规则名(注册在 carpet 默认管理器)。加 hao 前缀,与其它同名规则区分。 */
 	public static final String RULE_NAME = "haoBedrockMines";
 
 	@Rule(categories = {"Hao"})

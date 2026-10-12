@@ -32,3 +32,6 @@ reasonix.toml
 # Python
 __pycache__/
 *.pyc
+
+# Reasonix Agent 会话配置(不进版本库)
+.reasonix/

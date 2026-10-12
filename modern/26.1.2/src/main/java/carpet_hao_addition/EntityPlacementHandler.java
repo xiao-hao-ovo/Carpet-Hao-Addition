@@ -119,7 +119,7 @@ public final class EntityPlacementHandler {
 		receiverRegistered = true;
 		ServerPlayNetworking.registerGlobalReceiver(EntityPlacementPayload.ID, (payload, context) -> {
 			ServerPlayer player = context.player();
-			System.out.println(TAG + " 收到包: player=" + player.getName().getString()
+			HaoDebug.log(TAG + " 收到包: player=" + player.getName().getString()
 					+ " 实体数=" + payload.spawns().size() + " count=" + payload.count());
 			context.server().execute(() -> spawnEntity(player, payload));
 		});
@@ -128,7 +128,7 @@ public final class EntityPlacementHandler {
 	/** 逐条放出实体;每条都先确认这一格没有同类型实体。 */
 	private static void spawnEntity(ServerPlayer player, EntityPlacementPayload payload) {
 		if (!EasyPlaceEntitySettings.isEnabled()) {
-			System.out.println(TAG + " 忽略: 规则未开");
+			HaoDebug.log(TAG + " 忽略: 规则未开");
 			return;
 		}
 		if (!(player.level() instanceof ServerLevel world)) {
@@ -143,7 +143,7 @@ public final class EntityPlacementHandler {
 	private static void spawnOne(ServerPlayer player, ServerLevel world, EntitySpawn spawn, int rawCount) {
 		EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getValue(spawn.type());
 		if (type == null) {
-			System.out.println(TAG + " 跳过: 未知实体类型 " + spawn.type());
+			HaoDebug.log(TAG + " 跳过: 未知实体类型 " + spawn.type());
 			return;
 		}
 		int count = Math.max(1, Math.min(EasyPlaceEntitySettings.MAX_COUNT, rawCount));
@@ -170,18 +170,18 @@ public final class EntityPlacementHandler {
 			Entity entity = EntityType.loadEntityRecursive(nbt, world,
 					EntitySpawnReason.COMMAND, EntityProcessor.NOP);
 			if (entity == null) {
-				System.out.println(TAG + " 还原失败 " + spawn.type() + "(NBT 无法创建实体)");
+				HaoDebug.log(TAG + " 还原失败 " + spawn.type() + "(NBT 无法创建实体)");
 				break;
 			}
 			entity.snapTo(spawn.x(), spawn.y(), spawn.z(), spawn.yaw(), spawn.pitch());
 			boolean added = world.tryAddFreshEntityWithPassengers(entity);
-			System.out.println(TAG + " 生成 " + entity.getType() + " @ "
+			HaoDebug.log(TAG + " 生成 " + entity.getType() + " @ "
 					+ String.format("%.3f,%.3f,%.3f", entity.getX(), entity.getY(), entity.getZ())
 					+ " 投影要求=" + String.format("%.3f,%.3f,%.3f", spawn.x(), spawn.y(), spawn.z())
 					+ " yaw=" + String.format("%.1f", spawn.yaw())
 					+ " 加进世界=" + added + " 乘客数=" + entity.getPassengers().size());
 		}
-		System.out.println(TAG + " 完成 " + spawn.type() + " x" + count + " 消耗=" + need);
+		HaoDebug.log(TAG + " 完成 " + spawn.type() + " x" + count + " 消耗=" + need);
 	}
 
 	/**
@@ -207,7 +207,7 @@ public final class EntityPlacementHandler {
 				kept.add(passenger);
 			} else {
 				String passengerId = passenger.getString("id").orElse("?");
-				System.out.println(TAG + " 乘客材料不足,已剔除 " + passengerId);
+				HaoDebug.log(TAG + " 乘客材料不足,已剔除 " + passengerId);
 				player.sendSystemMessage(Component.translatable(
 						"carpet-hao-addition.easyplaceentity.missingPassenger", passengerId));
 			}
@@ -250,7 +250,7 @@ public final class EntityPlacementHandler {
 		CompoundTag single = nbt.getCompound("Item").orElse(null);
 		if (single != null && !payable(player, single, count, need)) {
 			nbt.remove("Item");
-			System.out.println(TAG + " 内容物不足,已剔除 Item");
+			HaoDebug.log(TAG + " 内容物不足,已剔除 Item");
 		}
 		for (String field : CONTENT_FIELDS) {
 			ListTag list = nbt.getList(field).orElse(null);
@@ -268,7 +268,7 @@ public final class EntityPlacementHandler {
 				sub.forEach((item, amount) -> need.merge(item, amount, Integer::sum));
 			} else {
 				nbt.remove(field);
-				System.out.println(TAG + " 内容物不足,已剔除 " + field);
+				HaoDebug.log(TAG + " 内容物不足,已剔除 " + field);
 				player.sendSystemMessage(Component.translatable(
 						"carpet-hao-addition.easyplaceentity.missingContents", field));
 			}

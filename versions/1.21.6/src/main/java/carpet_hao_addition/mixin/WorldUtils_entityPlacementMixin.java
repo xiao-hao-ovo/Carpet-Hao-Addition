@@ -47,6 +47,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import carpet_hao_addition.HaoDebug;
 /**
  * haoProjectionEntity(客户端):照投影轻松放置时,把玩家**真正指着**的投影实体报给服务端生成。
  * <p>
@@ -94,8 +95,8 @@ public abstract class WorldUtils_entityPlacementMixin {
 		try {
 			hao$handleEasyPlaceEntity(minecraft, cir);
 		} catch (Throwable throwable) {
-			System.out.println("[hao-entity] 出错(已忽略,不影响方块放置): " + throwable);
-			throwable.printStackTrace();
+			HaoDebug.log("[hao-entity] 出错(已忽略,不影响方块放置): " + throwable);
+			HaoDebug.stackTrace(throwable);
 		}
 	}
 
@@ -105,7 +106,7 @@ public abstract class WorldUtils_entityPlacementMixin {
 		if (player == null || !EasyPlaceEntitySettings.isEnabled()
 				|| !(minecraft.crosshairTarget instanceof BlockHitResult hit)) {
 			// 诊断(临时):区分"客户端读不到规则值"与"准星没对着方块"
-			System.out.println("[hao-entity] 未进入收集: player=" + (player != null)
+			HaoDebug.log("[hao-entity] 未进入收集: player=" + (player != null)
 					+ " 规则开=" + EasyPlaceEntitySettings.isEnabled()
 					+ " 准星是方块=" + (minecraft.crosshairTarget instanceof BlockHitResult));
 			return;
@@ -151,7 +152,7 @@ public abstract class WorldUtils_entityPlacementMixin {
 		Vec3d end = start.add(player.getRotationVec(1.0F).multiply(range));
 		// 诊断(临时):玩家眼睛位置 + 视线可达距离。
 		// 用来判断"没命中"到底是"离得太远"还是"litematica 给的有效距离是 0"。
-		System.out.println("[hao-entity] 玩家眼睛=" + String.format("%.2f,%.2f,%.2f", start.x, start.y, start.z)
+		HaoDebug.log("[hao-entity] 玩家眼睛=" + String.format("%.2f,%.2f,%.2f", start.x, start.y, start.z)
 				+ " 视线距离=" + String.format("%.2f", range));
 		List<EntitySpawn> found = new ArrayList<>();
 		for (SchematicPlacement placement
@@ -175,9 +176,9 @@ public abstract class WorldUtils_entityPlacementMixin {
 			found.removeIf(spawn ->
 					hao$countNearby(mc, spawn) >= projected.getOrDefault(hao$positionKey(spawn), 1));
 		}
-		System.out.println("[hao-entity] 候选 " + found.size() + " 个");
+		HaoDebug.log("[hao-entity] 候选 " + found.size() + " 个");
 		for (EntitySpawn spawn : found) {
-			System.out.println("[hao-entity]   " + spawn.type() + " @ "
+			HaoDebug.log("[hao-entity]   " + spawn.type() + " @ "
 					+ String.format("%.1f,%.1f,%.1f", spawn.x(), spawn.y(), spawn.z()));
 		}
 		return found;
@@ -199,7 +200,7 @@ public abstract class WorldUtils_entityPlacementMixin {
 		if (regionNames.isEmpty()) {
 			regionNames.addAll(schematic.getAreaPositions().keySet());
 		}
-		System.out.println("[hao-entity] 投影「" + placement.getName() + "」待查区域 " + regionNames);
+		HaoDebug.log("[hao-entity] 投影「" + placement.getName() + "」待查区域 " + regionNames);
 		for (String regionName : regionNames) {
 			SubRegionPlacement sub = placement.getRelativeSubRegionPlacement(regionName);
 			// 子区域自己也可以勾"忽略实体",和投影级是两回事
@@ -227,9 +228,9 @@ public abstract class WorldUtils_entityPlacementMixin {
 			Vec3d rayStart, Vec3d rayEnd) {
 		// 投影实体的身份 —— 去重只能靠它,不能靠坐标(投影里可能有几个实体坐标完全重合)
 		String key = regionName + "#" + index;
-		System.out.println("[hao-entity]    区域 " + regionName + " 实体 "
+		HaoDebug.log("[hao-entity]    区域 " + regionName + " 实体 "
 				+ info.nbt.getString("id").orElse("?") + " 局部=" + info.posVec);
-		System.out.println("[hao-entity]      NBT=" + info.nbt);
+		HaoDebug.log("[hao-entity]      NBT=" + info.nbt);
 		String raw = info.nbt.getString("id").orElse("");
 		Identifier identifier = raw.isEmpty() ? null : Identifier.tryParse(raw);
 		if (identifier == null) {
@@ -249,7 +250,7 @@ public abstract class WorldUtils_entityPlacementMixin {
 		double x = origin.getX() + regionPos.getX() + pos.x;
 		double y = origin.getY() + regionPos.getY() + pos.y;
 		double z = origin.getZ() + regionPos.getZ() + pos.z;
-		System.out.println("[hao-entity]    坐标 局部=" + info.posVec
+		HaoDebug.log("[hao-entity]    坐标 局部=" + info.posVec
 				+ " 区域=" + regionName + " 区域偏移=" + regionPos + " 投影原点=" + origin
 				+ " 变换后=" + String.format("%.3f,%.3f,%.3f", pos.x, pos.y, pos.z)
 				+ " 世界=" + String.format("%.3f,%.3f,%.3f", x, y, z));
@@ -258,7 +259,7 @@ public abstract class WorldUtils_entityPlacementMixin {
 		var schematicWorld = fi.dy.masa.litematica.world.SchematicWorldHandler.getSchematicWorld();
 		if (schematicWorld != null && mc.world != null) {
 			BlockPos at = BlockPos.ofFloored(x, y, z);
-			System.out.println("[hao-entity]    位置方块 " + at + " 投影=" + schematicWorld.getBlockState(at)
+			HaoDebug.log("[hao-entity]    位置方块 " + at + " 投影=" + schematicWorld.getBlockState(at)
 					+ " 世界=" + mc.world.getBlockState(at));
 		}
 		// "我渲染出来的才放":渲染层范围比投影级渲染开关细一档,没渲染的层/位置不参与。
@@ -266,7 +267,7 @@ public abstract class WorldUtils_entityPlacementMixin {
 		var renderLayerRange = DataManager.getRenderLayerRange();
 		if (renderLayerRange != null
 				&& !renderLayerRange.isPositionWithinRange((int) x, (int) y, (int) z)) {
-			System.out.println("[hao-entity]     × 在渲染层范围外 " + identifier + " @ "
+			HaoDebug.log("[hao-entity]     × 在渲染层范围外 " + identifier + " @ "
 					+ String.format("%.1f,%.1f,%.1f", x, y, z));
 			return null;
 		}
@@ -276,7 +277,7 @@ public abstract class WorldUtils_entityPlacementMixin {
 		boolean hitBox = !type.getSpawnBox(x, y, z).raycast(rayStart, rayEnd).isEmpty();
 		boolean hitCell = !new Box(BlockPos.ofFloored(x, y, z)).raycast(rayStart, rayEnd).isEmpty();
 		if (!hitBox && !hitCell) {
-			System.out.println("[hao-entity]     × 视线射线没命中 " + identifier + " @ "
+			HaoDebug.log("[hao-entity]     × 视线射线没命中 " + identifier + " @ "
 					+ String.format("%.1f,%.1f,%.1f", x, y, z));
 			return null;
 		}
@@ -295,7 +296,7 @@ public abstract class WorldUtils_entityPlacementMixin {
 		nbt.put("Pos", hao$nbtDoubles(x, y, z));
 		nbt.put("Rotation", hao$nbtFloats(yaw, pitch));
 		if (info.nbt.contains("Item")) {
-			System.out.println("[hao-entity]   框内物品=" + info.nbt.get("Item") + " @ " + identifier);
+			HaoDebug.log("[hao-entity]   框内物品=" + info.nbt.get("Item") + " @ " + identifier);
 		}
 		return new EntitySpawn(identifier, key, x, y, z, yaw, pitch, nbt);
 	}
@@ -306,7 +307,7 @@ public abstract class WorldUtils_entityPlacementMixin {
 		EntityPlacementHandler.registerPayloadType();
 		EntityPlacementHandler.registerPayloadType();
 		ClientPlayNetworking.send(new EntityPlacementPayload(List.of(spawn), count));
-		System.out.println("[hao-entity] 放置 " + spawn.type() + " @ "
+		HaoDebug.log("[hao-entity] 放置 " + spawn.type() + " @ "
 				+ String.format("%.1f,%.1f,%.1f", spawn.x(), spawn.y(), spawn.z()));
 	}
 

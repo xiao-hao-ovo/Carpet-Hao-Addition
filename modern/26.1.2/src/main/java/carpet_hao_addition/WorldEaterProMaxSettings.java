@@ -9,8 +9,7 @@ import carpet.api.settings.Rule;
  * (台阶、珊瑚扇、栅栏……)的有效抗性等于 100,TNT 根本炸不动,这就是原版
  * "含水方块防爆"的原因。本规则只让"流体那一项不参与"。
  * <p>
- * 高抗性方块(黑曜石/铁块/远古残骸等)也能被炸是另一回事 —— 那部分请用
- * 其它扩展的 {@code enhancedWorldEater},本项目不再重复实现。
+ * 高抗性方块(黑曜石/铁块/远古残骸等)也能被炸是另一回事 ,本项目不实现。
  */
 public class WorldEaterProMaxSettings {
 	/** Carpet 规则名(注册在 carpet 默认管理器)。 */

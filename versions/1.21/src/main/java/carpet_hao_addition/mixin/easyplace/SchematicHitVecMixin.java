@@ -34,7 +34,7 @@ public abstract class SchematicHitVecMixin {
     @Inject(
             method = "applyCarpetProtocolHitVec",
             at = @At(value = "RETURN"),
-            require = 0,
+            require = 1,
             cancellable = true)
     private static void hao$encodeProtocolBits(BlockPos pos, BlockState state, Vec3d hitVecIn, CallbackInfoReturnable<Vec3d> cir) {
         if (ProjectionPlacement.ruleEnabled()) {
@@ -55,7 +55,7 @@ public abstract class SchematicHitVecMixin {
     @Inject(
             method = "applyPlacementProtocolV3",
             at = @At(value = "RETURN"),
-            require = 0,
+            require = 1,
             cancellable = true)
     private static void hao$encodeProtocolBitsV3(BlockPos pos, BlockState state, Vec3d hitVecIn, CallbackInfoReturnable<Vec3d> cir) {
         if (!ProjectionPlacement.ruleEnabled()) {
@@ -77,7 +77,7 @@ public abstract class SchematicHitVecMixin {
     @Inject(
             method = "doEasyPlaceAction",
             at = @At(value = "RETURN"),
-            require = 0)
+            require = 1)
     private static void hao$completeMultiStageBlocks(MinecraftClient mc, CallbackInfoReturnable<ActionResult> cir) {
         BlockPos pos = hao$msPos;
         BlockState stateSchematic = hao$msSchematic;

@@ -15,7 +15,6 @@ import carpet.api.settings.Rule;
  * 这个规则按秒检查,把"卡在等级进度条里"的那部分经验也利用起来。
  * <p>
  * 规则注册在 Carpet 默认管理器(/carpet),分类 "Hao";默认关闭。
- * 规则名与上游保持一致,便于对照。
  */
 public class AutoMendingSettings {
 	/** Carpet 规则名(与上游 Carpet WuHu Addition 一致)。 */

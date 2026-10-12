@@ -56,5 +56,4 @@ This project is licensed under the **GNU LGPL-3.0** — see [LICENSE](LICENSE).
 ## Credits
 
 - Based on [fabric-carpet-extension-example-mod](https://github.com/gnembon/fabric-carpet-extension-example-mod).
-- Some rule ideas reference community extensions: 其它扩展, 其它扩展, and others.
 

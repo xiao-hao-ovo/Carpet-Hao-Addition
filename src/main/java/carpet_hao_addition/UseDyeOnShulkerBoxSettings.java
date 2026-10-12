@@ -5,7 +5,7 @@ import carpet.api.settings.CarpetRule;
 import carpet.api.settings.Rule;
 
 /**
- * 「潜影盒染色」规则(移植自 plusls-carpet-addition 的 {@code haoUseDyeOnShulkerBox}):
+ * 「潜影盒染色」规则:
  * <ul>
  *   <li>手持**染料**右键**潜影盒** → 把盒子染成该染料的颜色;</li>
  *   <li>手持**水瓶**右键**有颜色的潜影盒** → 洗回无色潜影盒(水瓶变回玻璃瓶);</li>

@@ -19,8 +19,7 @@ import org.spongepowered.asm.mixin.injection.At;
  * haoBedrockMines(客户端层):在<b>调用点</b>把基岩的挖掘进度兜底为黑曜石。
  * <p>
  * 为什么客户端要单独做一份:{@link BlockState_bedrockCanBeMinedMixin} 是在
- * {@code AbstractBlockState.calcBlockBreakingDelta} 的 RETURN 处兜底,但其它扩展
- * (典型是 其它扩展的 {@code commandCustomBlockHardness})会在该方法
+ * {@code AbstractBlockState.calcBlockBreakingDelta} 的 RETURN 处兜底,但该方法可能被别的注入
  * <b>HEAD</b> 处直接 {@code setReturnValue} 并取消,方法提前返回,Return 注入被整段跳过。
  * <p>
  * 而挖掘进度是<b>客户端驱动</b>的:客户端算不出进度就不会发挖掘包,服务端再兜底也没用,

@@ -18,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import carpet_hao_addition.HaoDebug;
 /**
  * 多阶段方块(雪层/海泡菜)的循环补放：原版一次只放一层，需连续调用多次才能堆到投影层数。
  * <p>
@@ -56,7 +57,7 @@ public abstract class WorldActionMixin {
         }
         if (loopCount > 0) {
             SchematicUtilsInvoker.hao$cachePlacement(pos);
-            System.out.println("[hao-easyplace] [multi-stage-fill] " + pos + " steps=" + loopCount
+            HaoDebug.log("[hao-easyplace] [multi-stage-fill] " + pos + " steps=" + loopCount
                     + " target=" + stateSchematic);
         }
     }

@@ -18,7 +18,7 @@ import java.util.AbstractList;
 import java.util.List;
 
 /**
- * 信标效果表(客户端)—— 移植自 getcmdrolled/wacko-beacons。
+ * 信标效果表(客户端)。
  * <p>
  * 把 {@code BEACON_EFFECTS} 换成一张**按规则动态求值**的只读视图:规则关时原样返回原版表,
  * 规则开时返回改动过的表(Regeneration 挪到第 2 档)。

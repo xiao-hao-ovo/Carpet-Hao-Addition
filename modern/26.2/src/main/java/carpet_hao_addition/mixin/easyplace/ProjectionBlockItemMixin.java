@@ -26,6 +26,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import carpet_hao_addition.easyplace.PlacementBitTools;
+import carpet_hao_addition.HaoDebug;
 import static carpet_hao_addition.easyplace.PlacementBitTools.readBits;
 import static carpet_hao_addition.easyplace.PlacementBitTools.hitOffsetX;
 import static carpet_hao_addition.easyplace.PlacementBitTools.hitOffsetZ;
@@ -52,7 +53,7 @@ public abstract class ProjectionBlockItemMixin {
             // 标牌文字靠它自己的 updateListeners 同步,只调 Level.updateListeners 不够。
             if (be instanceof SignBlockEntity signBe) {
                 ((SignListenerInvoker) signBe).hao$callMarkUpdated();
-                System.out.println("[hao-easyplace] [广播刷新] 标牌 updateListeners: " + pos);
+                HaoDebug.log("[hao-easyplace] [广播刷新] 标牌 updateListeners: " + pos);
             }
         }
         level.sendBlockUpdated(pos, now, now, 3);
@@ -61,7 +62,7 @@ public abstract class ProjectionBlockItemMixin {
     @Inject(method = "getPlacementState", at = @At("HEAD"), cancellable = true)
     private void hao$restorePlacementState(BlockPlaceContext context, CallbackInfoReturnable<BlockState> cir) {
         double relativeHitZ = hitOffsetZ(context.getClickLocation(), PlacementBitTools.clickedPos(context));
-        System.out.println("[hao-easyplace] [getPlacementState] 规则="
+        HaoDebug.log("[hao-easyplace] [getPlacementState] 规则="
                 + ProjectionPlacement.ruleEnabled()
                 + " hitPos=" + context.getClickLocation() + " blockPos=" + PlacementBitTools.clickedPos(context)
                 + " relZ=" + String.format("%.3f", relativeHitZ)
@@ -75,7 +76,7 @@ public abstract class ProjectionBlockItemMixin {
             baseState = this.getBlock().getStateForPlacement(context);
         }
         BlockState state = ProjectionPlacement.decodeSchematicState(this.getBlock(), context, baseState);
-        System.out.println("[hao-easyplace]   [放置解码] hitPos=" + context.getClickLocation()
+        HaoDebug.log("[hao-easyplace]   [放置解码] hitPos=" + context.getClickLocation()
                 + " blockPos=" + PlacementBitTools.clickedPos(context) + " side=" + context.getClickedFace()
                 + " 还原状态=" + state);
         if (state == null) {
@@ -123,7 +124,7 @@ public abstract class ProjectionBlockItemMixin {
                                         .map(net.minecraft.core.Holder.Reference::value)
                                         .orElse(null),
                                 fullNbt));
-                System.out.println("[hao-easyplace] [服务端] 应用完整 NBT: 位置=" + pos + " id=" + fullNbt.getString("id").orElse(""));
+                HaoDebug.log("[hao-easyplace] [服务端] 应用完整 NBT: 位置=" + pos + " id=" + fullNbt.getString("id").orElse(""));
                 boolean hao$ok = original.call(level, player, pos, withFullNbt);
                 hao$notifyClient(level, pos);
                 return hao$ok;
@@ -132,7 +133,7 @@ public abstract class ProjectionBlockItemMixin {
             hao$notifyClient(level, pos);
             return hao$ok2;
         }
-        System.out.println("[hao-easyplace] [postPlacement] pos=" + pos
+        HaoDebug.log("[hao-easyplace] [postPlacement] pos=" + pos
                 + " side=" + context.getClickedFace() + " state=" + level.getBlockState(pos)
                 + " 世界该处=" + level.getBlockState(pos));
         ItemStack newStack = ProjectionPlacement.applySchematicItemData(stack, context);

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import carpet_hao_addition.HaoDebug;
 /**
  * 昊藏小囊(轻松放置实体)的候选选择器 —— 与 1.21.8 的实现逐条对齐。
  * <p>
@@ -426,7 +427,7 @@ public class EntityPlacementScreen extends Screen {
 		int count = EasyPlaceEntitySettings.count(player.getUUID());
 		EntityPlacementHandler.registerPayloadType();
 		ClientPlayNetworking.send(new EntityPlacementPayload(List.of(spawn), count));
-		System.out.println("[hao-entity] 选择器放置 " + spawn.type() + " @ "
+		HaoDebug.log("[hao-entity] 选择器放置 " + spawn.type() + " @ "
 				+ String.format("%.1f,%.1f,%.1f", spawn.x(), spawn.y(), spawn.z()));
 	}
 

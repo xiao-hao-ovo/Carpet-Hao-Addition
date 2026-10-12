@@ -16,7 +16,7 @@ import net.minecraft.server.world.ServerWorld;
  * 版本相关 API(1.21 才有"附魔效果"这套机制,与旧版签名完全不同)。
  */
 public final class AutoMendingHandler {
-	/** 检查间隔:tick 数,20 = 1 秒(与上游一致)。 */
+	/** 检查间隔:tick 数,20 = 1 秒。 */
 	private static final int INTERVAL = 20;
 
 	private AutoMendingHandler() {

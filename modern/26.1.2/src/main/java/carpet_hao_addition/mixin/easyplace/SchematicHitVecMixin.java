@@ -26,6 +26,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import carpet_hao_addition.HaoDebug;
 // Litematica 版本差异：0.27.x 的 easyplace 编码方法仍在 WorldUtils（0.28 才搬到 EasyPlaceUtils）。
 // 本层依赖的是 litematica 0.27.14，故目标类必须是 WorldUtils。
 // 注意 cacheEasyPlacePosition 那份仍留在 EasyPlaceUtils（见 SchematicUtilsInvoker）。
@@ -41,7 +42,7 @@ public abstract class SchematicHitVecMixin {
     private static void hao$encodeProtocolBits(BlockPos pos, BlockState state, Vec3 hitVecIn, CallbackInfoReturnable<Vec3> cir) {
         if (ProjectionPlacement.ruleEnabled()) {
             Vec3 out = SchematicPlacementEncoder.encodeSchematicItemData(cir.getReturnValue(), pos, state);
-            System.out.println("[hao-easyplace] [CarpetVec] pos=" + pos + " in=" + cir.getReturnValue() + " out=" + out);
+            HaoDebug.log("[hao-easyplace] [CarpetVec] pos=" + pos + " in=" + cir.getReturnValue() + " out=" + out);
             cir.setReturnValue(out);
         }
     }
@@ -56,7 +57,7 @@ public abstract class SchematicHitVecMixin {
             return;
         }
         Vec3 encoded = SchematicPlacementEncoder.encodeSchematicItemData(cir.getReturnValue(), pos, state);
-        System.out.println("[hao-easyplace] [V3] pos=" + pos + " state=" + state
+        HaoDebug.log("[hao-easyplace] [V3] pos=" + pos + " state=" + state
                 + " litematica返回=" + cir.getReturnValue() + " 我们编码后=" + encoded);
         PendingMultiStage.note(pos, state, encoded);
         

@@ -22,6 +22,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 import java.util.Map;
 
+import carpet_hao_addition.HaoDebug;
 public class SchematicPlacementEncoder {
 
     public static Vec3 encodeSchematicItemData(Vec3 hitPos, BlockPos pos, BlockState stateSchematic) {
@@ -37,7 +38,7 @@ public class SchematicPlacementEncoder {
         if (itemCodec != null) {
             bits |= encodeItemData(itemCodec, pos, stateSchematic);
         }
-        System.out.println("[hao-easyplace] 客户端编码 方块=" + block + " 协议位=" + bits);
+        HaoDebug.log("[hao-easyplace] 客户端编码 方块=" + block + " 协议位=" + bits);
         return bits == 0 ? hitPos : PlacementBitTools.bitsToHitVec(bits, hitPos);
     }
 
@@ -60,10 +61,10 @@ public class SchematicPlacementEncoder {
 
         Level world = SchematicWorldHandler.getSchematicWorld();
         BlockEntity blockEntity = world == null ? null : world.getBlockEntity(pos);
-        System.out.println("[hao-easyplace]   投影方块实体=" + (blockEntity == null ? "null" : blockEntity.getClass().getSimpleName()));
+        HaoDebug.log("[hao-easyplace]   投影方块实体=" + (blockEntity == null ? "null" : blockEntity.getClass().getSimpleName()));
         if (blockEntity != null) {
             int fromEntity = ProjectionPlacement.encodeBlockEntityBits(blockEntity);
-            System.out.println("[hao-easyplace]   实体编码位=" + fromEntity);
+            HaoDebug.log("[hao-easyplace]   实体编码位=" + fromEntity);
             if (fromEntity != 0) {
                 return fromEntity;
             }
@@ -74,9 +75,9 @@ public class SchematicPlacementEncoder {
         if (fullNbt != null) {
             BlockDataChannel.dispatchPacket(pos, fullNbt);
         }
-        System.out.println("[hao-easyplace]   投影NBT=" + (fullNbt == null ? "null" : fullNbt));
+        HaoDebug.log("[hao-easyplace]   投影NBT=" + (fullNbt == null ? "null" : fullNbt));
         int fromNbt = codec.encodeNbt(fullNbt);
-        System.out.println("[hao-easyplace]   NBT编码位=" + fromNbt);
+        HaoDebug.log("[hao-easyplace]   NBT编码位=" + fromNbt);
         return fromNbt;
     }
 
@@ -104,21 +105,21 @@ public class SchematicPlacementEncoder {
                 if (directBe != null) {
                     CompoundTag directNbt = directBe.saveWithFullMetadata(schematicWorld.registryAccess());
                     if (hao$idMatchesState(directNbt, stateSchematic)) {
-                        System.out.println("[hao-easyplace]    投影世界直查命中: " + pos
+                        HaoDebug.log("[hao-easyplace]    投影世界直查命中: " + pos
                                 + " id=" + directNbt.getString("id").orElse("?"));
                         return directNbt;
                     }
-                    System.out.println("[hao-easyplace]    投影世界直查类型不符, 转换算: " + pos
+                    HaoDebug.log("[hao-easyplace]    投影世界直查类型不符, 转换算: " + pos
                             + " id=" + directNbt.getString("id").orElse("?")
                             + " 期望方块=" + stateSchematic.getBlock());
                 } else {
-                    System.out.println("[hao-easyplace]    直查诊断: pos=" + pos
+                    HaoDebug.log("[hao-easyplace]    直查诊断: pos=" + pos
                             + " 投影该处方块=" + schematicWorld.getBlockState(pos)
                             + " 期望方块=" + stateSchematic.getBlock());
                 }
             }
         } catch (Exception e) {
-            System.out.println("[hao-easyplace]    投影世界直查异常: " + e);
+            HaoDebug.log("[hao-easyplace]    投影世界直查异常: " + e);
         }
         try {
             List<SchematicPlacementManager.PlacementPart> parts = DataManager.getSchematicPlacementManager().getAllPlacementsTouchingChunk(pos);
@@ -159,7 +160,7 @@ public class SchematicPlacementEncoder {
                 BlockPos schematicPos = SchematicUtils.getSchematicContainerPositionFromWorldPosition(
                         pos, schematic, regionName, schematicPlacement, placement, container);
                 if (schematicPos != null) {
-                    System.out.println("[hao-easyplace]    换算诊断: worldPos=" + pos
+                    HaoDebug.log("[hao-easyplace]    换算诊断: worldPos=" + pos
                             + " schematicPos=" + schematicPos + " mapKeys=" + blockEntityMap.keySet());
                     CompoundTag nbt = blockEntityMap.get(schematicPos);
                     if (nbt == null) {
@@ -181,7 +182,7 @@ public class SchematicPlacementEncoder {
                             }
                         }
                         if (nbt != null) {
-                            System.out.println("[hao-easyplace]    类型兜底命中: 目标=" + schematicPos
+                            HaoDebug.log("[hao-easyplace]    类型兜底命中: 目标=" + schematicPos
                                     + " 实际=" + bestPos + " 距离=" + bestDist
                                     + " id=" + nbt.getString("id").orElse("?"));
                         }
@@ -192,8 +193,8 @@ public class SchematicPlacementEncoder {
                 }
             }
         } catch (Exception e) {
-            System.out.println("[hao-easyplace]     schematicBlockEntityNbt 异常: " + e);
-            e.printStackTrace();
+            HaoDebug.log("[hao-easyplace]     schematicBlockEntityNbt 异常: " + e);
+            HaoDebug.stackTrace(e);
             return null;
         }
         return null;

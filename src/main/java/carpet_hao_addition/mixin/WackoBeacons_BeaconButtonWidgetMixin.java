@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * 信标效果按钮(客户端)—— 移植自 getcmdrolled/wacko-beacons。
+ * 信标效果按钮(客户端)。
  * <p>
  * 1.21.x 里按层数禁用按钮的地方是 {@code BeaconScreen$BaseButtonWidget.setDisabled(boolean)}
  * (它同时写 {@code disabled} 与父类的 {@code active})。这里在 HEAD 处直接吞掉这次调用并把

@@ -154,7 +154,7 @@ public final class EntityPlacementHandler {
 		if (!key.isEmpty()) {
 			Integer previous = placedKeys.get(key);
 			if (previous != null && world.getEntityById(previous) != null) {
-				System.out.println("[hao-entity]   跳过 " + spawn.type() + ":这个投影实体已经放过了");
+				HaoDebug.log("[hao-entity]   跳过 " + spawn.type() + ":这个投影实体已经放过了");
 				return;
 			}
 		}
@@ -171,7 +171,7 @@ public final class EntityPlacementHandler {
 		}
 		for (Map.Entry<Item, Integer> entry : need.entrySet()) {
 			if (hao$count(player, entry.getKey()) < entry.getValue()) {
-				System.out.println("[hao-entity]   跳过 " + spawn.type() + ":实体本身的物品不足");
+				HaoDebug.log("[hao-entity]   跳过 " + spawn.type() + ":实体本身的物品不足");
 				return;
 			}
 		}
@@ -188,12 +188,12 @@ public final class EntityPlacementHandler {
 			// 入世界必须用 spawnNewEntityAndPassengers,否则乘客不会真正加进世界。
 			Entity entity = EntityType.loadEntityWithPassengers(nbt, world, SpawnReason.COMMAND, loaded -> loaded);
 			if (entity == null) {
-				System.out.println("[hao-entity]   还原失败 " + spawn.type() + "(NBT 无法创建实体)");
+				HaoDebug.log("[hao-entity]   还原失败 " + spawn.type() + "(NBT 无法创建实体)");
 				break;
 			}
 			entity.refreshPositionAndAngles(spawn.x(), spawn.y(), spawn.z(), spawn.yaw(), spawn.pitch());
 			boolean added = world.spawnNewEntityAndPassengers(entity);
-			System.out.println("[hao-entity]   生成后 " + entity.getType() + " @ "
+			HaoDebug.log("[hao-entity]   生成后 " + entity.getType() + " @ "
 					+ String.format("%.3f,%.3f,%.3f", entity.getX(), entity.getY(), entity.getZ())
 					+ " 投影要求=" + String.format("%.3f,%.3f,%.3f", spawn.x(), spawn.y(), spawn.z())
 					+ " yaw=" + String.format("%.1f", spawn.yaw()));
@@ -208,15 +208,15 @@ public final class EntityPlacementHandler {
 				// 否则客户端只会按载具的 Passengers "知道"它存在,却**不会渲染它** ——
 				// 表现就是"只看得见载具,打掉载具乘客才出现"。骑乘关系保持不变(投影一致)。
 				boolean addedPassenger = world.spawnNewEntityAndPassengers(passenger);
-				System.out.println("[hao-entity]   乘客 " + passenger.getType() + " 加入世界="
+				HaoDebug.log("[hao-entity]   乘客 " + passenger.getType() + " 加入世界="
 						+ addedPassenger + " 位置=" + passenger.getX() + "," + passenger.getY()
 						+ "," + passenger.getZ() + " 载具=" + entity.getX() + "," + entity.getY()
 						+ "," + entity.getZ());
 			}
-			System.out.println("[hao-entity]   加进世界=" + added + " 乘客实况="
+			HaoDebug.log("[hao-entity]   加进世界=" + added + " 乘客实况="
 					+ entity.getPassengerList().size());
 		}
-		System.out.println("[hao-entity]   生成 " + spawn.type() + " x" + count + " 消耗=" + need);
+		HaoDebug.log("[hao-entity]   生成 " + spawn.type() + " x" + count + " 消耗=" + need);
 	}
 
 	/**
@@ -245,7 +245,7 @@ public final class EntityPlacementHandler {
 				sub.forEach((item, amount) -> need.merge(item, amount, Integer::sum));
 				kept.add(passenger);
 			} else {
-				System.out.println("[hao-entity]   乘客材料不足,已剔除 "
+				HaoDebug.log("[hao-entity]   乘客材料不足,已剔除 "
 						+ passenger.getString("id").orElse("?"));
 			}
 		}
@@ -286,7 +286,7 @@ public final class EntityPlacementHandler {
 		NbtCompound single = nbt.getCompound("Item").orElse(null);
 		if (single != null && !hao$payable(player, single, count, need)) {
 			nbt.remove("Item");
-			System.out.println("[hao-entity]   内容物不足,已剔除 Item");
+			HaoDebug.log("[hao-entity]   内容物不足,已剔除 Item");
 		}
 		for (String field : CONTENT_FIELDS) {
 			NbtList list = nbt.getList(field).orElse(null);
@@ -304,7 +304,7 @@ public final class EntityPlacementHandler {
 				sub.forEach((item, amount) -> need.merge(item, amount, Integer::sum));
 			} else {
 				nbt.remove(field);
-				System.out.println("[hao-entity]   内容物不足,已剔除 " + field);
+				HaoDebug.log("[hao-entity]   内容物不足,已剔除 " + field);
 			}
 		}
 	}

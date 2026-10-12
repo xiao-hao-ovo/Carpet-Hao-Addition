@@ -67,13 +67,12 @@
   "carpet.rule.haoProjectionPlacement.name": "Projection Placement",
   "carpet.rule.haoProjectionPlacement.desc": "When building from a schematic, places blocks with complex states (facing, toggle, color, block-entity data...) exactly as the schematic specifies. Requires Litematica. For waterlogged blocks use haoProjectionWaterlogged. Values: false = off (default); true = on, but a composter's fill level is not restored; with_composter_level = on, restores a composter's fill level too.",
   "carpet.rule.haoEnhancedWorldEaterProMax.name": "Enhanced World Eater ProMax",
-  "carpet.rule.haoEnhancedWorldEaterProMax.desc": "Lets waterlogged blocks be destroyed by explosions. Vanilla takes max(block resistance, fluid resistance) and water has a fluid resistance of 100, so waterlogged slabs/coral fans etc. survive TNT; when on, water's fluid resistance counts as 0. This only covers waterlogged blocks - for high-resistance blocks (obsidian/iron block/...) use 其它扩展's enhancedWorldEater. Off by default.",
+  "carpet.rule.haoEnhancedWorldEaterProMax.desc": "Lets waterlogged blocks be destroyed by explosions. Vanilla takes max(block resistance, fluid resistance) and water has a fluid resistance of 100, so waterlogged slabs/coral fans etc. survive TNT; when on, water's fluid resistance counts as 0. Off by default.",
   "carpet.rule.haoCraftableTrimTemplates.name": "Craftable Trim Templates",
   "carpet.rule.haoCraftableTrimTemplates.desc": "When on, all 19 trim/upgrade smithing templates become craftable: 7 diamonds + 1 material taken from that template's original duplicating recipe (shipwreck -> cobblestone, desert temple -> sandstone, trail ruins -> terracotta, ...). Off by default.",
   "carpet.rule.haoProjectionWaterlogged.name": "Easy Place Fill",
   "carpet.rule.haoProjectionWaterlogged.desc": "While following a schematic with easy place, fills in the schematic's water/lava/lava cauldron/fire: water consumes ice, lava consumes a magma block, igniting prefers a fire charge. Values: false = off; true = inventory only; shulker_direct = take from inside a shulker box; shulker_take = move the material into the inventory. If short on materials, only the block itself is placed. Requires Litematica.",
-  "carpet.rule.haoDirectBlockDrops.extra.0": " - https://github.com/x-oOvOo-x/其它扩展",
-  "carpet.rule.haoDirectEntityDrops.extra.0": "Added by this extension on top of 其它扩展's haoDirectBlockDrops (entity drop variant)",
+  "carpet.rule.haoDirectEntityDrops.extra.0": "Added by this extension (entity drop variant)",
   "carpet.rule.haoProjectionWaterloggedTrigger.name": "Easy Place Fill Trigger",
   "carpet.rule.haoProjectionWaterloggedTrigger.desc": "When the fill feature is allowed to run: always = both poses, standing or sneaking (default); standing = only while the player is not sneaking; sneaking = only while the player is sneaking (holding the sneak key).",
   "carpet.rule.exampleBoolean.name": "Example Boolean Rule",
@@ -99,5 +98,5 @@
   "carpet.rule.haoAutoMending.name": "Auto mending (new)",
   "carpet.rule.haoAutoMending.desc": "Ported from Carpet WuHu Addition. Once a second, automatically spend the XP already accumulated in the level bar to repair damaged gear enchanted with Mending, repairing as much as that XP allows and deducting the same amount of XP (no free durability). Off by default.",
   "carpet.rule.haoWackoBeacons.name": "Wacko Beacons (client)",
-  "carpet.rule.haoWackoBeacons.desc": "Client-side beacon unlock: Regeneration selectable as a primary effect, and effect buttons are no longer disabled by beacon tier. Ported from wacko-beacons."
+  "carpet.rule.haoWackoBeacons.desc": "Client-side beacon unlock: Regeneration selectable as a primary effect, and effect buttons are no longer disabled by beacon tier."
 }

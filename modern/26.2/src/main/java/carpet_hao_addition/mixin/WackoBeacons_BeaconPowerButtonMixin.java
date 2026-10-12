@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * 信标效果按钮(客户端)—— 移植自 getcmdrolled/wacko-beacons。
+ * 信标效果按钮(客户端)。
  * <p>
  * {@code BeaconPowerButton.updateStatus(level)} 是原版按信标层数给按钮设 {@code active} 的地方。
  * 在它尾部把按钮重新启用,效果按钮就不再按层数禁用 —— 于是 9 块钻石也能选 Strength(原版要 50 块)。

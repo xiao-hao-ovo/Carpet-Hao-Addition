@@ -5,9 +5,9 @@ import carpet.api.settings.CarpetRule;
 import carpet.api.settings.Rule;
 
 /**
- * 信标效果解锁(客户端)—— 移植自 getcmdrolled/wacko-beacons。
+ * 信标效果解锁(客户端)。
  * <p>
- * 原 mod 是一个 proof of concept:信标的效果在**客户端**才被限制,服务端只校验
+ * 这是一个 proof of concept:信标的效果在**客户端**才被限制,服务端只校验
  * "效果是否有效"(以及 secondary 与 primary 相同时不给 II 级 + 层数要求),并不校验
  * "这个效果在你当前层数下能不能选"。于是纯客户端改两处就能做到:
  * <ol>

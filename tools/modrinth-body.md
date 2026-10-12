@@ -25,7 +25,7 @@
 | Minecraft | Yarn mappings | Fabric Loader | Carpet |
 |---|---|---|---|
 | 1.21 | 1.21+build.9 | 0.19.5（要求 ≥0.16.10） | 1.21-1.4.147+v240613 |
-| 1.21.1 | 1.21.1+build.3 | 0.19.5（要求 ≥0.16.10） | 1.21-1.4.147+v240613（上游无专用 1.21.1,该版本声明 minecraft ">1.20.1"） |
+| 1.21.1 | 1.21.1+build.3 | 0.19.5（要求 ≥0.16.10） | 1.21-1.4.147+v240613（Litematica 无专用 1.21.1,该版本声明 minecraft ">1.20.1"） |
 | 1.21.2 | 1.21.2+build.1 | 0.19.5（要求 ≥0.16.10） | 1.21.2-1.4.158+v241022 |
 | 1.21.4 | 1.21.4+build.8 | 0.19.5（要求 ≥0.16.10） | 1.21.4-1.4.161+v241203 |
 | 1.21.6 | 1.21.6+build.1 | 0.19.5（要求 ≥0.16.10） | 1.21.6-1.4.176+v250617 |
@@ -51,7 +51,7 @@
 | `haoSnowyCalcite` | false | 雪地刷石机产出方解石（雪/水与岩浆相接时生成方解石） |
 | `haoNoEndPortalTeleport` | false | 末地传送门传送控制：配合 `/playerNoEndPortalTeleport` 的名单与 `globalMode` 决定哪些玩家不被传送 |
 | `haoTerracottaUncolor` | false | 切石机把染色陶瓦 / 染色釉陶瓦还原为普通陶瓦；启用时自动向世界部署数据包配方并随规则启停 |
-| `haoBedrockMines` | false | 基岩可被挖掘：默认按黑曜石硬度，掉落 1 块基岩；与 其它扩展的 `commandCustomBlockHardness` 同时开启时遵循其对 `minecraft:bedrock` 的自定义硬度 |
+| `haoBedrockMines` | false | 基岩可被挖掘：默认按黑曜石硬度，掉落 1 块基岩；与提供自定义硬度的其它实现同时开启时遵循其对 `minecraft:bedrock` 的设置 |
 
 ### 选项规则
 
@@ -155,4 +155,3 @@ cd modern/26.2
 ## 致谢
 
 - 基于 [fabric-carpet-extension-example-mod](https://github.com/gnembon/fabric-carpet-extension-example-mod) 改造。
-- 部分规则思路参考社区扩展：其它扩展、其它扩展 等。

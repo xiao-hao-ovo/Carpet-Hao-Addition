@@ -12,6 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 
+import carpet_hao_addition.HaoDebug;
 /**
  * 投影「精准放置」的对外门面。
  *
@@ -163,7 +164,7 @@ public final class ProjectionPlacement {
 		}
 		int bits = PlacementBitTools.readBits(hitZ);
 		ItemStack restored = codec.decodeStack(bits, stack);
-		System.out.println("[hao-easyplace] 服务端解码 值=" + bits + " 物品=" + stack.getItem()
+		HaoDebug.log("[hao-easyplace] 服务端解码 值=" + bits + " 物品=" + stack.getItem()
 				+ " 还原后BlockEntityTag=" + (restored.get(DataComponents.BLOCK_ENTITY_DATA) != null));
 		return restored;
 	}

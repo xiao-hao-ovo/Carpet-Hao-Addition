@@ -26,6 +26,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import carpet_hao_addition.HaoDebug;
 @Mixin(EasyPlaceUtils.class)
 public abstract class SchematicHitVecMixin {
     //?<= 1.20.6 ? @Shadow private static void cacheEasyPlacePosition(BlockPos pos) {}
@@ -38,7 +39,7 @@ public abstract class SchematicHitVecMixin {
     private static void hao$encodeProtocolBits(BlockPos pos, BlockState state, Vec3 hitVecIn, CallbackInfoReturnable<Vec3> cir) {
         if (ProjectionPlacement.ruleEnabled()) {
             Vec3 out = SchematicPlacementEncoder.encodeSchematicItemData(cir.getReturnValue(), pos, state);
-            System.out.println("[hao-easyplace] [CarpetVec] pos=" + pos + " in=" + cir.getReturnValue() + " out=" + out);
+            HaoDebug.log("[hao-easyplace] [CarpetVec] pos=" + pos + " in=" + cir.getReturnValue() + " out=" + out);
             cir.setReturnValue(out);
         }
     }
@@ -53,7 +54,7 @@ public abstract class SchematicHitVecMixin {
             return;
         }
         Vec3 encoded = SchematicPlacementEncoder.encodeSchematicItemData(cir.getReturnValue(), pos, state);
-        System.out.println("[hao-easyplace] [V3] pos=" + pos + " state=" + state
+        HaoDebug.log("[hao-easyplace] [V3] pos=" + pos + " state=" + state
                 + " litematica返回=" + cir.getReturnValue() + " 我们编码后=" + encoded);
         PendingMultiStage.note(pos, state, encoded);
         

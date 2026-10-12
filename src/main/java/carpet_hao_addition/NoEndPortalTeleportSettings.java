@@ -5,8 +5,7 @@ import carpet.api.settings.CarpetRule;
 import carpet.api.settings.Rule;
 
 /**
- * 末地传送门不传送玩家规则(仿 其它扩展的
- * commandPlayerNoNetherPortalTeleport 思路,针对末地传送门)。
+ * 末地传送门不传送玩家规则。
  * <p>
  * 开启后提供 {@code /playerNoEndPortalTeleport} 名单管理,但<b>本身不改变传送</b>:
  * 只有当 globalMode 开启(所有玩家)或该玩家被加入黑名单后,才不被末地传送门传送;
