@@ -11,7 +11,7 @@ import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import fi.dy.masa.litematica.util.EasyPlaceUtils;
+import fi.dy.masa.litematica.util.WorldUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -26,7 +26,10 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-@Mixin(EasyPlaceUtils.class)
+// Litematica 版本差异：0.27.x 的 easyplace 编码方法仍在 WorldUtils（0.28 才搬到 EasyPlaceUtils）。
+// 本层依赖的是 litematica 0.27.14，故目标类必须是 WorldUtils。
+// 注意 cacheEasyPlacePosition 那份仍留在 EasyPlaceUtils（见 SchematicUtilsInvoker）。
+@Mixin(WorldUtils.class)
 public abstract class SchematicHitVecMixin {
     //?<= 1.20.6 ? @Shadow private static void cacheEasyPlacePosition(BlockPos pos) {}
 
