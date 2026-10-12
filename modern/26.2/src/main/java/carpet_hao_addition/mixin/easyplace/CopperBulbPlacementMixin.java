@@ -11,17 +11,13 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * easy place 放铜灯(1.21.x 的 Yarn 名是 {@link CopperBulbBlock})时不让它翻转 lit 状态。
- * <p>
- * 1.21.x 的方法名与 26.x 不同:{@code onPlace} / {@code neighborChanged} 在 Yarn 里分别叫
- * {@code onBlockAdded} / {@code neighborUpdate},而且 {@code CopperBulbBlock} 自己**都没覆写**
- * (它只覆写了 {@code update},26.x 里对应的方法叫 {@code checkAndFlip})。
- * {@code @Inject} 只认目标类自己声明的方法,所以只注入 {@code update} 这一处即可 ——
- * 放置(onBlockAdded)与邻居更新(neighborUpdate)最终都会走它。
- */
+ * easy place 鏀鹃摐鐏?1.21.x 鐨?Yarn 鍚嶆槸 {@link CopperBulbBlock})鏃朵笉璁╁畠缈昏浆 lit 鐘舵€併€? * <p>
+ * 1.21.x 鐨勬柟娉曞悕涓?26.x 涓嶅悓:{@code onPlace} / {@code neighborChanged} 鍦?Yarn 閲屽垎鍒彨
+ * {@code onBlockAdded} / {@code neighborUpdate},鑰屼笖 {@code CopperBulbBlock} 鑷繁**閮芥病瑕嗗啓**
+ * (瀹冨彧瑕嗗啓浜?{@code update},26.x 閲屽搴旂殑鏂规硶鍙?{@code checkAndFlip})銆? * {@code @Inject} 鍙鐩爣绫昏嚜宸卞０鏄庣殑鏂规硶,鎵€浠ュ彧娉ㄥ叆 {@code update} 杩欎竴澶勫嵆鍙?鈥斺€? * 鏀剧疆(onBlockAdded)涓庨偦灞呮洿鏂?neighborUpdate)鏈€缁堥兘浼氳蛋瀹冦€? */
 @Mixin(value = CopperBulbBlock.class, priority = 900)
 public abstract class CopperBulbPlacementMixin {
-	@Inject(method = "update", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "checkAndFlip", at = @At("HEAD"), cancellable = true)
 	private void hao$cancelFlip(BlockState state, ServerLevel world, BlockPos pos, CallbackInfo ci) {
 		if (ProjectionPlacement.isProjected()) {
 			ci.cancel();
