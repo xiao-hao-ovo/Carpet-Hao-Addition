@@ -24,7 +24,6 @@
 		"ServerLevel_tickBlockMixin",
 		"MinecraftServer_waterloggedFillMixin",
 		"easyplace.BeaconEffectAccessor",
-		"easyplace.SignPlacementMixin",
 		"easyplace.ProjectionBlockItemMixin",
 		"easyplace.AttachableItemPlacementMixin",
 		"easyplace.CopperBulbPlacementMixin",
