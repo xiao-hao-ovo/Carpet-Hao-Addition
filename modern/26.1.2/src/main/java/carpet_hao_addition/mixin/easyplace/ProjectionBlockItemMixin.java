@@ -86,7 +86,7 @@ public abstract class ProjectionBlockItemMixin {
         cir.setReturnValue(state);
     }
 
-    @WrapMethod(method = "place(Lnet/minecraft/item/BlockPlaceContext;)Lnet/minecraft/util/InteractionResult;")
+    @WrapMethod(method = "place")
     private InteractionResult hao$enterPlacementWindow(BlockPlaceContext context, Operation<InteractionResult> original) {
         if (ProjectionPlacement.ruleEnabled()
                 && isProtocolHit(hitOffsetX(context.getClickLocation(), PlacementBitTools.clickedPos(context)))) {
