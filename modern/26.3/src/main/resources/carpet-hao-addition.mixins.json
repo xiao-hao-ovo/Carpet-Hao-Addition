@@ -25,6 +25,7 @@
 		"MinecraftServer_waterloggedFillMixin",
 		"FluidState_breakWaterloggedMixin",
 		"easyplace.BeaconEffectAccessor",
+		"easyplace.SignPlacementMixin",
 		"easyplace.ProjectionBlockItemMixin",
 		"easyplace.AttachableItemPlacementMixin",
 		"easyplace.SignListenerInvoker",
@@ -41,7 +42,6 @@
 		"WorldUtils_waterloggedFillMixin",
 		"WorldUtils_entityPlacementMixin",
 		"easyplace.SchematicHitVecMixin",
-		"easyplace.EasyPlaceUtilsMixin",
 		"easyplace.SchematicUtilsInvoker"
 	],
 	"injectors": {

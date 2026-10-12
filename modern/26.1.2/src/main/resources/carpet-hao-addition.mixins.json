@@ -27,6 +27,7 @@
 		"easyplace.SignPlacementMixin",
 		"easyplace.ProjectionBlockItemMixin",
 		"easyplace.AttachableItemPlacementMixin",
+		"easyplace.CopperBulbPlacementMixin",
 		"easyplace.SignListenerInvoker",
 		"DyeItem_useDyeOnShulkerBoxMixin",
 		"CactusShulkerBoxWashMixin",
@@ -39,7 +40,6 @@
 		"easyplace.SchematicHitVecMixin",
 		"easyplace.SchematicUtilsInvoker",
 		"WorldUtils_entityPlacementMixin",
-		"easyplace.EasyPlaceUtilsMixin",
 		"WackoBeacons_BeaconPowerButtonMixin",
 		"WackoBeacons_BeaconBlockEntityMixin"
 	],

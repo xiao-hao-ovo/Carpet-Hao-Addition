@@ -27,6 +27,7 @@
 		"easyplace.SignPlacementMixin",
 		"easyplace.ProjectionBlockItemMixin",
 		"easyplace.AttachableItemPlacementMixin",
+		"easyplace.CopperBulbPlacementMixin",
 		"easyplace.SignListenerInvoker",
 		"DyeItem_useDyeOnShulkerBoxMixin",
 		"CactusShulkerBoxWashMixin",
@@ -36,10 +37,8 @@
 	"client": [
 		"WorldUtils_waterloggedFillMixin",
 		"easyplace.SchematicHitVecMixin",
-		"easyplace.EasyPlaceUtilsMixin",
 		"easyplace.SchematicUtilsInvoker",
 		"WorldUtils_entityPlacementMixin",
-		"easyplace.EasyPlaceUtilsMixin",
 		"MultiPlayerGameMode_bedrockMinesMixin",
 		"WackoBeacons_BeaconPowerButtonMixin",
 		"WackoBeacons_BeaconBlockEntityMixin"
