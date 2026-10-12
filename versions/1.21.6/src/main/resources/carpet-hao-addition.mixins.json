@@ -29,7 +29,11 @@
     "easyplace.ProjectionBlockItemMixin",
     "easyplace.AttachableItemPlacementMixin",
     "easyplace.SignListenerInvoker",
-    "easyplace.CopperBulbPlacementMixin"
+    "easyplace.CopperBulbPlacementMixin",
+    "CactusShulkerBoxWashMixin",
+    "DyeItem_useDyeOnShulkerBoxMixin",
+    "MinecraftServer_rocketShulkerMixin",
+    "ServerPlayerEntity_autoMendingMixin"
   ],
   "client": [
     "WackoBeacons_BeaconButtonWidgetMixin",
