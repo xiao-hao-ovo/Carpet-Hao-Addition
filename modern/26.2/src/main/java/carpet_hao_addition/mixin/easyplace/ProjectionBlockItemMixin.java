@@ -51,7 +51,7 @@ public abstract class ProjectionBlockItemMixin {
             be.setChanged();
             // 标牌文字靠它自己的 updateListeners 同步,只调 Level.updateListeners 不够。
             if (be instanceof SignBlockEntity signBe) {
-                ((SignListenerInvoker) signBe).hao$callUpdateListeners();
+                ((SignListenerInvoker) signBe).hao$callMarkUpdated();
                 System.out.println("[hao-easyplace] [广播刷新] 标牌 updateListeners: " + pos);
             }
         }

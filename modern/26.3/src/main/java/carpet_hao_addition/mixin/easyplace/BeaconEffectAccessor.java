@@ -8,9 +8,9 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(BeaconBlockEntity.class)
 public interface BeaconEffectAccessor {
-    @Accessor("primary")
+    @Accessor("primaryPower")
     Holder<MobEffect> hao$getPrimaryPower();
 
-    @Accessor("secondary")
+    @Accessor("secondaryPower")
     Holder<MobEffect> hao$getSecondaryPower();
 }
