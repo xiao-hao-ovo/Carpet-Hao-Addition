@@ -12,7 +12,6 @@
     "StonecutterScreenHandlerMixin",
     "Block_bedrockCanBeMinedMixin",
     "ServerPlayerInteractionManager_bedrockMinesMixin",
-    "ClientPlayerInteractionManager_bedrockMinesMixin",
     "BlockState_bedrockCanBeMinedMixin",
     "LivingEntity_witherSkeletonDropMixin",
     "MobEntity_witherSkeletonDropMixin",
@@ -38,6 +37,7 @@
   "client": [
     "WackoBeacons_BeaconButtonWidgetMixin",
     "WackoBeacons_BeaconBlockEntityMixin",
+    "ClientPlayerInteractionManager_bedrockMinesMixin",
     "WorldUtils_waterloggedFillMixin",
     "WorldUtils_entityPlacementMixin",
     "easyplace.SchematicHitVecMixin",
