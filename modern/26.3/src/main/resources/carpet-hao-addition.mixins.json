@@ -1,52 +1,53 @@
 {
-	"required": true,
-	"package": "carpet_hao_addition.mixin",
-	"compatibilityLevel": "JAVA_21",
-	"mixins": [
-		"SignBlockEntity_colorProbeMixin",
-		"ObserverBlockMixin",
-		"GoldenCarrotCompostMixin",
-		"LavaFluid_snowyCalciteMixin",
-		"FluidBlock_snowyCalciteMixin",
-		"EndPortalTeleportMixin",
-		"StonecutterScreenHandlerMixin",
-		"Block_bedrockCanBeMinedMixin",
-		"ServerPlayerInteractionManager_bedrockMinesMixin",
-		"BlockState_bedrockCanBeMinedMixin",
-		"LivingEntity_witherSkeletonDropMixin",
-		"MobEntity_witherSkeletonDropMixin",
-		"ServerPlayerGameMode_directBlockDropsMixin",
-		"ServerLevel_directDropsMixin",
-		"LivingEntity_directEntityDropsMixin",
-		"Player_directEntityDropsMixin",
-		"LivingEntity_lavaDepthStriderMixin",
-		"ScheduledTickAccess_directDropsMixin",
-		"ServerLevel_tickBlockMixin",
-		"MinecraftServer_waterloggedFillMixin",
-		"FluidState_breakWaterloggedMixin",
-		"easyplace.BeaconEffectAccessor",
-		"easyplace.ProjectionBlockItemMixin",
-		"easyplace.AttachableItemPlacementMixin",
-		"easyplace.SignListenerInvoker",
-		"easyplace.CopperBulbPlacementMixin",
-		"DyeItem_useDyeOnShulkerBoxMixin",
-		"CactusShulkerBoxWashMixin",
-		"ServerPlayer_autoMendingMixin",
-		"MinecraftServer_rocketShulkerMixin"
-	],
-	"client": [
-		"WackoBeacons_BeaconPowerButtonMixin",
-		"WackoBeacons_BeaconBlockEntityMixin",
-		"MultiPlayerGameMode_bedrockMinesMixin",
-		"WorldUtils_waterloggedFillMixin",
-		"WorldUtils_entityPlacementMixin",
-		"easyplace.SchematicHitVecMixin",
-		"easyplace.SchematicUtilsInvoker"
-	],
-	"injectors": {
-		"defaultRequire": 1
-	},
-	"overwrites": {
-		"requireAnnotations": true
-	}
+  "required": true,
+  "package": "carpet_hao_addition.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "SignBlockEntity_colorProbeMixin",
+    "ObserverBlockMixin",
+    "GoldenCarrotCompostMixin",
+    "LavaFluid_snowyCalciteMixin",
+    "FluidBlock_snowyCalciteMixin",
+    "EndPortalTeleportMixin",
+    "StonecutterScreenHandlerMixin",
+    "Block_bedrockCanBeMinedMixin",
+    "ServerPlayerInteractionManager_bedrockMinesMixin",
+    "BlockState_bedrockCanBeMinedMixin",
+    "LivingEntity_witherSkeletonDropMixin",
+    "MobEntity_witherSkeletonDropMixin",
+    "ServerPlayerGameMode_directBlockDropsMixin",
+    "ServerLevel_directDropsMixin",
+    "LivingEntity_directEntityDropsMixin",
+    "Player_directEntityDropsMixin",
+    "LivingEntity_lavaDepthStriderMixin",
+    "ScheduledTickAccess_directDropsMixin",
+    "ServerLevel_tickBlockMixin",
+    "MinecraftServer_waterloggedFillMixin",
+    "FluidState_breakWaterloggedMixin",
+    "easyplace.BeaconEffectAccessor",
+    "easyplace.ProjectionBlockItemMixin",
+    "easyplace.AttachableItemPlacementMixin",
+    "easyplace.SignListenerInvoker",
+    "easyplace.CopperBulbPlacementMixin",
+    "DyeItem_useDyeOnShulkerBoxMixin",
+    "CactusShulkerBoxWashMixin",
+    "ServerPlayer_autoMendingMixin",
+    "MinecraftServer_rocketShulkerMixin"
+  ],
+  "client": [
+    "WackoBeacons_BeaconPowerButtonMixin",
+    "WackoBeacons_BeaconBlockEntityMixin",
+    "MultiPlayerGameMode_bedrockMinesMixin",
+    "WorldUtils_waterloggedFillMixin",
+    "WorldUtils_entityPlacementMixin",
+    "easyplace.SchematicHitVecMixin",
+    "easyplace.WorldActionMixin",
+    "easyplace.SchematicUtilsInvoker"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
 }
