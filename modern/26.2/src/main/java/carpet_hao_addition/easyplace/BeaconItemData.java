@@ -81,7 +81,7 @@ public final class BeaconItemData implements ItemDataCodec {
 		if (effect == null) {
 			return false;
 		}
-		tag.putString(key, String.valueOf(registry.getId(effect)));
+		tag.putString(key, registry.getKey(effect).toString());
 		return true;
 	}
 
