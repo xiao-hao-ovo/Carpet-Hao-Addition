@@ -86,7 +86,7 @@ public abstract class ProjectionBlockItemMixin {
         cir.setReturnValue(state);
     }
 
-    @WrapMethod(method = "place")
+    @WrapMethod(method = "place(Lnet/minecraft/world/item/context/BlockPlaceContext;)Lnet/minecraft/world/InteractionResult;")
     private InteractionResult hao$enterPlacementWindow(BlockPlaceContext context, Operation<InteractionResult> original) {
         if (ProjectionPlacement.ruleEnabled()
                 && isProtocolHit(hitOffsetX(context.getClickLocation(), PlacementBitTools.clickedPos(context)))) {
@@ -106,9 +106,9 @@ public abstract class ProjectionBlockItemMixin {
 
     @WrapOperation(
              method = "place",
-             at = @At(value = "INVOKE", target = "Lnet/minecraft/item/BlockItem;postPlacement(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/world/Level;Lnet/minecraft/entity/player/Player;Lnet/minecraft/item/ItemStack;Lnet/minecraft/block/BlockState;)Z")
+             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/BlockItem;updateCustomBlockEntityTag(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/item/ItemStack;)Z")
      )
-    private boolean hao$applyItemData(BlockItem instance, BlockPos pos, Level level, Player player, ItemStack stack, BlockState state, Operation<Boolean> original, @Local(argsOnly = true) BlockPlaceContext context)
+    private static boolean hao$applyItemData(Level level, Player player, BlockPos pos, ItemStack stack, Operation<Boolean> original, @Local(argsOnly = true) BlockPlaceContext context)
     {
         // 优先使用「完整 NBT 通道」送来的数据。
         carpet_hao_addition.BlockDataChannel.PendingData data = carpet_hao_addition.BlockDataChannel.take(player, pos);
@@ -124,22 +124,22 @@ public abstract class ProjectionBlockItemMixin {
                                         .orElse(null),
                                 fullNbt));
                 System.out.println("[hao-easyplace] [服务端] 应用完整 NBT: 位置=" + pos + " id=" + fullNbt.getString("id").orElse(""));
-                boolean hao$ok = original.call(instance, pos, level, player, withFullNbt, state);
+                boolean hao$ok = original.call(level, player, pos, withFullNbt);
                 hao$notifyClient(level, pos);
                 return hao$ok;
             }
-            boolean hao$ok2 = original.call(instance, pos, level, player, stack, state);
+            boolean hao$ok2 = original.call(level, player, pos, stack);
             hao$notifyClient(level, pos);
             return hao$ok2;
         }
         System.out.println("[hao-easyplace] [postPlacement] pos=" + pos
-                + " side=" + context.getClickedFace() + " state=" + state
+                + " side=" + context.getClickedFace() + " state=" + level.getBlockState(pos)
                 + " 世界该处=" + level.getBlockState(pos));
         ItemStack newStack = ProjectionPlacement.applySchematicItemData(stack, context);
         if (newStack == null) {
-            return original.call(instance, pos, level, player, stack, state);
+            return original.call(level, player, pos, stack);
         }
-        boolean result = original.call(instance, pos, level, player, newStack, state);
+        boolean result = original.call(level, player, pos, newStack);
         double relativeHitZ = hitOffsetZ(context.getClickLocation(), PlacementBitTools.clickedPos(context));
         int protocolValue = readBits(relativeHitZ);
         return result;
