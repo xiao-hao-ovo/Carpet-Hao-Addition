@@ -72,6 +72,14 @@ public class EntityPlacementScreen extends Screen {
 	private static final int COLOR_PLACED = 0xFF6AA84F;      // 已发出(绿)
 	private static final int COLOR_MISSING = 0xFFE06060;     // 材料不足:红色外框/红字
 
+	/**
+	 * 本次放置的数量:打开界面时就定下来。
+	 * <p>
+	 * 上游(配套客户端的快捷键)会为这一次轻松放置临时指定数量,而那个值在
+	 * 本次放置返回后就被清掉了 —— 界面上是玩家**点选之后**才发包,那时再读
+	 * 只会读到默认值,数量设置看起来就「无效」。所以这里先快照。
+	 */
+	private final int count;
 	private final List<EntitySpawn> candidates;
 	private final List<ItemStack> icons = new ArrayList<>();
 	private final List<Component> names = new ArrayList<>();
@@ -89,6 +97,7 @@ public class EntityPlacementScreen extends Screen {
 	public EntityPlacementScreen(List<EntitySpawn> candidates) {
 		super(Component.literal("昊藏小囊"));
 		this.candidates = candidates;
+		this.count = hao$currentCount();
 		this.rows = Math.max(ROWS_MIN,
 				Math.min(ROWS_MAX, (candidates.size() + COLUMNS - 1) / COLUMNS));
 		// 面板 = 顶部标题栏 + 实体格子 + 底部栏(与标题栏等高,上下对称)
@@ -424,17 +433,16 @@ public class EntityPlacementScreen extends Screen {
 		if (player == null) {
 			return;
 		}
-		int count = EasyPlaceEntitySettings.count(player.getUUID());
+		int count = this.count;
 		EntityPlacementHandler.registerPayloadType();
 		ClientPlayNetworking.send(new EntityPlacementPayload(List.of(spawn), count));
 		HaoDebug.log("[hao-entity] 选择器放置 " + spawn.type() + " @ "
 				+ String.format("%.1f,%.1f,%.1f", spawn.x(), spawn.y(), spawn.z()));
 	}
 
+	/** 本次放置的数量:构造时快照好的,之后不再变。 */
 	private int currentCount() {
-		var player = Minecraft.getInstance().player;
-		return player == null ? EasyPlaceEntitySettings.DEFAULT_COUNT
-				: EasyPlaceEntitySettings.count(player.getUUID());
+		return this.count;
 	}
 
 	private static EntityType<?> entityType(EntitySpawn spawn) {
@@ -445,5 +453,13 @@ public class EntityPlacementScreen extends Screen {
 	private static Component nameOf(Identifier entityId) {
 		EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getValue(entityId);
 		return type == null ? Component.literal(entityId.toString()) : type.getDescription();
+	}
+
+	/** 取当前该用的放置数量(界面打开时调一次)。 */
+	private static int hao$currentCount() {
+		Minecraft minecraft = Minecraft.getInstance();
+		return minecraft != null && minecraft.player != null
+				? EasyPlaceEntitySettings.count(minecraft.player.getUUID())
+				: EasyPlaceEntitySettings.DEFAULT_COUNT;
 	}
 }

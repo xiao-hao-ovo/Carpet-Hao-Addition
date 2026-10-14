@@ -83,6 +83,14 @@ public class EntityPlacementScreen extends Screen {
 	/** 材料不足:红色外框/红字。 */
 	private static final int COLOR_MISSING = 0xFFE06060;
 
+	/**
+	 * 本次放置的数量:打开界面时就定下来。
+	 * <p>
+	 * 上游(配套客户端的快捷键)会为这一次轻松放置临时指定数量,而那个值在
+	 * 本次放置返回后就被清掉了 —— 界面上是玩家**点选之后**才发包,那时再读
+	 * 只会读到默认值,数量设置看起来就「无效」。所以这里先快照。
+	 */
+	private final int count;
 	private final List<EntitySpawn> candidates;
 	private final List<ItemStack> icons = new ArrayList<>();
 	private final List<Text> names = new ArrayList<>();
@@ -100,6 +108,7 @@ public class EntityPlacementScreen extends Screen {
 	public EntityPlacementScreen(List<EntitySpawn> candidates) {
 		super(Text.literal("昊藏小囊"));
 		this.candidates = candidates;
+		this.count = hao$currentCount();
 		this.rows = Math.max(ROWS_MIN,
 				Math.min(ROWS_MAX, (candidates.size() + COLUMNS - 1) / COLUMNS));
 		// 面板 = 顶部标题栏 + 实体格子 + 底部栏(与标题栏等高,上下对称)
@@ -312,8 +321,7 @@ public class EntityPlacementScreen extends Screen {
 	/** 这个候选**实体本身**需要的材料(不含内容物/乘客 —— 那些是"有就带"的可选项)。 */
 	private Map<Item, Integer> hao$baseCost(int index) {
 		EntitySpawn spawn = this.candidates.get(index);
-		int count = this.client != null && this.client.player != null
-				? EasyPlaceEntitySettings.count(this.client.player.getUuid()) : 1;
+		int count = this.count;
 		return EntityPlacementCosts.baseCostFor(Registries.ENTITY_TYPE.get(spawn.type()), count);
 	}
 
@@ -321,8 +329,7 @@ public class EntityPlacementScreen extends Screen {
 	private Map<Item, Integer> hao$materials(int index) {
 		if (this.materialCache == null || this.materialCacheIndex != index) {
 			EntitySpawn spawn = this.candidates.get(index);
-			int count = this.client != null && this.client.player != null
-					? EasyPlaceEntitySettings.count(this.client.player.getUuid()) : 1;
+			int count = this.count;
 			this.materialCache = EntityPlacementCosts.materialsFor(
 					Registries.ENTITY_TYPE.get(spawn.type()), spawn.nbt(), count);
 			this.materialCacheIndex = index;
@@ -488,7 +495,7 @@ public class EntityPlacementScreen extends Screen {
 		if (this.client == null || this.client.player == null) {
 			return;
 		}
-		int count = EasyPlaceEntitySettings.count(this.client.player.getUuid());
+		int count = this.count;
 		EntityPlacementHandler.registerPayloadType();
 		ClientPlayNetworking.send(new EntityPlacementPayload(List.of(spawn), count));
 		HaoDebug.log("[hao-entity] 选择器放置 " + spawn.type() + " @ "
@@ -499,5 +506,13 @@ public class EntityPlacementScreen extends Screen {
 	private static Text hao$nameOf(Identifier entityId) {
 		EntityType<?> type = Registries.ENTITY_TYPE.get(entityId);
 		return type == null ? Text.literal(entityId.toString()) : type.getName();
+	}
+
+	/** 取当前该用的放置数量(界面打开时调一次)。 */
+	private static int hao$currentCount() {
+		MinecraftClient minecraft = MinecraftClient.getInstance();
+		return minecraft != null && minecraft.player != null
+				? EasyPlaceEntitySettings.count(minecraft.player.getUuid())
+				: EasyPlaceEntitySettings.DEFAULT_COUNT;
 	}
 }
