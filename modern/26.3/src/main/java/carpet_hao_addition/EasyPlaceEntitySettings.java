@@ -94,8 +94,18 @@ public class EasyPlaceEntitySettings {
 		return value() != Trigger.FALSE;
 	}
 
-	/** 该玩家一次放几个(1-64;没设置过按默认 1)。 */
+	/**
+	 * 该玩家一次放几个(1-64;没设置过按默认 1)。
+	 * <p>
+	 * 若本次轻松放置是配套客户端的**快捷键**触发的,且它带来了自己的「一次放置数量」,
+	 * 则以那个为准 —— 配套客户端的配置界面里也有同一项,玩家在那边改就该在那边生效。
+	 * 右键路径会在入口处清掉这个覆盖值(见 {@code EntityPlacementTrigger#clearHotkeyCount})。
+	 */
 	public static int count(UUID playerId) {
+		int override = EntityPlacementTrigger.hotkeyCount();
+		if (override >= 1) {
+			return Math.max(1, Math.min(MAX_COUNT, override));
+		}
 		Integer value = COUNTS.get(playerId);
 		return value == null ? DEFAULT_COUNT : value;
 	}

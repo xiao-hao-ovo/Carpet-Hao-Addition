@@ -107,6 +107,11 @@ public abstract class WorldUtils_entityPlacementMixin {
 		PlayerEntity player = minecraft.player;
 		// 触发来源只对「这一次调用」有效：先取走，免得上一次快捷键影响后面的右键。
 		boolean fromHotkey = EntityPlacementTrigger.consumeHotkey();
+		if (!fromHotkey) {
+			// 右键路径：配套客户端上一次按快捷键带来的「一次放置数量」也要清掉，
+			// 否则它会影响这次右键用的数量。
+			EntityPlacementTrigger.clearHotkeyCount();
+		}
 		if (player == null || !EasyPlaceEntitySettings.isTriggerEnabled(fromHotkey)
 				|| !(minecraft.crosshairTarget instanceof BlockHitResult hit)) {
 			return;
