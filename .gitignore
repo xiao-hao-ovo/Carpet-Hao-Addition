@@ -35,3 +35,6 @@ __pycache__/
 
 # Reasonix Agent 会话配置(不进版本库)
 .reasonix/
+
+# 构建日志（临时）
+.b-*.log
