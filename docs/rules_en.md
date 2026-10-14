@@ -42,7 +42,7 @@ While enabled, drops produced by killing an entity (mobs and armor stands, as we
 
 ## Easy Place Entities (haoProjectionEntity)
 
-While following a schematic with easy place, also spawns the schematic's entities (minecarts, boats, armor stands, item frames, paintings...) and consumes the matching items. Values: false = off; true = on (this mod's client triggers it while easy-placing); not_trigger = right-click does not spawn entities, only the server side stays enabled so another client (e.g. HaoMaSa) can trigger it with its own key. Only entities with a matching item are supported; count is set by easyPlaceEntityCount. Spawns nothing if items are short. Off by default.
+While following a schematic with easy place, also spawns the schematic's entities (minecarts, boats, armor stands, item frames, paintings...) and consumes the matching items. Values: false = off; true = on, triggered by both right-click easy place and a companion client's hotkey; not_trigger = only a companion client's hotkey (e.g. HaoMaSa) triggers it - right-click easy place spawns no entities and shows no picker - while the server side keeps accepting requests. Only entities with a matching item are supported; count is set by easyPlaceEntityCount. Spawns nothing if items are short. Off by default.
 
 - Type: `Mode`
 - Default: `FALSE`

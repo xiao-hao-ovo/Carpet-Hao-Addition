@@ -3,6 +3,7 @@ package carpet_hao_addition.mixin;
 import carpet_hao_addition.EntityPlacementHandler;
 import carpet_hao_addition.EntityPlacementPayload;
 import carpet_hao_addition.EasyPlaceEntitySettings;
+import carpet_hao_addition.EntityPlacementTrigger;
 import carpet_hao_addition.EntitySpawn;
 import carpet_hao_addition.client.EntityPlacementScreen;
 
@@ -105,7 +106,9 @@ public abstract class WorldUtils_entityPlacementMixin {
 	@Unique
 	private static void hao$handleEasyPlaceEntity(Minecraft minecraft, CallbackInfoReturnable<InteractionResult> cir) {
 		LocalPlayer player = minecraft.player;
-		if (player == null || !EasyPlaceEntitySettings.isTriggerEnabled()
+		// 触发来源只对「这一次调用」有效：先取走，免得上一次快捷键影响后面的右键。
+		boolean fromHotkey = EntityPlacementTrigger.consumeHotkey();
+		if (player == null || !EasyPlaceEntitySettings.isTriggerEnabled(fromHotkey)
 				|| !(minecraft.hitResult instanceof BlockHitResult hit)) {
 			return;
 		}

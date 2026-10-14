@@ -69,12 +69,24 @@ public class EasyPlaceEntitySettings {
 	}
 
 	/**
-	 * 客户端是否触发:右键轻松放置时去收集投影实体并发包。
+	 * 客户端是否处理**这一次**触发。
 	 * <p>
-	 * 只有 {@code true} 才触发;{@code not_trigger} 交给别的客户端(例如 HaoMaSa)自己触发。
+	 * 触发来源分两种,本模组自己分辨不了 —— 由配套客户端通过
+	 * {@link EntityPlacementTrigger} 打标记告诉本模组:
+	 * <ul>
+	 *   <li>{@code true} —— 右键与快捷键都处理;</li>
+	 *   <li>{@code not_trigger} —— <b>只有快捷键</b>处理(右键不放实体、也不弹选择器界面);</li>
+	 *   <li>{@code false} —— 都不处理。</li>
+	 * </ul>
+	 *
+	 * @param fromHotkey 本次调用是否由配套客户端的快捷键触发
 	 */
-	public static boolean isTriggerEnabled() {
-		return value() == Trigger.TRUE;
+	public static boolean isTriggerEnabled(boolean fromHotkey) {
+		Trigger trigger = value();
+		if (trigger == Trigger.TRUE) {
+			return true;
+		}
+		return trigger == Trigger.NOT_TRIGGER && fromHotkey;
 	}
 
 	/** 服务端是否接受放置请求:{@code true} 与 {@code not_trigger} 都接受。 */

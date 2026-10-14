@@ -76,7 +76,7 @@
   "carpet.rule.haoCraftableTrimTemplates.name": "可合成纹饰模板",
   "carpet.rule.haoCraftableTrimTemplates.desc": "开启后 19 种纹饰/升级模板都能合成：7 个钻石 + 1 个该模板获取地点的代表物品。默认关闭。",
   "carpet.rule.haoProjectionEntity.name": "轻松放置实体",
-  "carpet.rule.haoProjectionEntity.desc": "照投影施工时把投影里的实体(矿车/船/盔甲架/展示框/画等)也一并放出,并扣掉对应物品。取值:false=关闭;true=开启(本模组的客户端在右键轻松放置时触发);not_trigger=不触发(右键不放实体,只保留服务端,配合别的客户端用它自己的按键放)。只对有对应物品的实体生效;一次放几个由 easyPlaceEntityCount 决定。物品不够时一个都不放。默认关闭。",
+  "carpet.rule.haoProjectionEntity.desc": "照投影施工时把投影里的实体(矿车/船/盔甲架/展示框/画等)也一并放出,并扣掉对应物品。取值:false=关闭;true=开启,右键轻松放置与配套客户端的快捷键都触发;not_trigger=只有配套客户端(如 HaoMaSa)的快捷键触发,右键轻松放置不放实体、也不弹选择器界面;但服务端照常接受请求。只对有对应物品的实体生效;一次放几个由 easyPlaceEntityCount 决定。物品不够时一个都不放。默认关闭。",
   "haoProjectionEntity.commands.status": "轻松放置实体:当前数量=%s,开关=%s",
   "haoProjectionEntity.commands.uiStatus": "轻松放置实体:选择器界面=%s,开关=%s",
   "haoProjectionEntity.commands.notEnabled": "提示:功能还没开启,需要管理员用 /carpet haoProjectionEntity true(或 not_trigger)打开。",
