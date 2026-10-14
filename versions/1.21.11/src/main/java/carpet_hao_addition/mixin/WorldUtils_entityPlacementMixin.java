@@ -104,7 +104,7 @@ public abstract class WorldUtils_entityPlacementMixin {
 	@Unique
 	private static void hao$handleEasyPlaceEntity(MinecraftClient minecraft, CallbackInfoReturnable<ActionResult> cir) {
 		PlayerEntity player = minecraft.player;
-		if (player == null || !EasyPlaceEntitySettings.isEnabled()
+		if (player == null || !EasyPlaceEntitySettings.isTriggerEnabled()
 				|| !(minecraft.crosshairTarget instanceof BlockHitResult hit)) {
 			return;
 		}

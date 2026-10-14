@@ -42,11 +42,11 @@
 
 ## 轻松放置实体 (haoProjectionEntity)
 
-照投影施工时把投影里的实体(矿车/船/盔甲架/展示框/画等)也一并放出,并扣掉对应物品。只对有对应物品的实体生效;一次放几个由 easyPlaceEntityCount 决定。物品不够时一个都不放。默认关闭。
+照投影施工时把投影里的实体(矿车/船/盔甲架/展示框/画等)也一并放出,并扣掉对应物品。取值:false=关闭;true=开启(本模组的客户端在右键轻松放置时触发);not_trigger=不触发(右键不放实体,只保留服务端,配合别的客户端用它自己的按键放)。只对有对应物品的实体生效;一次放几个由 easyPlaceEntityCount 决定。物品不够时一个都不放。默认关闭。
 
-- 类型: `boolean`
-- 默认值: `false`
-- 参考选项: `false`, `true`
+- 类型: `Mode`
+- 默认值: `FALSE`
+- 参考选项: `FALSE`, `TRUE`, `NOT_TRIGGER`
 - 分类: `Hao`
 
 ## 投影轻松放置补料 (haoProjectionWaterlogged)

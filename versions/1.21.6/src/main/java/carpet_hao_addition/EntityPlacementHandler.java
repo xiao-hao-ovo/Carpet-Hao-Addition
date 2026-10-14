@@ -125,7 +125,7 @@ public final class EntityPlacementHandler {
 
 	/** 逐条放出实体;每条都先确认这一格没有同类型实体。 */
 	private static void hao$spawnEntity(ServerPlayerEntity player, EntityPlacementPayload payload) {
-		if (!EasyPlaceEntitySettings.isEnabled()) {
+		if (!EasyPlaceEntitySettings.isServerEnabled()) {
 			return;
 		}
 		if (!(player.getWorld() instanceof ServerWorld world)) {

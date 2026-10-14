@@ -127,7 +127,7 @@ public final class EntityPlacementHandler {
 
 	/** 逐条放出实体;每条都先确认这一格没有同类型实体。 */
 	private static void spawnEntity(ServerPlayer player, EntityPlacementPayload payload) {
-		if (!EasyPlaceEntitySettings.isEnabled()) {
+		if (!EasyPlaceEntitySettings.isServerEnabled()) {
 			HaoDebug.log(TAG + " 忽略: 规则未开");
 			return;
 		}

@@ -13,7 +13,13 @@ import java.util.UUID;
  * (矿车、漏斗矿车、盔甲架、船、物品展示框等)也一并放出来 —— 这些实体没有"可放置的方块形式",
  * 原版与 Litematica 的轻松放置都不会放下它们。
  * <p>
- * 这条规则**只是总开关**({@code /carpet haoProjectionEntity true|false});
+ * 取值三态:
+ * <ul>
+ *   <li>{@code false} —— 关闭:客户端不触发,服务端也不接受放置请求;</li>
+ *   <li>{@code true} —— 开启:客户端在右键轻松放置的那一刻触发;</li>
+ *   <li>{@code not_trigger} —— 不触发:客户端的右键**不会**放出实体,但服务端仍然接受请求,
+ *       留给别的客户端来触发(例如 HaoMaSa 的投影实体放置,用它的按键放)。</li>
+ * </ul>
  * **一次放几个由每个玩家自己设置**,用命令:
  * <ul>
  *   <li>{@code /easyPlaceEntityCount &lt;1-64&gt;} —— 设置自己的放置数量;</li>
@@ -34,8 +40,18 @@ public class EasyPlaceEntitySettings {
 	/** 默认数量。 */
 	public static final int DEFAULT_COUNT = 1;
 
+	/** 规则取值。 */
+	public enum Trigger {
+		/** 关闭。 */
+		FALSE,
+		/** 开启:由本模组的客户端在右键轻松放置时触发。 */
+		TRUE,
+		/** 不触发:客户端不主动放,只保留服务端,供别的客户端触发。 */
+		NOT_TRIGGER
+	}
+
 	@Rule(categories = {"Hao"})
-	public static boolean haoProjectionEntity = false;
+	public static Trigger haoProjectionEntity = Trigger.FALSE;
 
 	/** 各玩家自己的"一次放几个"(内存;没设置过的玩家按 {@link #DEFAULT_COUNT})。 */
 	private static final Map<UUID, Integer> COUNTS = new HashMap<>();
@@ -46,10 +62,24 @@ public class EasyPlaceEntitySettings {
 	/** 各玩家自己的"是否总是弹选择器界面"(内存;没设置过的玩家按 {@link #DEFAULT_UI})。 */
 	private static final Map<UUID, Boolean> UI_ENABLED = new HashMap<>();
 
-	/** 权威读取:是否启用(缺失/异常按 false)。 */
-	public static boolean isEnabled() {
+	/** 权威读取:当前取值(缺失/异常按 {@link Trigger#FALSE})。 */
+	public static Trigger value() {
 		CarpetRule<?> rule = CarpetServer.settingsManager.getCarpetRule(RULE_NAME);
-		return rule != null && rule.value() instanceof Boolean value && value;
+		return rule != null && rule.value() instanceof Trigger trigger ? trigger : Trigger.FALSE;
+	}
+
+	/**
+	 * 客户端是否触发:右键轻松放置时去收集投影实体并发包。
+	 * <p>
+	 * 只有 {@code true} 才触发;{@code not_trigger} 交给别的客户端(例如 HaoMaSa)自己触发。
+	 */
+	public static boolean isTriggerEnabled() {
+		return value() == Trigger.TRUE;
+	}
+
+	/** 服务端是否接受放置请求:{@code true} 与 {@code not_trigger} 都接受。 */
+	public static boolean isServerEnabled() {
+		return value() != Trigger.FALSE;
 	}
 
 	/** 该玩家一次放几个(1-64;没设置过按默认 1)。 */

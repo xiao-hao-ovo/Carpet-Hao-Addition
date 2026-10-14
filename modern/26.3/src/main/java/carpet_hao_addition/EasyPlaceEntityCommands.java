@@ -21,7 +21,10 @@ import static net.minecraft.commands.Commands.literal;
  *   <li>{@code /easyPlaceEntityCount &lt;1-64&gt;} —— 设置自己的数量;</li>
  *   <li>{@code /easyPlaceEntityCount} —— 查看自己当前的数量。</li>
  * </ul>
- * 总开关是 Carpet 规则 {@code /carpet haoProjectionEntity true|false};数量只存在内存里。
+ * 总开关是 Carpet 规则 {@code /carpet haoProjectionEntity}({@code false} / {@code true} / {@code not_trigger});数量只存在内存里。
+ * <p>
+ * {@code not_trigger} 时服务端仍然接受放置请求,只是本模组的客户端不在右键时触发 ——
+ * 配合别的客户端(例如 HaoMaSa 的投影实体放置)使用时,这条命令照样能改自己的数量。
  * 命令对所有人开放(只能改自己的设置),不需要 OP。
  */
 public final class EasyPlaceEntityCommands {
@@ -52,7 +55,7 @@ public final class EasyPlaceEntityCommands {
 		}
 		Messenger.m(source, "w " + tr("uiStatus",
 				String.valueOf(EasyPlaceEntitySettings.uiEnabled(player.getUUID())),
-				String.valueOf(EasyPlaceEntitySettings.isEnabled())));
+				EasyPlaceEntitySettings.value().name().toLowerCase(java.util.Locale.ROOT)));
 		return 1;
 	}
 
@@ -74,7 +77,7 @@ public final class EasyPlaceEntityCommands {
 			return 0;
 		}
 		EasyPlaceEntitySettings.setUiEnabled(player.getUUID(), enabled);
-		if (!EasyPlaceEntitySettings.isEnabled()) {
+		if (!EasyPlaceEntitySettings.isServerEnabled()) {
 			Messenger.m(source, "y " + tr("notEnabled"));
 		}
 		return showUi(source);
@@ -88,7 +91,7 @@ public final class EasyPlaceEntityCommands {
 		}
 		Messenger.m(source, "w " + tr("status",
 				Integer.toString(EasyPlaceEntitySettings.count(player.getUUID())),
-				String.valueOf(EasyPlaceEntitySettings.isEnabled())));
+				EasyPlaceEntitySettings.value().name().toLowerCase(java.util.Locale.ROOT)));
 		return 1;
 	}
 
@@ -99,7 +102,7 @@ public final class EasyPlaceEntityCommands {
 			return 0;
 		}
 		EasyPlaceEntitySettings.setCount(player.getUUID(), count);
-		if (!EasyPlaceEntitySettings.isEnabled()) {
+		if (!EasyPlaceEntitySettings.isServerEnabled()) {
 			Messenger.m(source, "y " + tr("notEnabled"));
 		}
 		return show(source);

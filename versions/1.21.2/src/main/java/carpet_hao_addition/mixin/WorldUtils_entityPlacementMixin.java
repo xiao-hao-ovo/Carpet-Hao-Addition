@@ -103,11 +103,11 @@ public abstract class WorldUtils_entityPlacementMixin {
 	@Unique
 	private static void hao$handleEasyPlaceEntity(MinecraftClient minecraft, CallbackInfoReturnable<ActionResult> cir) {
 		PlayerEntity player = minecraft.player;
-		if (player == null || !EasyPlaceEntitySettings.isEnabled()
+		if (player == null || !EasyPlaceEntitySettings.isTriggerEnabled()
 				|| !(minecraft.crosshairTarget instanceof BlockHitResult hit)) {
 			// 诊断(临时):区分"客户端读不到规则值"与"准星没对着方块"
 			HaoDebug.log("[hao-entity] 未进入收集: player=" + (player != null)
-					+ " 规则开=" + EasyPlaceEntitySettings.isEnabled()
+					+ " 规则开=" + EasyPlaceEntitySettings.isTriggerEnabled()
 					+ " 准星是方块=" + (minecraft.crosshairTarget instanceof BlockHitResult));
 			return;
 		}
