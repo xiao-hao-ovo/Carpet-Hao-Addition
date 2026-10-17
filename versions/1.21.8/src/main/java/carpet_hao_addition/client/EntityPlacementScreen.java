@@ -89,8 +89,18 @@ public class EntityPlacementScreen extends Screen {
 	 * 本次放置返回后就被清掉了 —— 界面上是玩家**点选之后**才发包,那时再读
 	 * 只会读到默认值,数量设置看起来就「无效」。所以这里先快照。
 	 */
-	private final int count;
+	private int count;
+	/**
+	 * 本次快捷键带过来的「一次放几个」(0 = 没带,用 {@link #count})。
+	 * <p>
+	 * 配套客户端的数量只在"按快捷键那一次"有效({@code EntityPlacementTrigger} 的标记是一次性的),
+	 * 而弹了界面之后玩家要过一会儿才点格子 —— 那时标记早清了。所以在构造界面时把它抄下来,
+	 * 否则这个数量在"弹界面"这条路上会彻底丢失,玩家会觉得"改了数量没效果"。
+	 */
+	private int hotkeyCount;
 	private final List<EntitySpawn> candidates;
+	/** 每个候选的「投影需要几个 / 世界里已有几个」,键是 {@code EntitySpawn#key()}。 */
+	private final java.util.Map<String, int[]> counts;
 	private final List<ItemStack> icons = new ArrayList<>();
 	private final List<Text> names = new ArrayList<>();
 	private final int rows;
@@ -104,9 +114,12 @@ public class EntityPlacementScreen extends Screen {
 	/** 已经点过(已发给服务端)的候选下标 —— 标绿、不可重复点,但不关闭界面。 */
 	private final Set<Integer> placed = new LinkedHashSet<>();
 
-	public EntityPlacementScreen(List<EntitySpawn> candidates) {
+	public EntityPlacementScreen(List<EntitySpawn> candidates, java.util.Map<String, int[]> counts) {
 		super(Text.literal("昊藏小囊"));
 		this.candidates = candidates;
+		this.counts = counts;
+		// 快捷键带过来的数量必须**在这里**抄下来:标记是一次性的,等玩家点格子时早被清掉了
+		this.hotkeyCount = carpet_hao_addition.EntityPlacementTrigger.hotkeyCount();
 		this.count = hao$currentCount();
 		this.rows = Math.max(ROWS_MIN,
 				Math.min(ROWS_MAX, (candidates.size() + COLUMNS - 1) / COLUMNS));
@@ -116,6 +129,88 @@ public class EntityPlacementScreen extends Screen {
 			this.icons.add(EntityPlacementMaterials.iconFor(spawn.type(), spawn.nbt()));
 			this.names.add(hao$nameOf(spawn.type()));
 		}
+		hao$refreshNames();
+	}
+
+	/**
+	 * 重新统计「世界里已经放了几个」并刷新每格文字。
+	 * <p>
+	 * <b>为什么必须每 tick 刷一次:</b>玩家常常是"界面开着、当场点几下放出来"——如果只在构造时算一次,
+	 * 放完之后格子上还写着"缺1",玩家就会以为没放成。放置请求发出后实体要过一个网络来回才出现在
+	 * 世界里,所以这里每 tick 重算一次,放出来的那一刻界面就会跟着变成"完成"。
+	 */
+	private void hao$refreshNames() {
+		if (this.counts == null) {
+			return;
+		}
+
+		// 整体重算:位置上的「需要/已放」要按整处统计,逐条单独算做不到这件事
+		this.counts.putAll(carpet_hao_addition.EntityPlacementCounter.totals(this.candidates));
+
+		for (int index = 0; index < this.candidates.size(); index++) {
+			EntitySpawn spawn = this.candidates.get(index);
+			this.names.set(index, hao$decorate(hao$nameOf(spawn.type()), this.counts.get(spawn.key())));
+		}
+	}
+
+	/**
+	 * 名字后面缀上「需要几个 / 已经放了几个 / 是否完成」。
+	 * <p>
+	 * 玩家再次打开界面时,一眼就能核对投影到底放全了没有:
+	 * <ul>
+	 *   <li><b>需要 N</b> —— 投影里这一处要 N 个,用白色;</li>
+	 *   <li><b>已放 M</b> —— 世界里现在有 M 个,<b>颜色跟着状态走</b>:少了红、正好绿、多了黄;</li>
+	 *   <li><b>结论</b> —— 缺 K / 完成 / 多 K,与「已放」同色。</li>
+	 * </ul>
+	 * 「已放」特意与「需要」不同色:两个数字同色时,玩家得逐位对比才知道差多少;
+	 * 让「已放」自己变色,数量不对的那一刻就直接跳出来。
+	 */
+	/**
+	 * 按「需要 vs 已放」给出状态色:少了红、正好绿、多了黄。
+	 * <p>
+	 * 名字里的文字与格子右下角的小牌都用它,保证两处颜色永远一致。
+	 */
+	private static int hao$stateColor(int[] counts) {
+		final int diff = counts[0] - counts[1];
+
+		if (diff > 0) {
+			return 0xFFFF6060;      // 还差
+		}
+
+		if (diff == 0) {
+			return 0xFF7FE07F;      // 齐了
+		}
+
+		return 0xFFFFD060;          // 多了
+	}
+
+	private static Text hao$decorate(Text name, int[] counts) {
+		if (counts == null) {
+			return name;
+		}
+		final int need = counts[0];
+		final int have = counts[1];
+		final int diff = need - have;
+		final Text tail;
+		final net.minecraft.util.Formatting color;
+
+		if (diff > 0) {
+			tail = Text.literal("缺" + diff);
+			color = net.minecraft.util.Formatting.RED;
+		} else if (diff == 0) {
+			tail = Text.literal("完成");
+			color = net.minecraft.util.Formatting.GREEN;
+		} else {
+			tail = Text.literal("多" + (-diff));
+			color = net.minecraft.util.Formatting.YELLOW;
+		}
+
+		return Text.empty().append(name)
+				.append(Text.literal("  需要 " + need).formatted(net.minecraft.util.Formatting.WHITE))
+				.append(Text.literal(" · ").formatted(net.minecraft.util.Formatting.DARK_GRAY))
+				.append(Text.literal("已放 " + have).formatted(color))
+				.append(Text.literal(" · ").formatted(net.minecraft.util.Formatting.DARK_GRAY))
+				.append(tail.copy().formatted(color));
 	}
 
 	@Override
@@ -129,6 +224,12 @@ public class EntityPlacementScreen extends Screen {
 		if (this.noticeTicks > 0) {
 			this.noticeTicks--;
 		}
+		// 玩家常常在界面开着的时候当场放置,这里每 tick 重算一次,"已放几个"才会实时更新
+		hao$refreshNames();
+		// 「一次放几个」每 tick 重读:玩家会在界面开着时用 /easyPlaceEntityCount 改数量。
+		// 但如果本次是快捷键触发的、且它带来了自己的数量,就以它为准(那个值已在构造时抄下),
+		// 否则玩家在配套客户端里改的数量在"弹界面"这条路上会丢失。
+		this.count = this.hotkeyCount >= 1 ? this.hotkeyCount : hao$currentCount();
 	}
 
 	@Override
@@ -231,6 +332,22 @@ public class EntityPlacementScreen extends Screen {
 				context.fill(slotX + 16, slotY, slotX + 17, slotY + 16, frame);
 			}
 			context.drawItem(this.icons.get(index), slotX, slotY);
+
+			// 右下角小牌:显示「这一次会放几个」—— 也就是玩家设置的一次放置数量。
+			// 它跟着 /easyPlaceEntityCount 和配套客户端传过来的数量走(见 this.count),
+			// 与格子上「需要/已放」无关;后者是投影和世界实体数决定的。
+			if (this.count > 0) {
+				String badgeText = "x" + this.count;
+				var badgeMatrix = context.getMatrices();
+				badgeMatrix.pushMatrix();
+				badgeMatrix.translate(slotX + SLOT_SIZE, slotY + SLOT_SIZE);
+				badgeMatrix.scale(0.5F, 0.5F);
+				int badgeWidth = this.textRenderer.getWidth(badgeText);
+				// 现在 (0,0) 是格子右下角,往左上退:右留 1px、下留 1px
+				context.drawText(this.textRenderer, Text.literal(badgeText),
+						-badgeWidth - 1, -9, 0xFFE8E8F0, true);
+				badgeMatrix.popMatrix();
+			}
 		}
 
 		// 信息文字画在**上方**那条里
@@ -241,8 +358,11 @@ public class EntityPlacementScreen extends Screen {
 		} else if (this.noticeTicks > 0 && this.notice != null) {
 			hao$centeredShadow(context, Text.literal(this.notice), this.width / 2, infoY, 0xFFFF8080);
 		} else {
+			// 把「一次放几个」也写出来:这个值来自 /easyPlaceEntityCount 或配套客户端的设置,
+			// 改了之后界面上必须能看到,否则玩家会以为设置没生效。
+			// 注意它和格子上的「需要/已放」无关 —— 那两数由投影和世界里的实体数决定。
 			hao$centeredShadow(context, Text.literal("点击要放的那一个 · 还剩 "
-					+ (this.candidates.size() - this.placed.size()) + " 个"),
+					+ (this.candidates.size() - this.placed.size()) + " 个 · 一次放 " + this.count + " 个"),
 					this.width / 2, infoY, 0xFFD8D8D8);
 		}
 	}

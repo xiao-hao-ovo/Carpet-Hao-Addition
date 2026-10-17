@@ -1,5 +1,6 @@
 package carpet_hao_addition.mixin;
 
+import carpet_hao_addition.EntityPlacementCounter;
 import carpet_hao_addition.EntityPlacementHandler;
 import carpet_hao_addition.EntityPlacementPayload;
 import carpet_hao_addition.EasyPlaceEntitySettings;
@@ -90,6 +91,19 @@ public abstract class WorldUtils_entityPlacementMixin {
 	@Unique
 	private static final long HAO_ENTITY_REQUEST_TTL = 40L;
 
+	/**
+	 * 每个候选的「投影里几个 / 世界里已有几个」,键是 {@code EntitySpawn#key()}。
+	 * <p>
+	 * 刻意**不**放进 {@link EntitySpawn}:那是个带 {@code PacketCodec} 的 record,加字段会改动
+	 * 跨 mod 协议(HaoMaSa 与 26.x 都按同一个 codec 收发)。这两个数只给客户端的选择器界面用,
+	 * 不需要发给服务端,所以单独放一份。
+	 * <p>
+	 * 用途有两个:① 界面能一直打开,玩家可以**继续加放**;② 界面上能看出**还缺几个**,
+	 * 用来核对投影是否放全了。
+	 */
+	@Unique
+	private static final java.util.Map<String, int[]> HAO_COUNTS = new java.util.HashMap<>();
+
 	@Inject(method = "doEasyPlaceAction", at = @At("HEAD"), cancellable = true)
 	private static void hao$spawnEntityOnEasyPlace(MinecraftClient minecraft, CallbackInfoReturnable<ActionResult> cir) {
 		// 注入点在 HEAD:这里一旦抛异常,整个轻松放置(包括方块)都会失效。所以兜住一切意外。
@@ -111,40 +125,71 @@ public abstract class WorldUtils_entityPlacementMixin {
 			// 否则它会影响这次右键用的数量。
 			EntityPlacementTrigger.clearHotkeyCount();
 		}
-		if (player == null || !EasyPlaceEntitySettings.isTriggerEnabled(fromHotkey)
-				|| !(minecraft.crosshairTarget instanceof BlockHitResult hit)) {
+		if (player == null || !EasyPlaceEntitySettings.isTriggerEnabled(fromHotkey)) {
 			// 诊断(临时):区分"客户端读不到规则值"与"准星没对着方块"
 			HaoDebug.log("[hao-entity] 未进入收集: player=" + (player != null)
 					+ " 取值=" + EasyPlaceEntitySettings.value() + " 快捷键=" + fromHotkey
 					+ " 准星是方块=" + (minecraft.crosshairTarget instanceof BlockHitResult));
+			// 快捷键是玩家主动按键,不给提示就完全看不出发生了什么(以前这里是静默返回,
+			// 表现就是"快捷键时灵时不灵")。右键路径保持安静,否则照着投影施工会刷屏。
+			if (fromHotkey && player != null) {
+				hao$notify(player, EasyPlaceEntitySettings.value() == EasyPlaceEntitySettings.Trigger.FALSE
+						? "carpet-hao-addition.entity.ruleOff"
+						: "carpet-hao-addition.entity.noBlock");
+			}
+			return;
+		}
+		// ⚠️ 右键路径才要求"准星对着方块"(右键本来就是对屏幕中央那个方块操作);
+		// 快捷键路径**不能**这样要求 —— 快捷键的判定在 hao$collectCandidates 里用视线射线自己做,
+		// 而 crosshairTarget 会命中**实体**:第一次放出的那个实体往往正好挡在准星上,
+		// 于是"在同一个地方再按一次"就会被误判成"准星没有指着方块"。
+		if (!fromHotkey && !(minecraft.crosshairTarget instanceof BlockHitResult)) {
+			HaoDebug.log("[hao-entity] 右键路径:准星没对着方块");
 			return;
 		}
 		long tick = player.getWorld().getTime();
-		if (hao$lastEntityTick == tick) {
+		// 同 tick 去抖只对右键长按有意义:快捷键是人工单击,再抖就会"按第二下没反应"。
+		if (!fromHotkey && hao$lastEntityTick == tick) {
 			return;
 		}
 		List<EntitySpawn> candidates = hao$collectCandidates(minecraft);
 		if (candidates.isEmpty()) {
+			HaoDebug.log("[hao-entity] 候选为空(视线内没有可放的投影实体)");
+			if (fromHotkey) {
+				hao$notify(player, "carpet-hao-addition.entity.noTarget");
+			}
 			return;
 		}
 		hao$lastEntityTick = tick;
 		if (candidates.size() > 1 || EasyPlaceEntitySettings.uiEnabled(player.getUuid())) {
 			// 多个候选时必须让玩家点(代码猜不出来"你指着谁");只命中一个时是否还弹界面,
 			// 由 /easyPlaceEntityUi 决定 —— 开着就总是弹界面,关掉就直接放置(更快)。
-			minecraft.setScreen(new EntityPlacementScreen(candidates));
+			// 界面会一直弹(即使这一处已经放满),玩家据此核对缺口、或继续加放。
+			minecraft.setScreen(new EntityPlacementScreen(candidates, HAO_COUNTS));
 			cir.setReturnValue(ActionResult.SUCCESS);
 			return;
 		}
-		// 单候选:同一格 2 秒内只放一次,否则按住右键会刷出一堆
-		BlockPos target = hit.getBlockPos();
+		// 单候选:同一格 2 秒内只放一次,否则按住右键会刷出一堆。快捷键不受此限。
+		// TTL 的键统一用"视线终点所在格":快捷键路径没有可靠的 crosshairTarget
+		// (可能被实体挡住),而这条射线两条路径都能拿到。
+		Vec3d eye = player.getCameraPosVec(1.0F);
+		Vec3d lookEnd = eye.add(player.getRotationVec(1.0F).multiply(WorldUtils.getValidBlockRange(minecraft)));
+		BlockPos target = BlockPos.ofFloored(lookEnd);
 		long key = target.asLong();
 		Long last = hao$recentEntityRequests.get(key);
-		if (last != null && tick - last <= HAO_ENTITY_REQUEST_TTL) {
+		if (!fromHotkey && last != null && tick - last <= HAO_ENTITY_REQUEST_TTL) {
+			HaoDebug.log("[hao-entity] 同格 2 秒内已放过,跳过");
 			return;
 		}
 		hao$recentEntityRequests.entrySet().removeIf(entry -> tick - entry.getValue() > HAO_ENTITY_REQUEST_TTL);
 		hao$recentEntityRequests.put(key, tick);
 		hao$dispatchPacket(candidates.getFirst(), player);
+	}
+
+	/** 给玩家一行动作栏提示(快捷键路径专用,右键路径保持安静)。 */
+	@Unique
+	private static void hao$notify(PlayerEntity player, String translationKey) {
+		player.sendMessage(net.minecraft.text.Text.translatable(translationKey), true);
 	}
 
 	/** 视线射线命中的、还没放过的投影实体,由近到远。 */
@@ -172,22 +217,21 @@ public abstract class WorldUtils_entityPlacementMixin {
 		}
 		found.sort(Comparator.comparingDouble(spawn ->
 				new Vec3d(spawn.x(), spawn.y(), spawn.z()).squaredDistanceTo(start)));
-		// 按"位置 + 类型"计数过滤:同一处投影里有 N 个实体,世界里已有 M 个同类型实体,
-		// 只有 M >= N 才算"这一处已经放满"。
-		// 这样:① 叠在同一位置的多个实体能一个个放(而不是永远只认一个);
-		//      ② 把实体打掉之后 M 归零,候选会自动重新出现,可以重新放。
+		// 按"位置 + 类型"计数:同一处投影里有 N 个实体,世界里已有 M 个。
+		// ⚠️ 这里**不再**把"已放满"的候选从列表里去掉 —— 选择器界面要能随时打开,玩家才能
+		// ①继续加放(比如投影 2 个只放了 1 个,或想多放几个)②核对投影到底缺不缺。
+		// 数量另存一份带进界面(见 HAO_COUNTS),候选本身原样保留。
+		HAO_COUNTS.clear();
 		if (mc.world != null) {
-			Map<String, Integer> projected = new java.util.HashMap<>();
-			for (EntitySpawn spawn : found) {
-				projected.merge(hao$positionKey(spawn), 1, Integer::sum);
-			}
-			found.removeIf(spawn ->
-					hao$countNearby(mc, spawn) >= projected.getOrDefault(hao$positionKey(spawn), 1));
+			// 整处统计:同一位置有几个投影实体、世界里已有几个(与"一次放几个"无关)
+			HAO_COUNTS.putAll(EntityPlacementCounter.totals(mc.world, found));
 		}
 		HaoDebug.log("[hao-entity] 候选 " + found.size() + " 个");
 		for (EntitySpawn spawn : found) {
+			int[] counts = HAO_COUNTS.get(spawn.key());
 			HaoDebug.log("[hao-entity]   " + spawn.type() + " @ "
-					+ String.format("%.1f,%.1f,%.1f", spawn.x(), spawn.y(), spawn.z()));
+					+ String.format("%.1f,%.1f,%.1f", spawn.x(), spawn.y(), spawn.z())
+					+ (counts == null ? "" : "  投影=" + counts[0] + " 已有=" + counts[1]));
 		}
 		return found;
 	}
@@ -326,7 +370,17 @@ public abstract class WorldUtils_entityPlacementMixin {
 				+ "," + (int) Math.floor(spawn.z());
 	}
 
-	/** 世界里"就在这个点上"已经有多少个同类型实体(用于判断这一处是否已经放满)。 */
+	/**
+	 * 世界里"就在这个点上"已经有多少个同类型实体(用于判断这一处是否已经放满)。
+	 *
+	 * <p><b>为什么不用"与投影坐标的距离"来判：</b>投影里的坐标是实体<b>应该在</b>的位置,
+	 * 而放出来的盔甲架/矿车/船会受重力与碰撞箱修正**落地或轻微偏移**,经常差半格到一格。
+	 * 早先版本用 {@code squaredDistanceTo <= 0.36}(= 0.6 格)判定,结果实体明明在那儿却数不到,
+	 * 界面就一直显示"还缺几个"。
+	 * 现在改成**碰撞箱相交**:只要实体的包围盒碰到「以投影坐标为底面、放宽 1 格」的那个盒子,
+	 * 就算这一处已经有过一个了 —— 落地、被推移一点点、朝向不同都不影响。
+	 * </p>
+	 */
 	@Unique
 	private static int hao$countNearby(MinecraftClient mc, EntitySpawn spawn) {
 		ClientWorld world = mc.world;
@@ -334,12 +388,13 @@ public abstract class WorldUtils_entityPlacementMixin {
 		if (world == null || type == null) {
 			return 0;
 		}
+		final Box target = type.getSpawnBox(spawn.x(), spawn.y(), spawn.z());
+		final Box search = target.expand(2.0D);
+		final Box accepted = target.expand(1.0D);
 		int count = 0;
-		for (Entity existing : world.getOtherEntities(null,
-				type.getSpawnBox(spawn.x(), spawn.y(), spawn.z()).expand(1.0D))) {
-			// 只数"几乎落在同一个点"的:并排/上下紧挨着的同类实体不算同一处
-			if (existing.getType() == type
-					&& existing.getPos().squaredDistanceTo(spawn.x(), spawn.y(), spawn.z()) <= 0.36D) {
+		for (Entity existing : world.getOtherEntities(null, search)) {
+			// 只认"这一处"的同类型实体:并排/上下紧挨着的同类实体不算同一处
+			if (existing.getType() == type && existing.getBoundingBox().intersects(accepted)) {
 				count++;
 			}
 		}
