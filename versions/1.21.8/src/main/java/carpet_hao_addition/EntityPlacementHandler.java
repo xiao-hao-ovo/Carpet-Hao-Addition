@@ -168,11 +168,16 @@ public final class EntityPlacementHandler {
 		//
 		// 所以判据是:投影这个实体**带乘客**,而世界里那个同类型载具的乘客**还不够**。
 		if (hao$wantedPassengerCount(nbt) > 0) {
-			Entity existingVehicle = hao$findExistingVehicle(world, spawn, type, nbt);
-			if (existingVehicle != null) {
-				HaoDebug.log("[hao-entity]   该位置已有载具 " + existingVehicle.getType()
-						+ " 且缺乘客,走补齐路径");
-				hao$fillMissingPassengers(player, world, existingVehicle, spawn, count);
+			java.util.List<Entity> existingVehicles = hao$findExistingVehicles(world, spawn, type, nbt);
+			if (!existingVehicles.isEmpty()) {
+				HaoDebug.log("[hao-entity]   该位置已有载具 " + existingVehicles.size()
+						+ " 辆缺乘客,走补齐路径(本次最多补 " + count + " 位)");
+				hao$fillMissingPassengers(player, world, existingVehicles, spawn, count);
+				return;
+			}
+			// 载具有了、乘客也齐了 —— 再放就会多出一份载具,直接不做
+			if (hao$countVehiclesNear(world, spawn, type) > 0) {
+				HaoDebug.log("[hao-entity]   该位置的载具乘客已齐,不再重建");
 				return;
 			}
 		}
@@ -289,13 +294,30 @@ public final class EntityPlacementHandler {
 	 * <p><b>为什么优先选缺乘客的那个:</b>同一处可能已经有两个同类载具,
 	 * 其中一个坐满了乘客、另一个还空着。该补的是空着的那个。</p>
 	 */
-	private static Entity hao$findExistingVehicle(ServerWorld world, EntitySpawn spawn, EntityType<?> type,
-			NbtCompound wantedNbt) {
+	/**
+	 * 这一处一共有几个同类型载具(不管乘客齐不齐)。
+	 * <p>用来区分两种情况:「这里根本没载具」和「载具有了、乘客也齐了」——
+	 * 前者该整组新建,后者再新建就会多出一份载具。</p>
+	 */
+	private static int hao$countVehiclesNear(ServerWorld world, EntitySpawn spawn, EntityType<?> type) {
+		Box target = type.getSpawnBox(spawn.x(), spawn.y(), spawn.z());
+		Box accepted = target.expand(2.0D);
+		int count = 0;
+		for (Entity candidate : world.getOtherEntities(null, target.expand(4.0D))) {
+			if (candidate.getType() == type && candidate.isAlive()
+					&& candidate.getBoundingBox().intersects(accepted)) {
+				count++;
+			}
+		}
+		return count;
+	}
+
+	private static java.util.List<Entity> hao$findExistingVehicles(ServerWorld world, EntitySpawn spawn,
+			EntityType<?> type, NbtCompound wantedNbt) {
 		Box target = type.getSpawnBox(spawn.x(), spawn.y(), spawn.z());
 		Box accepted = target.expand(2.0D);
 		String wantedName = spawn.nbt().getString("CustomName").orElse("");
-		Entity best = null;
-		double bestDistance = Double.MAX_VALUE;
+		java.util.List<Entity> found = new java.util.ArrayList<>();
 		int candidates = 0;
 		for (Entity candidate : world.getOtherEntities(null, target.expand(4.0D))) {
 			if (candidate.getType() != type || !candidate.isAlive()) {
@@ -314,89 +336,115 @@ public final class EntityPlacementHandler {
 			if (hao$missingPassengerCount(candidate, wantedNbt) <= 0) {
 				continue;
 			}
-			double distance = candidate.squaredDistanceTo(spawn.x(), spawn.y(), spawn.z());
-			if (distance < bestDistance) {
-				bestDistance = distance;
-				best = candidate;
-			}
+			found.add(candidate);
 		}
+		// 近的优先补:玩家通常就在最近的那一辆旁边
+		found.sort(java.util.Comparator.comparingDouble(
+				entity -> entity.squaredDistanceTo(spawn.x(), spawn.y(), spawn.z())));
 		HaoDebug.log("[hao-entity]   找已有载具 " + type + " 位置候选=" + candidates
-				+ " 选中=" + (best == null ? "无" : String.format("%.2f格", Math.sqrt(bestDistance))));
-		return best;
+				+ " 缺乘客的=" + found.size());
+		return found;
 	}
 
 	/**
 	 * 把**缺失的乘客**补到已有载具上(不重建载具)。
 	 *
-	 * <p>做法:投影要求的乘客按类型记账,减去载具上现有的,剩下的就是缺的;
-	 * 逐位检查材料,付得起的召出来并 {@code startRiding},付不起的跳过 ——
-	 * 与 {@link #hao$prunePassengers} 同语义:有多少材料补多少。</p>
+	 * <p>做法:把这一处**所有**还缺乘客的同类载具找出来(近的优先),在上面一共补
+	 * {@code count} 位 —— {@code count} 就是「一次放几个」,设 5 就补 5 条船。
+	 * 每位按 1 份材料算,材料不够补几位算几位。</p>
 	 */
 	private static void hao$fillMissingPassengers(ServerPlayerEntity player, ServerWorld world,
-			Entity vehicle, EntitySpawn spawn, int count) {
+			java.util.List<Entity> vehicles, EntitySpawn spawn, int count) {
 		NbtList wanted = spawn.nbt().getList("Passengers").orElse(null);
 		if (wanted == null || wanted.isEmpty()) {
 			HaoDebug.log("[hao-entity]   已有载具且投影本来就没有乘客,无需补齐");
 			return;
 		}
-		// 投影要求几位乘客
-		Map<EntityType<?>, Integer> remaining = new LinkedHashMap<>();
-		for (int i = 0; i < wanted.size(); i++) {
-			if (wanted.get(i) instanceof NbtCompound passengerNbt) {
-				EntityType<?> passengerType = hao$typeOf(passengerNbt);
-				if (passengerType != null) {
-					remaining.merge(passengerType, 1, Integer::sum);
-				}
-			}
-		}
-		// 载具上已经坐着几位
-		for (Entity passenger : vehicle.getPassengerList()) {
-			remaining.computeIfPresent(passenger.getType(), (ignored, amount) -> amount - 1);
-		}
 		Map<Item, Integer> need = new LinkedHashMap<>();
 		int filled = 0;
-		for (int i = 0; i < wanted.size(); i++) {
-			if (!(wanted.get(i) instanceof NbtCompound passengerNbt)) {
-				continue;
+		// 还要补几位:一次放几个 = 最多补几位
+		int budget = count;
+		for (Entity vehicle : vehicles) {
+			if (budget <= 0) {
+				break;
 			}
-			EntityType<?> passengerType = hao$typeOf(passengerNbt);
-			if (passengerType == null) {
-				continue;
+			// 这一辆上还缺哪几位乘客
+			Map<EntityType<?>, Integer> remaining = new LinkedHashMap<>();
+			for (int i = 0; i < wanted.size(); i++) {
+				if (wanted.get(i) instanceof NbtCompound passengerNbt) {
+					EntityType<?> passengerType = hao$typeOf(passengerNbt);
+					if (passengerType != null) {
+						remaining.merge(passengerType, 1, Integer::sum);
+					}
+				}
 			}
-			Integer left = remaining.get(passengerType);
-			if (left == null || left <= 0) {
-				continue; // 这一位载具上已经有了
+			for (Entity passenger : vehicle.getPassengerList()) {
+				remaining.computeIfPresent(passenger.getType(), (ignored, amount) -> amount - 1);
 			}
-			// 付不起就跳过这一位,不扣材料也不生成
-			Map<Item, Integer> sub = new LinkedHashMap<>();
-			if (!hao$collectEntities(passengerType, passengerNbt, count, player, sub)) {
-				HaoDebug.log("[hao-entity]   补齐阶段乘客材料不足,跳过 " + passengerType);
-				continue;
-			}
-			sub.forEach((item, amount) -> need.merge(item, amount, Integer::sum));
-			remaining.merge(passengerType, -1, Integer::sum);
+			for (int i = 0; i < wanted.size() && budget > 0; i++) {
+				if (!(wanted.get(i) instanceof NbtCompound passengerNbt)) {
+					continue;
+				}
+				EntityType<?> passengerType = hao$typeOf(passengerNbt);
+				if (passengerType == null) {
+					continue;
+				}
+				Integer left = remaining.get(passengerType);
+				if (left == null || left <= 0) {
+					continue; // 这一辆上这一位已经有了
+				}
+				// 补 1 位就按 1 份材料算,不乘「一次放几个」——
+				// 倍率由外面的 budget 控制(补几位),不是每位要几份
+				Map<Item, Integer> one = new LinkedHashMap<>();
+				if (!hao$collectEntities(passengerType, passengerNbt, 1, player, one)) {
+					HaoDebug.log("[hao-entity]   补齐阶段乘客材料不足,跳过 " + passengerType);
+					budget = 0; // 材料没了:外层也别再换下一辆重试(否则日志会刷屏 N 条)
+					break;
+				}
+				// 还要和**本次已经决定要补的**合并后再校验:背包只有 1 份材料时不能补 2 位
+				boolean affordable = true;
+				for (Map.Entry<Item, Integer> entry : one.entrySet()) {
+					int total = need.getOrDefault(entry.getKey(), 0) + entry.getValue();
+					if (hao$count(player, entry.getKey()) < total) {
+						affordable = false;
+						break;
+					}
+				}
+				if (!affordable) {
+					HaoDebug.log("[hao-entity]   补齐阶段材料不够再多补一位,跳过 " + passengerType);
+					budget = 0;
+					break;
+				}
 
-			NbtCompound passengerCopy = passengerNbt.copy();
-			hao$fixPassengerPositions(passengerCopy, spawn.x(), spawn.y(), spawn.z());
-			Entity created = EntityType.loadEntityWithPassengers(passengerCopy, world,
-					SpawnReason.COMMAND, loaded -> loaded);
-			if (created == null) {
-				continue;
+				NbtCompound passengerCopy = passengerNbt.copy();
+				hao$fixPassengerPositions(passengerCopy, spawn.x(), spawn.y(), spawn.z());
+				Entity created = EntityType.loadEntityWithPassengers(passengerCopy, world,
+						SpawnReason.COMMAND, loaded -> loaded);
+				if (created == null) {
+					// 材料还没记账,这里直接跳过,不会白扣
+					continue;
+				}
+				created.refreshPositionAndAngles(vehicle.getX(), vehicle.getY(), vehicle.getZ(),
+						created.getYaw(), created.getPitch());
+				world.spawnNewEntityAndPassengers(created);
+				// force=true:座位被占也换上去,保证一定补在原来那个载具上
+				if (!created.startRiding(vehicle, true)) {
+					// 没坐上去就不算补齐:不计 filled/budget,也不扣材料
+					HaoDebug.log("[hao-entity]   补齐的乘客没能骑上去,视为失败 " + passengerType);
+					continue;
+				}
+				// 真的补上了才记账 + 扣料
+				one.forEach((item, amount) -> need.merge(item, amount, Integer::sum));
+				remaining.merge(passengerType, -1, Integer::sum);
+				filled++;
+				budget--;
 			}
-			created.refreshPositionAndAngles(vehicle.getX(), vehicle.getY(), vehicle.getZ(),
-					created.getYaw(), created.getPitch());
-			world.spawnNewEntityAndPassengers(created);
-			// force=true:座位被占也换上去,保证一定补在原来那个载具上
-			if (!created.startRiding(vehicle, true)) {
-				HaoDebug.log("[hao-entity]   补齐的乘客没能骑上去 " + passengerType);
-			}
-			filled++;
 		}
 		for (Map.Entry<Item, Integer> entry : need.entrySet()) {
 			hao$consume(player, entry.getKey(), entry.getValue());
 		}
-		HaoDebug.log("[hao-entity]   补齐乘客 " + filled + " 位 消耗=" + need
-				+ " 载具现有乘客=" + vehicle.getPassengerList().size());
+		HaoDebug.log("[hao-entity]   补齐乘客 " + filled + "/" + count + " 位 消耗=" + need
+				+ " 涉及载具=" + vehicles.size());
 	}
 
 	/**

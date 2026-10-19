@@ -54,6 +54,13 @@ public final class EntityPlacementCounter
 
 		for (Entity existing : world.getOtherEntities(null, target.expand(SEARCH_EXPAND)))
 		{
+			// 乘客不单独计数:它已经被上面载具那一支的 countPassengers 算进去了。
+			// 不跳过的话,"矿车驮着矿车"这种同类型乘客会被计两次。
+			if (existing.getVehicle() != null)
+			{
+				continue;
+			}
+
 			// 只认"这一处"的同类型实体:并排/上下紧挨着的同类实体不算同一处
 			if (existing.getType() == type && existing.getBoundingBox().intersects(accepted))
 			{

@@ -117,7 +117,9 @@ public class EntityPlacementScreen extends Screen {
 	public EntityPlacementScreen(List<EntitySpawn> candidates, java.util.Map<String, int[]> counts) {
 		super(Text.literal("昊藏小囊"));
 		this.candidates = candidates;
-		this.counts = counts;
+		// 拷一份,不直接引用 mixin 那张静态表:界面开着时如果又被快捷键触发一次收集,
+		// 静态表会被清空重填,正在显示的这一份数字就被换掉了。
+		this.counts = new java.util.HashMap<>(counts);
 		// 快捷键带过来的数量必须**在这里**抄下来:标记是一次性的,等玩家点格子时早被清掉了
 		this.hotkeyCount = carpet_hao_addition.EntityPlacementTrigger.hotkeyCount();
 		this.count = hao$currentCount();
@@ -140,10 +142,6 @@ public class EntityPlacementScreen extends Screen {
 	 * 世界里,所以这里每 tick 重算一次,放出来的那一刻界面就会跟着变成"完成"。
 	 */
 	private void hao$refreshNames() {
-		if (this.counts == null) {
-			return;
-		}
-
 		// 整体重算:位置上的「需要/已放」要按整处统计,逐条单独算做不到这件事
 		this.counts.putAll(carpet_hao_addition.EntityPlacementCounter.totals(this.candidates));
 
@@ -165,25 +163,6 @@ public class EntityPlacementScreen extends Screen {
 	 * 「已放」特意与「需要」不同色:两个数字同色时,玩家得逐位对比才知道差多少;
 	 * 让「已放」自己变色,数量不对的那一刻就直接跳出来。
 	 */
-	/**
-	 * 按「需要 vs 已放」给出状态色:少了红、正好绿、多了黄。
-	 * <p>
-	 * 名字里的文字与格子右下角的小牌都用它,保证两处颜色永远一致。
-	 */
-	private static int hao$stateColor(int[] counts) {
-		final int diff = counts[0] - counts[1];
-
-		if (diff > 0) {
-			return 0xFFFF6060;      // 还差
-		}
-
-		if (diff == 0) {
-			return 0xFF7FE07F;      // 齐了
-		}
-
-		return 0xFFFFD060;          // 多了
-	}
-
 	private static Text hao$decorate(Text name, int[] counts) {
 		if (counts == null) {
 			return name;
@@ -405,32 +384,6 @@ public class EntityPlacementScreen extends Screen {
 		return hao$texSize;
 	}
 
-	/** 用 fill 拼出一个**圆角矩形**(半径 r,四角按圆弧削平)。 */
-	private static void hao$roundedFill(DrawContext context, int x1, int y1, int x2, int y2,
-			int radius, int color) {
-		int r = Math.max(0, Math.min(radius, Math.min((x2 - x1) / 2, (y2 - y1) / 2)));
-		if (r == 0) {
-			context.fill(x1, y1, x2, y2, color);
-			return;
-		}
-		context.fill(x1 + r, y1, x2 - r, y2, color);   // 中间竖条
-		context.fill(x1, y1 + r, x2, y2 - r, color);   // 中间横条
-		for (int i = 0; i < r; i++) {                  // 四角按圆弧逐像素补齐
-			double dy = r - i - 0.5D;
-			int inset = r - (int) Math.round(Math.sqrt(Math.max(0.0D, r * r - dy * dy)));
-			context.fill(x1 + inset, y1 + i, x1 + r, y1 + i + 1, color);
-			context.fill(x2 - r, y1 + i, x2 - inset, y1 + i + 1, color);
-			context.fill(x1 + inset, y2 - i - 1, x1 + r, y2 - i, color);
-			context.fill(x2 - r, y2 - i - 1, x2 - inset, y2 - i, color);
-		}
-	}
-
-	/** 居中画一行文字,**不带阴影**。 */
-	private void hao$centered(DrawContext context, Text text, int centerX, int y, int color) {
-		context.drawText(this.textRenderer, text, centerX - this.textRenderer.getWidth(text) / 2,
-				y, color, false);
-	}
-
 	/** 居中画一行文字,带原版阴影(用于深色信息条上,浅色材质包下也读得清)。 */
 	private void hao$centeredShadow(DrawContext context, Text text, int centerX, int y, int color) {
 		context.drawText(this.textRenderer, text, centerX - this.textRenderer.getWidth(text) / 2,
@@ -537,25 +490,6 @@ public class EntityPlacementScreen extends Screen {
 					: Text.literal("×" + amount + "(" + stacks + "组+" + rest + ")");
 		}
 		return Text.literal("×" + amount);
-	}
-
-	/** 画玩家自己的背包(主背包 3 行 + 快捷栏 1 行),位置与原版箱子界面一致。 */
-	private void hao$renderPlayerInventory(DrawContext context, int left, int invTop) {
-		if (this.client == null || this.client.player == null) {
-			return;
-		}
-		var inventory = this.client.player.getInventory();
-		for (int row = 0; row < 3; row++) {
-			for (int column = 0; column < 9; column++) {
-				context.drawItem(inventory.getStack(9 + row * 9 + column),
-						left + GRID_LEFT + column * SLOT_SIZE, invTop + row * SLOT_SIZE);
-			}
-		}
-		int hotbarY = invTop + 3 * SLOT_SIZE + 4;
-		for (int column = 0; column < 9; column++) {
-			context.drawItem(inventory.getStack(column),
-					left + GRID_LEFT + column * SLOT_SIZE, hotbarY);
-		}
 	}
 
 	/** 面板(纹理部分)左上角 y:整体垂直居中,并给上方的信息条留出位置。 */

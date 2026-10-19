@@ -357,48 +357,9 @@ public abstract class WorldUtils_entityPlacementMixin {
 	private static void hao$dispatchPacket(EntitySpawn spawn, PlayerEntity player) {
 		int count = EasyPlaceEntitySettings.count(player.getUuid());
 		EntityPlacementHandler.registerPayloadType();
-		EntityPlacementHandler.registerPayloadType();
 		ClientPlayNetworking.send(new EntityPlacementPayload(List.of(spawn), count));
 		HaoDebug.log("[hao-entity] 放置 " + spawn.type() + " @ "
 				+ String.format("%.1f,%.1f,%.1f", spawn.x(), spawn.y(), spawn.z()));
-	}
-
-	/** "位置 + 类型"的粗粒度键:同一处的多个同类实体算同一组。 */
-	@Unique
-	private static String hao$positionKey(EntitySpawn spawn) {
-		return spawn.type() + "@" + (int) Math.floor(spawn.x()) + "," + (int) Math.floor(spawn.y())
-				+ "," + (int) Math.floor(spawn.z());
-	}
-
-	/**
-	 * 世界里"就在这个点上"已经有多少个同类型实体(用于判断这一处是否已经放满)。
-	 *
-	 * <p><b>为什么不用"与投影坐标的距离"来判：</b>投影里的坐标是实体<b>应该在</b>的位置,
-	 * 而放出来的盔甲架/矿车/船会受重力与碰撞箱修正**落地或轻微偏移**,经常差半格到一格。
-	 * 早先版本用 {@code squaredDistanceTo <= 0.36}(= 0.6 格)判定,结果实体明明在那儿却数不到,
-	 * 界面就一直显示"还缺几个"。
-	 * 现在改成**碰撞箱相交**:只要实体的包围盒碰到「以投影坐标为底面、放宽 1 格」的那个盒子,
-	 * 就算这一处已经有过一个了 —— 落地、被推移一点点、朝向不同都不影响。
-	 * </p>
-	 */
-	@Unique
-	private static int hao$countNearby(MinecraftClient mc, EntitySpawn spawn) {
-		ClientWorld world = mc.world;
-		EntityType<?> type = Registries.ENTITY_TYPE.get(spawn.type());
-		if (world == null || type == null) {
-			return 0;
-		}
-		final Box target = type.getSpawnBox(spawn.x(), spawn.y(), spawn.z());
-		final Box search = target.expand(2.0D);
-		final Box accepted = target.expand(1.0D);
-		int count = 0;
-		for (Entity existing : world.getOtherEntities(null, search)) {
-			// 只认"这一处"的同类型实体:并排/上下紧挨着的同类实体不算同一处
-			if (existing.getType() == type && existing.getBoundingBox().intersects(accepted)) {
-				count++;
-			}
-		}
-		return count;
 	}
 
 	/**
