@@ -4,9 +4,9 @@ import carpet.CarpetServer;
 import carpet.api.settings.CarpetRule;
 import carpet.api.settings.Rule;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 「轻松放置实体」规则:用 Litematica 的「轻松放置」照着投影施工时,把投影里的**实体**
@@ -54,13 +54,13 @@ public class EasyPlaceEntitySettings {
 	public static Trigger haoProjectionEntity = Trigger.FALSE;
 
 	/** 各玩家自己的"一次放几个"(内存;没设置过的玩家按 {@link #DEFAULT_COUNT})。 */
-	private static final Map<UUID, Integer> COUNTS = new HashMap<>();
+	private static final Map<UUID, Integer> COUNTS = new ConcurrentHashMap<>();
 
 	/** 默认总是弹选择器界面(即使只命中一个实体)。 */
 	public static final boolean DEFAULT_UI = true;
 
 	/** 各玩家自己的"是否总是弹选择器界面"(内存;没设置过的玩家按 {@link #DEFAULT_UI})。 */
-	private static final Map<UUID, Boolean> UI_ENABLED = new HashMap<>();
+	private static final Map<UUID, Boolean> UI_ENABLED = new ConcurrentHashMap<>();
 
 	/** 权威读取:当前取值(缺失/异常按 {@link Trigger#FALSE})。 */
 	public static Trigger value() {

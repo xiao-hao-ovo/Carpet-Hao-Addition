@@ -82,11 +82,15 @@ public class ZoneguardSavedData extends PersistentState {
 
 	public boolean addOperator(GameProfile profile) {
 		UUID uuid = profile.getId();
-		if (uuid == null) {
+		String name = profile.getName();
+		// 名字可能是 null（离线查询、手工构造的 GameProfile）。存进去之后
+		// removeOperatorByName 会对着它调 equalsIgnoreCase 直接 NPE，
+		// 而且 Codec.STRING 的 map 不接受 null value，保存时会产出无效数据。
+		if (uuid == null || name == null) {
 			return false;
 		}
-		String previous = this.operators.put(uuid.toString(), profile.getName());
-		if (previous == null || !previous.equals(profile.getName())) {
+		String previous = this.operators.put(uuid.toString(), name);
+		if (previous == null || !previous.equals(name)) {
 			this.markDirty();
 		}
 		return previous == null;
@@ -105,8 +109,13 @@ public class ZoneguardSavedData extends PersistentState {
 	}
 
 	public Optional<String> removeOperatorByName(String name) {
+		if (name == null) {
+			return Optional.empty();
+		}
+		// 用 name.equalsIgnoreCase(value) 而不是 value.equalsIgnoreCase(name)：
+		// 老存档里可能存着 null 名字（见 addOperator 的注释），反过来调会 NPE。
 		Optional<Map.Entry<String, String>> match = this.operators.entrySet().stream()
-				.filter(entry -> entry.getValue().equalsIgnoreCase(name))
+				.filter(entry -> name.equalsIgnoreCase(entry.getValue()))
 				.findFirst();
 		if (match.isEmpty()) {
 			return Optional.empty();

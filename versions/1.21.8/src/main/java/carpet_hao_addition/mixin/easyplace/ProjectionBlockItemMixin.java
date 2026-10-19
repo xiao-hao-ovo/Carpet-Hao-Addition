@@ -28,8 +28,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import carpet_hao_addition.easyplace.PlacementBitTools;
-import static carpet_hao_addition.easyplace.PlacementBitTools.readBits;
-import static carpet_hao_addition.easyplace.PlacementBitTools.hitOffsetX;
 import static carpet_hao_addition.easyplace.PlacementBitTools.hitOffsetZ;
 import static carpet_hao_addition.easyplace.PlacementBitTools.isProtocolHit;
 
@@ -90,8 +88,12 @@ public abstract class ProjectionBlockItemMixin {
 
     @WrapMethod(method = "place(Lnet/minecraft/item/ItemPlacementContext;)Lnet/minecraft/util/ActionResult;")
     private ActionResult hao$enterPlacementWindow(ItemPlacementContext context, Operation<ActionResult> original) {
+        // 协议值藏在 **z** 的偏移上（见 PlacementBitTools.bitsToHitVec 只改 z），
+        // 所以这里必须用 hitOffsetZ。早先误写成 hitOffsetX，而 x 偏移恒在 [0,1)、
+        // 阈值是 2.0 —— 条件恒假，整条放置窗口链路（铜灯不翻转、告示牌不弹编辑界面）
+        // 从来没有生效过。
         if (ProjectionPlacement.ruleEnabled()
-                && isProtocolHit(hitOffsetX(context.getHitPos(), PlacementBitTools.clickedPos(context)))) {
+                && isProtocolHit(hitOffsetZ(context.getHitPos(), PlacementBitTools.clickedPos(context)))) {
             ProjectionPlacement.markProjectedState(true);
             ProjectionPlacement.assignPlaceTargetPos(PlacementBitTools.clickedPos(context));
             ProjectionPlacement.assignPlaceTargetBlock(this.getBlock());
@@ -137,8 +139,6 @@ public abstract class ProjectionBlockItemMixin {
             return original.call(instance, pos, level, player, stack, state);
         }
         boolean result = original.call(instance, pos, level, player, newStack, state);
-        double relativeHitZ = hitOffsetZ(context.getHitPos(), PlacementBitTools.clickedPos(context));
-        int protocolValue = readBits(relativeHitZ);
         return result;
     }
 }
