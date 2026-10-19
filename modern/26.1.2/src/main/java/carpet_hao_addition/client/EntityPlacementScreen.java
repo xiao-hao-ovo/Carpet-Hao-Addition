@@ -69,7 +69,6 @@ public class EntityPlacementScreen extends Screen {
 
 	// —— 深色卡片风配色(不依赖材质包,自带层次)——
 	private static final int COLOR_HOVER = 0xFF8C8CE8;       // 悬停/高亮(柔和紫)
-	private static final int COLOR_PLACED = 0xFF6AA84F;      // 已发出(绿)
 	private static final int COLOR_MISSING = 0xFFE06060;     // 材料不足:红色外框/红字
 
 	/**

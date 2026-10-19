@@ -54,7 +54,6 @@ public class EntityPlacementScreen extends Screen {
 			Identifier.ofVanilla("textures/gui/container/generic_54.png");
 	/** 原版箱子界面的比例:标题栏 17 高,之后每行 18,底部留 4。 */
 	private static final int PANEL_HEADER = 17;
-	private static final int PANEL_FOOTER = 4;
 	/** 底部栏高度 —— 比标题栏略矮一点(仍取标题栏那段素材,纵向压缩显示)。 */
 	private static final int BOTTOM_BAR = 14;
 	/** 信息条高度(画在**面板上方**)。 */
@@ -64,22 +63,9 @@ public class EntityPlacementScreen extends Screen {
 	/** 槽位区相对面板左上角的偏移。 */
 	private static final int GRID_LEFT = 8;
 	private static final int GRID_TOP = 18;
-	private static final int HEADER = GRID_TOP;
-	private static final int FOOTER = 15;
 
 	// —— 深色卡片风配色(不依赖材质包,自带圆角与层次)——
-	private static final int COLOR_SHADOW = 0x60000000;      // 面板投影
-	private static final int COLOR_BORDER = 0x40FFFFFF;      // 面板描边
-	private static final int COLOR_PANEL = 0xF01C1C24;       // 面板底
-	private static final int COLOR_PANEL_HI = 0x28FFFFFF;    // 顶部高光
-	private static final int COLOR_TITLE_LINE = 0x30FFFFFF;  // 标题分隔线
-	private static final int COLOR_GRID_BG = 0xFF14141C;     // 槽位区底
-	private static final int COLOR_SLOT = 0xFF12121A;        // 格子底
-	private static final int COLOR_SLOT_BORDER = 0xFF34343F; // 格子边
 	private static final int COLOR_HOVER = 0xFF8C8CE8;       // 悬停/高亮(柔和紫)
-	private static final int COLOR_PLACED = 0xFF6AA84F;      // 已发出(绿)
-	private static final int COLOR_TEXT = 0xFFE8E8F0;        // 文字
-	private static final int COLOR_INFO_BG = 0xE8181820;     // 信息条底
 	/** 材料不足:红色外框/红字。 */
 	private static final int COLOR_MISSING = 0xFFE06060;
 
