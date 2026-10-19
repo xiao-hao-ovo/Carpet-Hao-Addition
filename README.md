@@ -38,6 +38,7 @@ Java 21+（26.x 需要 Java 25）。
 - [规则](docs/rules.md) —— 全部规则的类型、默认值、参考选项与说明
 - [命令](docs/commands.md) —— 各命令的语法与效果
 - [开发](docs/development.md) —— 构建、发布、项目结构与注意事项
+- [各版本文件清单](docs/versions.md) —— 每个版本层有哪些文件、多少行、各自负责什么
 
 游戏内用 `/carpet <规则> <值>` 查看/切换规则（也可在 Carpet 的规则界面里操作）。
 

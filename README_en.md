@@ -38,6 +38,7 @@ Java 21+ (Java 25 for 26.x).
 - [Rules](docs/rules_en.md) — type, default, options and description of every rule
 - [Commands](docs/commands_en.md) — syntax and effect of every command
 - [Development](docs/development_en.md) — building, publishing, project layout and notes
+- [File map per version](docs/versions_en.md) — what each version layer contains, how large, and what it does
 
 In game, use `/carpet <rule> <value>` to view/toggle rules (or use Carpet's rule screen).
 
