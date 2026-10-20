@@ -3,7 +3,6 @@ package carpet_hao_addition;
 import carpet.CarpetExtension;
 import carpet.CarpetServer;
 import carpet.api.settings.SettingsManager;
-import carpet.utils.Messenger;
 import carpet.utils.Translations;
 import com.mojang.brigadier.CommandDispatcher;
 import net.fabricmc.api.ModInitializer;
@@ -67,7 +66,6 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         // parseSettingsClass internally refreshes carpet's translations first, which
         // collects the keys returned by canHasTranslations() (see below), so the rule
         // parser always finds the required "carpet.rule.haoZoneguard.desc" key.
-        settingsManager.parseSettingsClass(CarpetHaoAdditionSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(ZoneguardSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(GoldenCarrotCompostSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(SnowyCalciteSettings.class);
@@ -81,7 +79,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         CarpetServer.settingsManager.parseSettingsClass(EasyPlaceWaterloggedSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(ProjectionPlacementSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(CraftableTrimTemplateSettings.class);
-CarpetServer.settingsManager.parseSettingsClass(WorldEaterProMaxSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(WorldEaterProMaxSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(UseDyeOnShulkerBoxSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(AutoMendingSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(RocketShulkerSettings.class);
@@ -219,15 +217,6 @@ CarpetServer.settingsManager.parseSettingsClass(WorldEaterProMaxSettings.class);
     @SuppressWarnings("deprecation") // old registerCommands(dispatcher) is forwarded by Carpet
     public void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        // Example command: /hao
-        dispatcher.register(literal("hao").executes(context ->
-        {
-            Messenger.m(context.getSource(), "w " + Translations.tr(MANAGER_ID + ".command.hao.header"));
-            Messenger.m(context.getSource(), "w  - exampleBoolean: " + CarpetHaoAdditionSettings.exampleBoolean);
-            Messenger.m(context.getSource(), "w  - exampleString: " + CarpetHaoAdditionSettings.exampleString);
-            Messenger.m(context.getSource(), "w " + Translations.tr(MANAGER_ID + ".command.hao.manage"));
-            return 1;
-        }));
 
         // /haoZoneguard command tree lives in the versioned layer (versions/<mc>/src),
         // keeping per-Minecraft-version APIs out of this shared entry point.
@@ -253,7 +242,7 @@ CarpetServer.settingsManager.parseSettingsClass(WorldEaterProMaxSettings.class);
         // All user-visible texts live in the language files under
         // assets/carpet-hao-addition/lang/{en_us,zh_cn}.json — nothing is hardcoded
         // here. Carpet merges the returned map into its translation table (used for
-        // rule names/descriptions and the /hao command), and the same keys are also
+        // rule names and descriptions), and the same keys are also
         // shipped as regular Minecraft lang files for client-side rendering.
         String language = lang == null ? "en_us" : lang;
         Map<String, String> translations = Translations.getTranslationFromResourcePath(
