@@ -36,10 +36,13 @@ public final class AutoMendingHandler {
 	/** 把等级进度里已攒下的经验拿去修补一件带「经验修补」的受损装备。 */
 	private static void mending(ServerPlayerEntity player) {
 		// 等级进度条里已经攒下、尚未消费掉的经验(点数)。
-		int experience = (int) Math.floor(player.experienceProgress * player.getNextLevelExperience());
-		// 进度为 0 但已经有等级时至少给 1 点,否则经验凑不满一级就永远修不动。
-		int amount = experience == 0 ? (player.experienceLevel > 0 ? 1 : 0) : experience;
-		if (amount == 0) {
+		//
+		// 进度为 0 时就是没有可用经验:原版同样不会拿等级里的经验去修补,等级是一道不可分割的
+		// 门槛。早先这里"至少给 1 点"兜底,结果是 addExperience(-1) 在 experienceProgress == 0
+		// 时进入降级分支(见 PlayerEntity.addExperience:progress < 0 时 addExperienceLevels(-1)),
+		// 玩家白白掉一整级,只换来两点耐久。
+		int amount = (int) Math.floor(player.experienceProgress * player.getNextLevelExperience());
+		if (amount <= 0) {
 			return;
 		}
 		ItemStack target = findDamagedMendingItem(player);

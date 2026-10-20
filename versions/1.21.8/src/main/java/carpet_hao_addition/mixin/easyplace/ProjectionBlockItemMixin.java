@@ -16,7 +16,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.world.World;
 import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.block.BlockState;
@@ -104,7 +103,6 @@ public abstract class ProjectionBlockItemMixin {
                 && isProtocolHit(hitOffsetZ(context.getHitPos(), PlacementBitTools.clickedPos(context)))) {
             ProjectionPlacement.markProjectedState(true);
             ProjectionPlacement.assignPlaceTargetPos(PlacementBitTools.clickedPos(context));
-            ProjectionPlacement.assignPlaceTargetBlock(this.getBlock());
         }
         try {
             return original.call(context);
@@ -112,7 +110,6 @@ public abstract class ProjectionBlockItemMixin {
             ProjectionPlacement.markProjectedState(false);
             ProjectionPlacement.noteWindowFlags(0);
             ProjectionPlacement.assignPlaceTargetPos(BlockPos.ORIGIN);
-            ProjectionPlacement.assignPlaceTargetBlock(Blocks.AIR);
         }
     }
 

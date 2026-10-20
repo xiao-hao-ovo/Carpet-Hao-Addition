@@ -45,11 +45,6 @@ public class DirectDropsSettings {
 		return ruleEnabled(ENTITY_RULE_NAME);
 	}
 
-	/** 任一规则开启即为 true;此时才需要维护掉落归属上下文。 */
-	public static boolean anyEnabled() {
-		return blockDropsEnabled() || entityDropsEnabled();
-	}
-
 	/** 权威读取:carpet 默认管理器中该规则当前是否为 true。 */
 	private static boolean ruleEnabled(String ruleName) {
 		CarpetRule<?> rule = CarpetServer.settingsManager.getCarpetRule(ruleName);

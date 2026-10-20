@@ -440,7 +440,7 @@ public final class WaterloggedFillHandler {
 	 * 从背包(含快捷栏/副手)里扣掉 1 个指定物品;背包里没有时,<b>先从背包里的潜影盒取出 1 个</b>,
 	 * 再按同样方式从背包扣除。
 	 * <p>
-	 * 潜影盒取货不依赖 QuickShulker(它是纯客户端 mod):这里直接读写潜影盒的 container 组件,
+	 * 潜影盒取货不依赖任何客户端潜影盒 mod:这里直接读写潜影盒的 container 组件,
 	 * 取出后会正常进背包,再由下面的逻辑扣除;改完的物品由服务端同步给客户端。
 	 */
 	private static boolean consumeOne(ServerPlayerEntity player, Item item) {
@@ -460,14 +460,16 @@ public final class WaterloggedFillHandler {
 		return switch (EasyPlaceWaterloggedSettings.shulkerMode()) {
 			// 方案一:直接在潜影盒里扣除,材料不拿到背包。
 			case DIRECT -> consumeFromShulker(player, item);
-			// 方案二:先把材料取到背包,材料留在背包里(不再从背包扣掉)。
-			case TAKE -> takeFromShulker(player, item);
+			// 方案二:先把材料取到背包,再从背包扣掉这 1 个(取一组只是省得反复取)。
+			// 这里必须和 damageOne 的 TAKE 分支对称地"取了再扣":早先只调 takeFromShulker
+			// 就返回 true,每补一格白送一整组冰/岩浆块 —— 材料和消耗完全脱钩。
+			case TAKE -> takeFromShulker(player, item) && consumeOne(player, item);
 			case FALSE -> false;
 		};
 	}
 
 	/**
-	 * 方案二:从背包里的潜影盒中【取出整个堆叠】放进背包(等价于 QuickShulker 的自动取货)。
+	 * 方案二:从背包里的潜影盒中【取出整个堆叠】放进背包,再由调用方从背包扣掉。
 	 * <p>
 	 * 一个堆叠不会超过该物品的一组,所以"盒内该物品有一组及以上就取一组、不满一组就全部取出"
 	 * 天然成立;背包放不下时只放入能放下的部分,剩下的仍留在潜影盒里(不丢失)。

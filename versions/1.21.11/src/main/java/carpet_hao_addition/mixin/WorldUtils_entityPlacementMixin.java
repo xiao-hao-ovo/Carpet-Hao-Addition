@@ -53,7 +53,7 @@ import carpet_hao_addition.HaoDebug;
 /**
  * haoProjectionEntity(客户端):照投影轻松放置时,把玩家**真正指着**的投影实体报给服务端生成。
  * <p>
- * 候选判定照 QuickCraft 的做法(而不是估算距离/夹角):
+ * 候选判定用视线射线求交(而不是估算距离/夹角):
  * <ol>
  *   <li><b>视线射线 × 实体生成盒</b>:{@code start = 眼睛, end = 眼睛 + 视线 × 交互距离},
  *       与 {@code type.getSpawnBox(x,y,z)} 求交 —— 用碰撞箱会漏掉大半个身位,用"命中方块附近"

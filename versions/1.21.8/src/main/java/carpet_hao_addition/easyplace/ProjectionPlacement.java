@@ -119,14 +119,6 @@ public final class ProjectionPlacement {
 		PlacementWindow.setTargetPos(pos);
 	}
 
-	public static Block placeTargetBlock() {
-		return PlacementWindow.targetBlock();
-	}
-
-	public static void assignPlaceTargetBlock(Block block) {
-		PlacementWindow.setTargetBlock(block);
-	}
-
 	// ==================== 方块状态 ====================
 
 	/**
@@ -149,29 +141,7 @@ public final class ProjectionPlacement {
 		return restore(context, baseState);
 	}
 
-	/**
-	 * 同 {@link #decodeSchematicState}，但用于「站着 / 挂墙」二选一的方块
-	 * （灯笼、告示牌这类）：先按点击的面挑出基础状态，再还原。
-	 */
-	public static BlockState decodeHangingState(Block standingBlock, Block wallBlock,
-														   ItemPlacementContext context) {
-		if (!ruleEnabled()) {
-			return null;
-		}
-		BlockState baseState = null;
-		if (context.getSide().getAxis() != Direction.Axis.Y) {
-			baseState = wallBlock.getPlacementState(context);
-		}
-		if (baseState == null) {
-			baseState = standingBlock.getPlacementState(context);
-		}
-		if (baseState == null) {
-			return null;
-		}
-		return restore(context, baseState);
-	}
-
-	/** 两条解码入口共用的部分：取位 → 查规则表还原 → 补上只服务端需要的修正。 */
+	/** 解码入口的共用部分：取位 → 查规则表还原 → 补上只服务端需要的修正。 */
 	private static BlockState restore(ItemPlacementContext context, BlockState baseState) {
 		double hitZ = PlacementBitTools.hitOffsetZ(context.getHitPos(),
 				PlacementBitTools.clickedPos(context));

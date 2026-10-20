@@ -53,7 +53,7 @@ import carpet_hao_addition.HaoDebug;
 /**
  * haoProjectionEntity(客户端):照投影轻松放置时,把玩家**真正指着**的投影实体报给服务端生成。
  * <p>
- * 候选判定照 QuickCraft 的做法(而不是估算距离/夹角):
+ * 候选判定用视线射线求交(而不是估算距离/夹角):
  * <ol>
  *   <li><b>视线射线 × 实体生成盒</b>:{@code start = 眼睛, end = 眼睛 + 视线 × 交互距离},
  *       与 {@code type.getSpawnBox(x,y,z)} 求交 —— 用碰撞箱会漏掉大半个身位,用"命中方块附近"
@@ -233,12 +233,14 @@ public abstract class WorldUtils_entityPlacementMixin {
 			// 整处统计:同一位置有几个投影实体、世界里已有几个(与"一次放几个"无关)
 			HAO_COUNTS.putAll(EntityPlacementCounter.totals(mc.world, found));
 		}
-		HaoDebug.log("[hao-entity] 候选 " + found.size() + " 个");
-		for (EntitySpawn spawn : found) {
-			int[] counts = HAO_COUNTS.get(spawn.key());
-			HaoDebug.log("[hao-entity]   " + spawn.type() + " @ "
-					+ String.format("%.1f,%.1f,%.1f", spawn.x(), spawn.y(), spawn.z())
-					+ (counts == null ? "" : "  投影=" + counts[0] + " 已有=" + counts[1]));
+		if (HaoDebug.ENABLED) {
+			HaoDebug.log("[hao-entity] 候选 " + found.size() + " 个");
+			for (EntitySpawn spawn : found) {
+				int[] counts = HAO_COUNTS.get(spawn.key());
+				HaoDebug.log("[hao-entity]   " + spawn.type() + " @ "
+						+ String.format("%.1f,%.1f,%.1f", spawn.x(), spawn.y(), spawn.z())
+						+ (counts == null ? "" : "  投影=" + counts[0] + " 已有=" + counts[1]));
+			}
 		}
 		return found;
 	}
@@ -259,7 +261,9 @@ public abstract class WorldUtils_entityPlacementMixin {
 		if (regionNames.isEmpty()) {
 			regionNames.addAll(schematic.getAreaPositions().keySet());
 		}
-		HaoDebug.log("[hao-entity] 投影「" + placement.getName() + "」待查区域 " + regionNames);
+		if (HaoDebug.ENABLED) {
+			HaoDebug.log("[hao-entity] 投影「" + placement.getName() + "」待查区域 " + regionNames);
+		}
 		for (String regionName : regionNames) {
 			SubRegionPlacement sub = placement.getRelativeSubRegionPlacement(regionName);
 			// 子区域自己也可以勾"忽略实体",和投影级是两回事
@@ -287,9 +291,14 @@ public abstract class WorldUtils_entityPlacementMixin {
 			Vec3d rayStart, Vec3d rayEnd) {
 		// 投影实体的身份 —— 去重只能靠它,不能靠坐标(投影里可能有几个实体坐标完全重合)
 		String key = regionName + "#" + index;
-		HaoDebug.log("[hao-entity]    区域 " + regionName + " 实体 "
-				+ info.nbt.getString("id").orElse("?") + " 局部=" + info.posVec);
-		HaoDebug.log("[hao-entity]      NBT=" + info.nbt);
+		// ⚠️ 下面这段诊断里 info.nbt 的 toString 会把整棵 NBT 树序列化一遍,
+		// 而 hao$candidateFor 是"每个投影实体 × 每 tick"都走的路径 —— 必须靠 ENABLED 短路,
+		// 否则玩家按住轻松放置键时这里会持续空转。
+		if (HaoDebug.ENABLED) {
+			HaoDebug.log("[hao-entity]    区域 " + regionName + " 实体 "
+					+ info.nbt.getString("id").orElse("?") + " 局部=" + info.posVec);
+			HaoDebug.log("[hao-entity]      NBT=" + info.nbt);
+		}
 		String raw = info.nbt.getString("id").orElse("");
 		Identifier identifier = raw.isEmpty() ? null : Identifier.tryParse(raw);
 		if (identifier == null) {
@@ -309,25 +318,32 @@ public abstract class WorldUtils_entityPlacementMixin {
 		double x = origin.getX() + regionPos.getX() + pos.x;
 		double y = origin.getY() + regionPos.getY() + pos.y;
 		double z = origin.getZ() + regionPos.getZ() + pos.z;
-		HaoDebug.log("[hao-entity]    坐标 局部=" + info.posVec
-				+ " 区域=" + regionName + " 区域偏移=" + regionPos + " 投影原点=" + origin
-				+ " 变换后=" + String.format("%.3f,%.3f,%.3f", pos.x, pos.y, pos.z)
-				+ " 世界=" + String.format("%.3f,%.3f,%.3f", x, y, z));
+		if (HaoDebug.ENABLED) {
+			HaoDebug.log("[hao-entity]    坐标 局部=" + info.posVec
+					+ " 区域=" + regionName + " 区域偏移=" + regionPos + " 投影原点=" + origin
+					+ " 变换后=" + String.format("%.3f,%.3f,%.3f", pos.x, pos.y, pos.z)
+					+ " 世界=" + String.format("%.3f,%.3f,%.3f", x, y, z));
+		}
 		// 诊断:这个位置在**投影世界**和**真实世界**分别是什么方块。
 		// 若投影那边是空气,说明我们算的位置根本不是投影里凋灵所在的那一格(位置算偏了)。
-		var schematicWorld = fi.dy.masa.litematica.world.SchematicWorldHandler.getSchematicWorld();
-		if (schematicWorld != null && mc.world != null) {
-			BlockPos at = BlockPos.ofFloored(x, y, z);
-			HaoDebug.log("[hao-entity]    位置方块 " + at + " 投影=" + schematicWorld.getBlockState(at)
-					+ " 世界=" + mc.world.getBlockState(at));
+		// getBlockState 是真实的世界查询,不在调试时一律不跑。
+		if (HaoDebug.ENABLED) {
+			var schematicWorld = fi.dy.masa.litematica.world.SchematicWorldHandler.getSchematicWorld();
+			if (schematicWorld != null && mc.world != null) {
+				BlockPos at = BlockPos.ofFloored(x, y, z);
+				HaoDebug.log("[hao-entity]    位置方块 " + at + " 投影=" + schematicWorld.getBlockState(at)
+						+ " 世界=" + mc.world.getBlockState(at));
+			}
 		}
 		// "我渲染出来的才放":渲染层范围比投影级渲染开关细一档,没渲染的层/位置不参与。
 		// 拿不到范围对象时不过滤(宁可多给候选,也别把能放的挡掉)。
 		var renderLayerRange = DataManager.getRenderLayerRange();
 		if (renderLayerRange != null
 				&& !renderLayerRange.isPositionWithinRange((int) x, (int) y, (int) z)) {
-			HaoDebug.log("[hao-entity]     × 在渲染层范围外 " + identifier + " @ "
-					+ String.format("%.1f,%.1f,%.1f", x, y, z));
+			if (HaoDebug.ENABLED) {
+				HaoDebug.log("[hao-entity]     × 在渲染层范围外 " + identifier + " @ "
+						+ String.format("%.1f,%.1f,%.1f", x, y, z));
+			}
 			return null;
 		}
 		// 视线判定:**生成盒**求交,或者**实体所在的那一整格**求交。
@@ -336,8 +352,10 @@ public abstract class WorldUtils_entityPlacementMixin {
 		boolean hitBox = !type.getSpawnBox(x, y, z).raycast(rayStart, rayEnd).isEmpty();
 		boolean hitCell = !new Box(BlockPos.ofFloored(x, y, z)).raycast(rayStart, rayEnd).isEmpty();
 		if (!hitBox && !hitCell) {
-			HaoDebug.log("[hao-entity]     × 视线射线没命中 " + identifier + " @ "
-					+ String.format("%.1f,%.1f,%.1f", x, y, z));
+			if (HaoDebug.ENABLED) {
+				HaoDebug.log("[hao-entity]     × 视线射线没命中 " + identifier + " @ "
+						+ String.format("%.1f,%.1f,%.1f", x, y, z));
+			}
 			return null;
 		}
 		// 材料不足**不再**把候选藏起来 —— 藏起来玩家就不知道"还差什么",连材料清单都看不到。
@@ -354,7 +372,7 @@ public abstract class WorldUtils_entityPlacementMixin {
 		hao$stripUuids(nbt);
 		nbt.put("Pos", hao$nbtDoubles(x, y, z));
 		nbt.put("Rotation", hao$nbtFloats(yaw, pitch));
-		if (info.nbt.contains("Item")) {
+		if (HaoDebug.ENABLED && info.nbt.contains("Item")) {
 			HaoDebug.log("[hao-entity]   框内物品=" + info.nbt.get("Item") + " @ " + identifier);
 		}
 		return new EntitySpawn(identifier, key, x, y, z, yaw, pitch, nbt);
@@ -365,8 +383,10 @@ public abstract class WorldUtils_entityPlacementMixin {
 		int count = EasyPlaceEntitySettings.count(player.getUuid());
 		EntityPlacementHandler.registerPayloadType();
 		ClientPlayNetworking.send(new EntityPlacementPayload(List.of(spawn), count));
-		HaoDebug.log("[hao-entity] 放置 " + spawn.type() + " @ "
-				+ String.format("%.1f,%.1f,%.1f", spawn.x(), spawn.y(), spawn.z()));
+		if (HaoDebug.ENABLED) {
+			HaoDebug.log("[hao-entity] 放置 " + spawn.type() + " @ "
+					+ String.format("%.1f,%.1f,%.1f", spawn.x(), spawn.y(), spawn.z()));
+		}
 	}
 
 	/**

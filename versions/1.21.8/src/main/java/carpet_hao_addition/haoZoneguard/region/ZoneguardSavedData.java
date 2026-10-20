@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.datafixer.DataFixTypes;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -127,6 +128,15 @@ public class ZoneguardSavedData extends PersistentState {
 	}
 
 	public boolean disablesObserver(World world, BlockPos pos) {
-		return this.regions.values().stream().anyMatch(region -> region.contains(world.getRegistryKey(), pos));
+		// 手写 for-each 而不是 values().stream().anyMatch(...)：这个判定挂在侦测器的
+		// getWeakRedstonePower / getStrongRedstonePower 上，大型红石机器每 tick 会问几万到几十万次，
+		// 每次都新建一个 Stream 只是给 GC 添活。
+		RegistryKey<World> dimension = world.getRegistryKey();
+		for (DetectorRegion region : this.regions.values()) {
+			if (region.contains(dimension, pos)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

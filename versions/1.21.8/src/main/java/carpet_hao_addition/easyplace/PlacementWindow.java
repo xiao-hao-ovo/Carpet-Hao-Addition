@@ -1,14 +1,12 @@
 package carpet_hao_addition.easyplace;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 
 /**
  * 「这一次放置动作发生在哪」的临时状态。
  *
  * <p>投影的轻松放置是「先模拟一次放置拿到状态、再真正放」两步，期间要靠这几个静态字段
- * 把目标位置/目标方块/额外标记从编码阶段带到放置阶段。它们随放置动作成对地开与关，
+ * 把目标位置/额外标记从编码阶段带到放置阶段。它们随放置动作成对地开与关，
  * 所以集中放在这里，不跟协议位编解码混在一起。
  */
 public final class PlacementWindow {
@@ -16,7 +14,6 @@ public final class PlacementWindow {
 	private static boolean windowOpen = false;
 	private static long flags = 0;
 	private static BlockPos targetPos = BlockPos.ORIGIN;
-	private static Block targetBlock = Blocks.AIR;
 
 	private PlacementWindow() {
 	}
@@ -50,13 +47,5 @@ public final class PlacementWindow {
 
 	public static void setTargetPos(BlockPos pos) {
 		targetPos = pos;
-	}
-
-	public static Block targetBlock() {
-		return targetBlock;
-	}
-
-	public static void setTargetBlock(Block block) {
-		targetBlock = block;
 	}
 }

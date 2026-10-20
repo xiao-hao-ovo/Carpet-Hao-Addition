@@ -288,7 +288,7 @@ public abstract class WorldUtils_waterloggedFillMixin {
 	/**
 	 * 背包(含快捷栏/副手)里是否有该物品;背包里没有时,再看背包里的潜影盒。
 	 * <p>
-	 * 潜影盒取货不依赖 QuickShulker(它是纯客户端 mod):这里直接读潜影盒的 container 组件,
+	 * 潜影盒取货不依赖任何客户端潜影盒 mod:这里直接读潜影盒的 container 组件,
 	 * 服务端扣材料时用同样的方式写回组件。
 	 */
 	@Unique

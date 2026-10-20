@@ -76,11 +76,6 @@ public final class PendingDirectDropTicks {
 		return world.getServer().getPlayerManager().getPlayer(entry.playerId);
 	}
 
-	/** 规则关闭或服务器切换时清空全部登记。 */
-	public static void clearAllPending() {
-		HAO_PENDING.clear();
-	}
-
 	private static final class WorldEntries {
 		private final Map<Key, Entry> entries = new HashMap<>();
 		private long nextCleanupTick = Long.MIN_VALUE;
