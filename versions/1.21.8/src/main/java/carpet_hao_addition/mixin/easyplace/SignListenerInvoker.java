@@ -7,6 +7,6 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 /** 暴露 {@link SignBlockEntity} 的 private {@code updateListeners()}。 */
 @Mixin(SignBlockEntity.class)
 public interface SignListenerInvoker {
-	    @Invoker("updateListeners")
-	    void hao$callUpdateListeners();
+		@Invoker("updateListeners")
+		void hao$callUpdateListeners();
 }

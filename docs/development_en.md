@@ -105,20 +105,52 @@ Credential sources:
 
 ## Project layout
 
-- `src/main/java/carpet_hao_addition/`
-  - `CarpetHaoAdditionExtension.java` — extension entry point (`ModInitializer` + `CarpetExtension`): parses the rule classes, registers commands, handles rule-change callbacks
-  - `*Settings.java` — shared rule definitions (carpet API only, no Minecraft version types)
-  - `portal/` — end-portal teleport list (`PlayerNoEndPortalTeleportList`)
-- `src/main/resources/`
-  - `fabric.mod.json` — mod metadata and dependencies
-  - `assets/carpet-hao-addition/lang/{en_us,zh_cn}.json` — all user-visible text (rule names/descriptions/command messages)
-- `versions/<mc>/` (the 1.21.x layers)
-  - `gradle.properties` — minecraft / yarn / loader / carpet versions for that layer
-  - `src/main/java/carpet_hao_addition/` — version-specific implementation: mixins, `haoZoneguard/`, `portal/`, `RecipeDeployHooks`, ...
-  - `src/main/resources/carpet-hao-addition.mixins.json` — that layer's mixin list
-- `modern/<mc>/` (the three 26.x sub-projects)
+### Shared layer `src/main/java/carpet_hao_addition/`
 
-The root `build.gradle` aggregates the version sub-modules; layer code is merged together with the shared layer into each version's jar.
+Merged into every **versions/** layer (the modern/ layers do **not** merge it — see below).
+
+- `CarpetHaoAdditionExtension.java` — extension entry point (`ModInitializer` + `CarpetExtension`): parses the rule classes, registers commands, handles rule-change callbacks
+- `*Settings.java` — shared rule definitions (carpet API only, no Minecraft version types)
+- `EntityPlacementTrigger.java` — **reflection contract for the companion client (HaoMaSa)**; class and method names must not change
+- `HaoDebug.java` — debug output switch (`-Dhao.debug=true` or `HAO_DEBUG=true`)
+- `EasyPlaceEntityCommands.java` / `RocketShulkerCommands.java` — commands shared across versions
+- `mixin/` — cross-version mixins (the two WackoBeacons ones)
+- `zoneguard/` — `ZoneguardSettings` (rule definition)
+- `portal/` — `PlayerNoEndPortalTeleportList` (allowlist data)
+
+### Shared resources `src/main/resources/`
+
+- `fabric.mod.json` — mod metadata and dependencies
+- `assets/carpet-hao-addition/lang/{en_us,zh_cn}.json` — all user-visible text (rule names/descriptions/command messages)
+
+### Version layers `versions/<mc>/` (8 layers for 1.21.x)
+
+Each layer is a **complete implementation**; when compiled it is merged with the shared layer (`duplicatesStrategy = EXCLUDE`, so a same-named file replaces the shared one wholly).
+
+- `gradle.properties` — minecraft / yarn / loader / carpet versions for that layer
+- `src/main/resources/carpet-hao-addition.mixins.json` — that layer's mixin list
+- `src/main/java/carpet_hao_addition/`, split by feature area:
+
+| Package | Contents |
+|---|---|
+| (root) | One handler per standalone rule: `AutoMendingHandler` / `RocketShulkerHandler` / `ShulkerBoxContentHelper` / `SnowyCalciteHooks` |
+| `entity/` | Projection-driven entity spawning: `EntityPlacementHandler` / `EntityPlacementCounter` / `EntitySpawn` / `EntityPlacementPayload` |
+| `easyplace/` | Projection-accurate block placement: protocol-bit codecs (`PlacementRules` / `PlacementCodecs`), `ProjectionPlacement`, full-NBT channel (`BlockDataChannel`) |
+| `waterlogged/` | Water/lava top-up from the projection: `WaterloggedFillHandler` / `WaterloggedFillPayload` |
+| `recipe/` | Datapack deployment: `RecipeDeployHooks` / `CopperStonecuttingDeployHook` / `TrimTemplateRecipeDeployHook` |
+| `client/` | Client screens and material math: `EntityPlacementScreen`, ... |
+| `directdrops/` | Drop-ownership context for direct-to-inventory drops |
+| `zoneguard/` | Zone guard: `ZoneguardHooks` + `command/` + `region/` |
+| `portal/` | End-portal commands |
+| `mixin/`, `mixin/easyplace/` | That layer's mixin implementations |
+
+### Standalone layers `modern/<mc>/` (3 layers for 26.x)
+
+⚠️ **A completely different build model**: modern is an **independent sub-project**. Its `build.gradle` has **no** `rootProject.file('src/main/java')`, so it does **not** merge the shared layer and instead carries its own copies of `HaoDebug`, `DirectDropsSettings`, `EntityPlacementTrigger`, `CarpetHaoAdditionExtension`, ...
+
+**A change to the shared layer does not reach 26.x** — anything that must be synced has to be applied per layer again.
+
+The root `build.gradle` aggregates both the versions and modern sub-modules.
 
 ## Development notes
 

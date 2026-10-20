@@ -567,7 +567,7 @@ public final class PlacementRules {
 
 	/** 距离目标还差几次点击（当前层数 → 目标层数）。 */
 	private static <B extends Block> int missing(BlockState schematic, BlockState client,
-	                                             Class<B> blockType, net.minecraft.state.property.IntProperty property) {
+												 Class<B> blockType, net.minecraft.state.property.IntProperty property) {
 		int current = blockType.isInstance(client.getBlock()) && client.contains(property) ? client.get(property) : 0;
 		int target = schematic.contains(property) ? schematic.get(property) : 0;
 		return Math.max(0, target - current);
@@ -575,7 +575,7 @@ public final class PlacementRules {
 
 	/** 列出「投影有、客户端还没有」的方向索引。 */
 	private static List<Integer> missingDirections(BlockState schematic, BlockState client,
-	                                               Direction[] directions, BiPredicate<BlockState, Direction> has) {
+												   Direction[] directions, BiPredicate<BlockState, Direction> has) {
 		List<Integer> out = new ArrayList<>();
 		for (int i = 0; i < directions.length; i++) {
 			if (has.test(schematic, directions[i]) && !has.test(client, directions[i])) {

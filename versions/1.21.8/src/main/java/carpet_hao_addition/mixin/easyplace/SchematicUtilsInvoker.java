@@ -7,6 +7,6 @@ import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(EasyPlaceUtils.class)
 public interface SchematicUtilsInvoker {
-	    @Invoker("cacheEasyPlacePosition")
-	    static void hao$cachePlacement(BlockPos pos) {}
+		@Invoker("cacheEasyPlacePosition")
+		static void hao$cachePlacement(BlockPos pos) {}
 }
