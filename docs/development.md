@@ -105,50 +105,35 @@ python tools/publish_modrinth.py publish                # 把项目提交公开�
 
 ## 项目结构
 
-### 共享层 `src/main/java/carpet_hao_addition/`
+- `src/main/java/carpet_hao_addition/` —— 共享层，`versions/` 各层编译时会合并进来
+  - `CarpetHaoAdditionExtension.java` —— 扩展入口（`ModInitializer` + `CarpetExtension`），解析规则类、注册命令、处理规则变更
+  - `*Settings.java` —— 规则定义，只依赖 carpet API，不引用 Minecraft 版本类型
+  - `EntityPlacementTrigger.java` —— 配套客户端（HaoMaSa）反射调用的入口，类名与方法名不能改
+  - `HaoDebug.java` —— 调试输出开关，`-Dhao.debug=true` 或 `HAO_DEBUG=true` 打开
+  - `EasyPlaceEntityCommands.java` / `RocketShulkerCommands.java` —— 跨版本共用的命令
+  - `mixin/` —— 跨版本共用的 mixin（WackoBeacons 两条）
+  - `zoneguard/` —— `ZoneguardSettings`
+  - `portal/` —— `PlayerNoEndPortalTeleportList`
+- `src/main/resources/`
+  - `fabric.mod.json` —— 模组元数据与依赖
+  - `assets/carpet-hao-addition/lang/{en_us,zh_cn}.json` —— 全部用户可见文案
+- `versions/<mc>/` —— 1.21.x 各层，每层是完整实现，编译时与共享层合并（同名文件整份覆盖）
+  - `gradle.properties` —— 该版本的 minecraft / yarn / loader / carpet 版本
+  - `src/main/resources/carpet-hao-addition.mixins.json` —— 该层的 mixin 列表
+  - `src/main/java/carpet_hao_addition/` —— 按功能域分包：
+    - `entity/` —— 照投影放实体（生成、统计、NBT 还原）
+    - `easyplace/` —— 投影精准放置：协议位编解码、状态还原、完整 NBT 通道
+    - `waterlogged/` —— 照投影补水 / 灌岩浆
+    - `recipe/` —— 切石机等配方数据包的部署与启停
+    - `client/` —— 选择器界面与材料计算
+    - `directdrops/` —— 掉落直入背包的归属上下文
+    - `zoneguard/` —— 区域守卫，含 `command/` 与 `region/`
+    - `portal/` —— 末地门传送命令
+    - `mixin/`、`mixin/easyplace/` —— 该层的 mixin 实现
+    - 根包 —— 各对应一条独立规则的 Handler：`AutoMendingHandler`、`RocketShulkerHandler`、`ShulkerBoxContentHelper`、`SnowyCalciteHooks`
+- `modern/<mc>/` —— 26.x 三层，独立子工程
 
-被 **versions/ 各层**合并（modern/ 三层不合并，见下）。
-
-- `CarpetHaoAdditionExtension.java` — 扩展入口（`ModInitializer` + `CarpetExtension`），解析各规则类、注册命令、处理规则变更回调
-- `*Settings.java` — 共享规则定义（仅依赖 carpet API，不引用 Minecraft 版本类型）
-- `EntityPlacementTrigger.java` — **给配套客户端（HaoMaSa）反射调用的契约**，类名/方法名不可改
-- `HaoDebug.java` — 调试输出开关（`-Dhao.debug=true` 或 `HAO_DEBUG=true` 打开）
-- `EasyPlaceEntityCommands.java` / `RocketShulkerCommands.java` — 跨版本共用的命令
-- `mixin/` — 跨版本共用的 mixin（WackoBeacons 两条）
-- `zoneguard/` — `ZoneguardSettings`（规则定义）
-- `portal/` — `PlayerNoEndPortalTeleportList`（名单数据）
-
-### 共享资源 `src/main/resources/`
-
-- `fabric.mod.json` — 模组元数据与依赖
-- `assets/carpet-hao-addition/lang/{en_us,zh_cn}.json` — 全部用户可见文案（规则名/描述/命令消息）
-
-### 版本层 `versions/<mc>/`（1.21.x 共 8 层）
-
-每层是**完整实现**，编译时与本层一起合并共享层（`duplicatesStrategy = EXCLUDE`，同名文件整份覆盖）。
-
-- `gradle.properties` — 该版本的 minecraft / yarn / loader / carpet 版本
-- `src/main/resources/carpet-hao-addition.mixins.json` — 该版本的 mixin 列表
-- `src/main/java/carpet_hao_addition/` 按功能域分包：
-
-| 包 | 放什么 |
-|---|---|
-| （根包） | 各对应一条独立规则的 Handler：`AutoMendingHandler` / `RocketShulkerHandler` / `ShulkerBoxContentHelper` / `SnowyCalciteHooks` |
-| `entity/` | 照投影放实体：`EntityPlacementHandler` / `EntityPlacementCounter` / `EntitySpawn` / `EntityPlacementPayload` |
-| `easyplace/` | 投影精准放置：协议位编解码（`PlacementRules` / `PlacementCodecs`）、`ProjectionPlacement`、完整 NBT 通道（`BlockDataChannel`） |
-| `waterlogged/` | 照投影补水/灌岩浆：`WaterloggedFillHandler` / `WaterloggedFillPayload` |
-| `recipe/` | 数据包部署：`RecipeDeployHooks` / `CopperStonecuttingDeployHook` / `TrimTemplateRecipeDeployHook` |
-| `client/` | 客户端界面与材料计算：`EntityPlacementScreen` 等 |
-| `directdrops/` | 掉落直入背包的归属上下文 |
-| `zoneguard/` | 区域守卫：`ZoneguardHooks` + `command/` + `region/` |
-| `portal/` | 末地门传送命令 |
-| `mixin/` `mixin/easyplace/` | 该层的 mixin 实现 |
-
-### 独立层 `modern/<mc>/`（26.x 共 3 层）
-
-⚠️ **与 versions 层完全不同的构建模型**：modern 是**独立子工程**，`build.gradle` 里**没有** `rootProject.file('src/main/java')`，也就**不合并共享层**。因此它自带一份 `HaoDebug` / `DirectDropsSettings` / `EntityPlacementTrigger` / `CarpetHaoAdditionExtension` 等副本。
-
-**改共享层不会同步到 26.x**，要同步的改动必须逐层再改一遍。
+`modern/` 三层的 build.gradle 里没有 `rootProject.file('src/main/java')`，**不合并共享层**，各自带一份 `HaoDebug`、`DirectDropsSettings`、`EntityPlacementTrigger`、`CarpetHaoAdditionExtension` 副本。改共享层不会同步到 26.x，需要逐层再改一遍。
 
 根 `build.gradle` 汇总 versions 与 modern 各子模块。
 

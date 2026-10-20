@@ -1,20 +1,14 @@
 #!/usr/bin/env python3
-"""双向核对 mixins.json 与源码里的 @Mixin 类是否一一对应。
+"""核对 mixins.json 与源码里的 @Mixin 类是否一一对应。
 
-用法（仓库根目录）：
-    python tools/check_mixin_registry.py            # 检查全部层
-    python tools/check_mixin_registry.py 1.21.8     # 只检查某层
+漏登记的 mixin 不报错，只是静默不生效；多登记的启动就崩。
 
-为什么需要它：
-  - 源码里有 @Mixin 类但 mixins.json 没列 → 该 mixin **永不生效**，编译不报错、启动不报错，
-    表现是"规则能开但某一半功能没效果"。这类问题极难靠肉眼发现。
-  - mixins.json 列了但找不到类 → 启动直接崩。
+versions/ 各层会合并顶层 src/main/java，modern/ 三层是独立构建、不合并，
+所以判断"某层该有哪些 mixin"前要先看该层 build.gradle。
 
-关键前提（容易搞错的地方）：
-  **只有 versions/ 层会合并顶层的 `src/main/java`**（build.gradle 里
-  `rootProject.file('src/main/java')` 那一行）。`modern/` 三层是独立构建，
-  只有自己的一份代码，**不**合并共享层。所以判断"某层应该有哪些 mixin"时，
-  必须先看该层 build.gradle 有没有声明共享源码目录。
+用法：
+    python tools/check_mixin_registry.py
+    python tools/check_mixin_registry.py 1.21.8
 """
 
 import json

@@ -22,6 +22,10 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+/**
+ * 在 litematica 算完 hitVec 的返回处，把协议位写进去 —— Carpet 协议与 V3 协议两条路径都接。
+ * 另外顺手记下这次放置的位置与状态，供多阶段方块（雪层、海泡菜）事后补齐。
+ */
 @Mixin(WorldUtils.class)
 public abstract class SchematicHitVecMixin {
 		//?<= 1.20.6 ? @Shadow private static void cacheEasyPlacePosition(BlockPos pos) {}

@@ -1,8 +1,6 @@
 # 各版本文件清单
 
-> **本文件由 `tools/gen_versions_doc.py` 从源码树自动生成，请勿手改。**
-> 包结构或文件行数变了，跑一次 `python tools/gen_versions_doc.py` 即可同步。
-> 行数口径：`len(text.split("\n"))`，即文件以换行结尾时会比 `wc -l` 多 1。
+> 由 `tools/gen_versions_doc.py` 从源码树生成，请勿手改。行数按 `len(text.split("\n"))` 计。
 
 ## 一、仓库结构总览
 

@@ -29,6 +29,11 @@ import carpet_hao_addition.easyplace.PlacementBitTools;
 import static carpet_hao_addition.easyplace.PlacementBitTools.hitOffsetZ;
 import static carpet_hao_addition.easyplace.PlacementBitTools.isProtocolHit;
 
+/**
+ * 两处注入：{@code getPlacementState} 在 HEAD 用协议位还原投影要的状态；
+ * {@code place} 外面包一层「放置窗口」，供铁轨、铜灯、告示牌那几个 mixin 判断
+ * 这一次是不是照投影放的。
+ */
 @Mixin(value = BlockItem.class, priority = 950)
 public abstract class ProjectionBlockItemMixin {
 		@Shadow

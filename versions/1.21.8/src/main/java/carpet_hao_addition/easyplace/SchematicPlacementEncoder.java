@@ -24,6 +24,10 @@ import net.minecraft.util.math.Vec3d;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 客户端编码：把投影里这一格的方块状态、以及方块实体的数据，编成协议位塞进 hitVec。
+ * 协议位装不下的内容（标牌文字等）另走 {@code BlockDataChannel} 的完整 NBT 通道。
+ */
 public class SchematicPlacementEncoder {
 
 		public static Vec3d encodeSchematicItemData(Vec3d hitPos, BlockPos pos, BlockState stateSchematic) {

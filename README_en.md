@@ -35,15 +35,11 @@ Java 21+ (Java 25 for 26.x).
 
 ## Documentation
 
-Pick one based on what you want to do:
-
-| I want to... | Read |
-|---|---|
-| look up a rule's options and default | [Rules](docs/rules_en.md) |
-| look up a command's syntax | [Commands](docs/commands_en.md) |
-| add a new rule | [New rule template](docs/new-rule-template.md) |
-| build / publish / understand the code layout | [Development](docs/development_en.md) |
-| see what each version layer contains and does | [File map per version](docs/versions_en.md) |
+- [Rules](docs/rules_en.md) — type, default, options and description of every rule
+- [Commands](docs/commands_en.md) — syntax and effect of every command
+- [New rule template](docs/new-rule-template.md) — follow this when adding a rule
+- [Development](docs/development_en.md) — building, publishing, project layout and notes
+- [File map per version](docs/versions_en.md) — what each version layer contains (generated)
 
 In game, use `/carpet <rule> <value>` to view/toggle rules (or use Carpet's rule screen).
 

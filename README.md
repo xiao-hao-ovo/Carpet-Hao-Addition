@@ -35,15 +35,11 @@ Java 21+（26.x 需要 Java 25）。
 
 ## 文档
 
-按你想做的事挑一份：
-
-| 我想…… | 看这里 |
-|---|---|
-| 查某条规则怎么用、默认值是什么 | [规则](docs/rules.md) |
-| 查命令的语法 | [命令](docs/commands.md) |
-| 加一条新规则 | [新规则模板](docs/new-rule-template.md) |
-| 自己构建 / 发版 / 看懂代码结构 | [开发](docs/development.md) |
-| 知道某个版本层里有哪些文件、各自负责什么 | [各版本文件清单](docs/versions.md) |
+- [规则](docs/rules.md) —— 每条规则的类型、默认值、参考选项与说明
+- [命令](docs/commands.md) —— 各命令的语法与效果
+- [新规则模板](docs/new-rule-template.md) —— 加新规则时照这个写
+- [开发](docs/development.md) —— 构建、发布、项目结构与注意事项
+- [各版本文件清单](docs/versions.md) —— 每个版本层有哪些文件、多少行（脚本生成）
 
 游戏内用 `/carpet <规则> <值>` 查看/切换规则（也可在 Carpet 的规则界面里操作）。
 
