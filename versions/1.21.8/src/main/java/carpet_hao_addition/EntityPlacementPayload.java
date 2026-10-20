@@ -20,6 +20,16 @@ public record EntityPlacementPayload(List<EntitySpawn> spawns, int count) implem
 	public static final CustomPayload.Id<EntityPlacementPayload> ID =
 			new CustomPayload.Id<>(Identifier.of(CarpetHaoAdditionExtension.HAO_MOD_ID, "easy_place_entity"));
 
+	/**
+	 * 一个包里最多允许带多少个实体。
+	 * <p>
+	 * 解码时 {@code size} 是客户端给的，直接 {@code new ArrayList<>(size)} 会被一个
+	 * {@code writeVarInt(Integer.MAX_VALUE)} 打爆内存（网络线程上的 {@code OutOfMemoryError}，
+	 * catch 不住）。而且这个列表会被服务端逐个生成实体，不设上限等于让客户端远程决定
+	 * 一次操作生成多少实体 —— 实际同格叠加也就几个。
+	 */
+	private static final int MAX_SPAWNS = 64;
+
 	public static final PacketCodec<RegistryByteBuf, EntityPlacementPayload> CODEC =
 			PacketCodec.of(
 					(payload, buf) -> {
@@ -31,6 +41,10 @@ public record EntityPlacementPayload(List<EntitySpawn> spawns, int count) implem
 					},
 					buf -> {
 						int size = buf.readVarInt();
+						if (size < 0 || size > MAX_SPAWNS) {
+							throw new io.netty.handler.codec.DecoderException(
+									"carpet-hao-addition: entity spawns size out of range: " + size);
+						}
 						List<EntitySpawn> spawns = new ArrayList<>(size);
 						for (int i = 0; i < size; i++) {
 							spawns.add(EntitySpawn.CODEC.decode(buf));

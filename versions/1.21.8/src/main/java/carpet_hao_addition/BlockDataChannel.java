@@ -32,6 +32,14 @@ public final class BlockDataChannel {
 	/** 服务端:玩家 UUID -> (位置 -> 数据)。 */
 	private static final Map<UUID, Map<BlockPos, PendingData>> HAO_PENDING = new HashMap<>();
 
+	/**
+	 * 单个玩家最多能屯多少条待用 NBT。
+	 * <p>
+	 * 这张表只在 {@link #take} 消费与断线时清理，**没有 TTL**，而每条的 NBT 上限是 2MB
+	 * ——客户端一直发不同坐标就能把它撑成无界。正常一次放置只会留 0~1 条。
+	 */
+	private static final int MAX_PENDING_PER_PLAYER = 256;
+
 	private BlockDataChannel() {
 	}
 
@@ -58,8 +66,19 @@ public final class BlockDataChannel {
 					HaoDebug.log("[hao-easyplace] [服务端] 收到包: 位置=" + payload.pos()
 							+ " id=" + (payload.nbt() == null ? "null" : payload.nbt().getString("id")));
 				}
-				HAO_PENDING.computeIfAbsent(player.getUuid(), ignored -> new HashMap<>())
-						.put(payload.pos(), new PendingData(payload.nbt()));
+				java.util.Map<BlockPos, PendingData> pending =
+						HAO_PENDING.computeIfAbsent(player.getUuid(), ignored -> new HashMap<>());
+				// 这个表只在 take() 消费和断线时清理,没有 TTL —— 客户端一直发**不同坐标**
+				// 就能把它撑成无界（每个条目的 NBT 最大 2MB）。正常一次放置只会有 0~1 条，
+				// 所以超限时直接丢新数据:代价是那一格不还原方块实体，比把服务端吃光好。
+				if (pending.size() >= MAX_PENDING_PER_PLAYER && !pending.containsKey(payload.pos())) {
+					if (HaoDebug.ENABLED) {
+						HaoDebug.log("[hao-easyplace] [服务端] 待用 NBT 已达上限 "
+								+ MAX_PENDING_PER_PLAYER + "，丢弃位置=" + payload.pos());
+					}
+					return;
+				}
+				pending.put(payload.pos(), new PendingData(payload.nbt()));
 			});
 		});
 		// 断线时清掉这个玩家还没被消费的条目。

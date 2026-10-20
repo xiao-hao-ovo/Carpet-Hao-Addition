@@ -37,6 +37,16 @@ public record WaterloggedFillPayload(boolean active, int kind, List<BlockPos> po
 	public static final CustomPayload.Id<WaterloggedFillPayload> ID =
 			new CustomPayload.Id<>(Identifier.of(CarpetHaoAdditionExtension.HAO_MOD_ID, "easy_place_active"));
 
+	/**
+	 * 一个包里最多允许带多少个坐标。
+	 * <p>
+	 * 这个上限**必须有**：解码时 {@code size} 是对端（客户端）给的，直接拿去
+	 * {@code new ArrayList<>(size)} 会被一个 {@code writeVarInt(Integer.MAX_VALUE)} 打爆内存
+	 * ——那发生在网络线程上，而且抛的是 {@code OutOfMemoryError}，catch 不住。
+	 * 一次施工本来也只报几格到几十格。
+	 */
+	private static final int MAX_POSITIONS = 512;
+
 	public static final PacketCodec<RegistryByteBuf, WaterloggedFillPayload> CODEC =
 			PacketCodec.of(
 					(payload, buf) -> {
@@ -51,6 +61,10 @@ public record WaterloggedFillPayload(boolean active, int kind, List<BlockPos> po
 						boolean active = buf.readBoolean();
 						int kind = buf.readVarInt();
 						int size = buf.readVarInt();
+						if (size < 0 || size > MAX_POSITIONS) {
+							throw new io.netty.handler.codec.DecoderException(
+									"carpet-hao-addition: waterlogged positions size out of range: " + size);
+						}
 						List<BlockPos> positions = new java.util.ArrayList<>(size);
 						for (int i = 0; i < size; i++) {
 							positions.add(buf.readBlockPos());
