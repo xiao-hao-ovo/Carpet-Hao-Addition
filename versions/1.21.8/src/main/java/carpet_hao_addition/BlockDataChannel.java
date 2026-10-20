@@ -62,8 +62,10 @@ public final class BlockDataChannel {
 		ServerPlayNetworking.registerGlobalReceiver(BlockDataPayload.ID, (payload, context) -> {
 			ServerPlayerEntity player = context.player();
 			context.server().execute(() -> {
-				HaoDebug.log("[hao-easyplace] [服务端] 收到包: 位置=" + payload.pos()
-						+ " id=" + (payload.nbt() == null ? "null" : payload.nbt().getString("id")));
+				if (HaoDebug.ENABLED) {
+					HaoDebug.log("[hao-easyplace] [服务端] 收到包: 位置=" + payload.pos()
+							+ " id=" + (payload.nbt() == null ? "null" : payload.nbt().getString("id")));
+				}
 				HAO_PENDING.computeIfAbsent(player.getUuid(), ignored -> new HashMap<>())
 						.put(payload.pos(), new PendingData(payload.nbt()));
 			});
@@ -77,7 +79,9 @@ public final class BlockDataChannel {
 						java.util.Map<BlockPos, PendingData> dropped =
 								HAO_PENDING.remove(handler.getPlayer().getUuid());
 						if (dropped != null && !dropped.isEmpty()) {
-							HaoDebug.log("[hao-easyplace] [断线清理] 丢掉 " + dropped.size() + " 条待用 NBT");
+							if (HaoDebug.ENABLED) {
+								HaoDebug.log("[hao-easyplace] [断线清理] 丢掉 " + dropped.size() + " 条待用 NBT");
+							}
 						}
 					}
 				});
@@ -89,8 +93,10 @@ public final class BlockDataChannel {
 		registerPayloadType();
 		// 不做节流:该函数只在真正放置时调用,节流会吞包导致文字错位。
 		boolean canSend = net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.canSend(BlockDataPayload.ID);
-		HaoDebug.log("[hao-easyplace] [客户端] 发包: 位置=" + pos + " canSend=" + canSend
-				+ " id=" + (nbt == null ? "null" : nbt.getString("id")));
+		if (HaoDebug.ENABLED) {
+			HaoDebug.log("[hao-easyplace] [客户端] 发包: 位置=" + pos + " canSend=" + canSend
+					+ " id=" + (nbt == null ? "null" : nbt.getString("id")));
+		}
 		if (canSend) {
 			net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(
 					new BlockDataPayload(pos, nbt));
@@ -118,8 +124,10 @@ public final class BlockDataChannel {
 			return null;
 		}
 		Map<BlockPos, PendingData> byPos = HAO_PENDING.get(serverPlayer.getUuid());
-		HaoDebug.log("[hao-easyplace] [take] 查找 pos=" + pos
-				+ " 缓存=" + (byPos == null ? "null" : byPos.keySet()));
+		if (HaoDebug.ENABLED) {
+			HaoDebug.log("[hao-easyplace] [take] 查找 pos=" + pos
+					+ " 缓存=" + (byPos == null ? "null" : byPos.keySet()));
+		}
 		if (byPos == null) {
 			return null;
 		}
@@ -137,15 +145,21 @@ public final class BlockDataChannel {
 						+ Math.abs(key.getZ() - pos.getZ());
 				if (d <= 1 && hao$idMatches(only.getValue(), state)) {
 					nbt = byPos.remove(key);
-					HaoDebug.log("[hao-easyplace] [take] 宽容命中: 查找=" + pos
-							+ " 实际=" + key + " 距离=" + d);
+					if (HaoDebug.ENABLED) {
+						HaoDebug.log("[hao-easyplace] [take] 宽容命中: 查找=" + pos
+								+ " 实际=" + key + " 距离=" + d);
+					}
 				} else {
-					HaoDebug.log("[hao-easyplace] [take] 宽容未命中: 查找=" + pos
-							+ " 唯一缓存=" + key + " 距离=" + d + " id相容=" + hao$idMatches(only.getValue(), state));
+					if (HaoDebug.ENABLED) {
+						HaoDebug.log("[hao-easyplace] [take] 宽容未命中: 查找=" + pos
+								+ " 唯一缓存=" + key + " 距离=" + d + " id相容=" + hao$idMatches(only.getValue(), state));
+					}
 				}
 			} else if (!byPos.isEmpty()) {
-				HaoDebug.log("[hao-easyplace] [take] 宽容放弃: 查找=" + pos
-						+ " 缓存里还有 " + byPos.size() + " 条,不猜,宁可不还原也不串号");
+				if (HaoDebug.ENABLED) {
+					HaoDebug.log("[hao-easyplace] [take] 宽容放弃: 查找=" + pos
+							+ " 缓存里还有 " + byPos.size() + " 条,不猜,宁可不还原也不串号");
+				}
 			}
 		}
 		if (byPos.isEmpty()) {

@@ -537,8 +537,10 @@ public class EntityPlacementScreen extends Screen {
 		int count = this.count;
 		EntityPlacementHandler.registerPayloadType();
 		ClientPlayNetworking.send(new EntityPlacementPayload(List.of(spawn), count));
-		HaoDebug.log("[hao-entity] 选择器放置 " + spawn.type() + " @ "
-				+ String.format("%.1f,%.1f,%.1f", spawn.x(), spawn.y(), spawn.z()));
+		if (HaoDebug.ENABLED) {
+			HaoDebug.log("[hao-entity] 选择器放置 " + spawn.type() + " @ "
+					+ String.format("%.1f,%.1f,%.1f", spawn.x(), spawn.y(), spawn.z()));
+		}
 	}
 
 	/** 实体的显示名(跟随语言文件,中文客户端就是中文名)。 */

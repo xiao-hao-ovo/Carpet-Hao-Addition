@@ -156,8 +156,10 @@ public final class EntityPlacementHandler {
 		if (hao$wantedPassengerCount(nbt) > 0) {
 			java.util.List<Entity> existingVehicles = hao$findExistingVehicles(world, spawn, type, nbt);
 			if (!existingVehicles.isEmpty()) {
-				HaoDebug.log("[hao-entity]   该位置已有载具 " + existingVehicles.size()
-						+ " 辆缺乘客,走补齐路径(本次最多补 " + count + " 位)");
+				if (HaoDebug.ENABLED) {
+					HaoDebug.log("[hao-entity]   该位置已有载具 " + existingVehicles.size()
+							+ " 辆缺乘客,走补齐路径(本次最多补 " + count + " 位)");
+				}
 				hao$fillMissingPassengers(player, world, existingVehicles, spawn, count);
 				return;
 			}
@@ -189,15 +191,19 @@ public final class EntityPlacementHandler {
 			// 入世界必须用 spawnNewEntityAndPassengers,否则乘客不会真正加进世界。
 			Entity entity = EntityType.loadEntityWithPassengers(nbt, world, SpawnReason.COMMAND, loaded -> loaded);
 			if (entity == null) {
-				HaoDebug.log("[hao-entity]   还原失败 " + spawn.type() + "(NBT 无法创建实体)");
+				if (HaoDebug.ENABLED) {
+					HaoDebug.log("[hao-entity]   还原失败 " + spawn.type() + "(NBT 无法创建实体)");
+				}
 				break;
 			}
 			entity.refreshPositionAndAngles(spawn.x(), spawn.y(), spawn.z(), spawn.yaw(), spawn.pitch());
 			boolean added = world.spawnNewEntityAndPassengers(entity);
-			HaoDebug.log("[hao-entity]   生成后 " + entity.getType() + " @ "
-					+ String.format("%.3f,%.3f,%.3f", entity.getX(), entity.getY(), entity.getZ())
-					+ " 投影要求=" + String.format("%.3f,%.3f,%.3f", spawn.x(), spawn.y(), spawn.z())
-					+ " yaw=" + String.format("%.1f", spawn.yaw()));
+			if (HaoDebug.ENABLED) {
+				HaoDebug.log("[hao-entity]   生成后 " + entity.getType() + " @ "
+						+ String.format("%.3f,%.3f,%.3f", entity.getX(), entity.getY(), entity.getZ())
+						+ " 投影要求=" + String.format("%.3f,%.3f,%.3f", spawn.x(), spawn.y(), spawn.z())
+						+ " yaw=" + String.format("%.1f", spawn.yaw()));
+			}
 			// 乘客保留**骑乘关系**(与投影完全一致:雪傀儡就是坐在竹筏上的乘客,有坐姿、会动),
 			// 但要把它"已经在骑乘位"这件事**同步给客户端** —— 否则客户端会一直把它画在载具内部,
 			// 表现就是"只看得见载具,打掉载具乘客才出现"。
@@ -206,15 +212,21 @@ public final class EntityPlacementHandler {
 				// 否则客户端只会按载具的 Passengers "知道"它存在,却**不会渲染它** ——
 				// 表现就是"只看得见载具,打掉载具乘客才出现"。骑乘关系保持不变(投影一致)。
 				boolean addedPassenger = world.spawnNewEntityAndPassengers(passenger);
-				HaoDebug.log("[hao-entity]   乘客 " + passenger.getType() + " 加入世界="
-						+ addedPassenger + " 位置=" + passenger.getX() + "," + passenger.getY()
-						+ "," + passenger.getZ() + " 载具=" + entity.getX() + "," + entity.getY()
-						+ "," + entity.getZ());
+				if (HaoDebug.ENABLED) {
+					HaoDebug.log("[hao-entity]   乘客 " + passenger.getType() + " 加入世界="
+							+ addedPassenger + " 位置=" + passenger.getX() + "," + passenger.getY()
+							+ "," + passenger.getZ() + " 载具=" + entity.getX() + "," + entity.getY()
+							+ "," + entity.getZ());
+				}
 			}
-			HaoDebug.log("[hao-entity]   加进世界=" + added + " 乘客实况="
-					+ entity.getPassengerList().size());
+			if (HaoDebug.ENABLED) {
+				HaoDebug.log("[hao-entity]   加进世界=" + added + " 乘客实况="
+						+ entity.getPassengerList().size());
+			}
 		}
-		HaoDebug.log("[hao-entity]   生成 " + spawn.type() + " x" + count + " 消耗=" + need);
+		if (HaoDebug.ENABLED) {
+			HaoDebug.log("[hao-entity]   生成 " + spawn.type() + " x" + count + " 消耗=" + need);
+		}
 	}
 
 	/** 投影里这个实体要求几位乘客(递归数 NBT 的 {@code Passengers})。 */
@@ -324,8 +336,10 @@ public final class EntityPlacementHandler {
 		// 近的优先补:玩家通常就在最近的那一辆旁边
 		found.sort(java.util.Comparator.comparingDouble(
 				entity -> entity.squaredDistanceTo(spawn.x(), spawn.y(), spawn.z())));
-		HaoDebug.log("[hao-entity]   找已有载具 " + type + " 位置候选=" + candidates
-				+ " 缺乘客的=" + found.size());
+		if (HaoDebug.ENABLED) {
+			HaoDebug.log("[hao-entity]   找已有载具 " + type + " 位置候选=" + candidates
+					+ " 缺乘客的=" + found.size());
+		}
 		return found;
 	}
 
@@ -380,7 +394,9 @@ public final class EntityPlacementHandler {
 				// 倍率由外面的 budget 控制(补几位),不是每位要几份
 				Map<Item, Integer> one = new LinkedHashMap<>();
 				if (!hao$collectEntities(passengerType, passengerNbt, 1, player, one)) {
-					HaoDebug.log("[hao-entity]   补齐阶段乘客材料不足,跳过 " + passengerType);
+					if (HaoDebug.ENABLED) {
+						HaoDebug.log("[hao-entity]   补齐阶段乘客材料不足,跳过 " + passengerType);
+					}
 					budget = 0; // 材料没了:外层也别再换下一辆重试(否则日志会刷屏 N 条)
 					break;
 				}
@@ -394,7 +410,9 @@ public final class EntityPlacementHandler {
 					}
 				}
 				if (!affordable) {
-					HaoDebug.log("[hao-entity]   补齐阶段材料不够再多补一位,跳过 " + passengerType);
+					if (HaoDebug.ENABLED) {
+						HaoDebug.log("[hao-entity]   补齐阶段材料不够再多补一位,跳过 " + passengerType);
+					}
 					budget = 0;
 					break;
 				}
@@ -413,7 +431,9 @@ public final class EntityPlacementHandler {
 				// force=true:座位被占也换上去,保证一定补在原来那个载具上
 				if (!created.startRiding(vehicle, true)) {
 					// 没坐上去就不算补齐:不计 filled/budget,也不扣材料
-					HaoDebug.log("[hao-entity]   补齐的乘客没能骑上去,视为失败 " + passengerType);
+					if (HaoDebug.ENABLED) {
+						HaoDebug.log("[hao-entity]   补齐的乘客没能骑上去,视为失败 " + passengerType);
+					}
 					continue;
 				}
 				// 真的补上了才记账 + 扣料
@@ -426,8 +446,10 @@ public final class EntityPlacementHandler {
 		for (Map.Entry<Item, Integer> entry : need.entrySet()) {
 			hao$consume(player, entry.getKey(), entry.getValue());
 		}
-		HaoDebug.log("[hao-entity]   补齐乘客 " + filled + "/" + count + " 位 消耗=" + need
-				+ " 涉及载具=" + vehicles.size());
+		if (HaoDebug.ENABLED) {
+			HaoDebug.log("[hao-entity]   补齐乘客 " + filled + "/" + count + " 位 消耗=" + need
+					+ " 涉及载具=" + vehicles.size());
+		}
 	}
 
 	/**
@@ -457,8 +479,10 @@ public final class EntityPlacementHandler {
 				sub.forEach((item, amount) -> need.merge(item, amount, Integer::sum));
 				kept.add(passenger);
 			} else {
-				HaoDebug.log("[hao-entity]   乘客材料不足,已剔除 "
-						+ passenger.getString("id").orElse("?"));
+				if (HaoDebug.ENABLED) {
+					HaoDebug.log("[hao-entity]   乘客材料不足,已剔除 "
+							+ passenger.getString("id").orElse("?"));
+				}
 			}
 		}
 		if (kept.isEmpty()) {
@@ -517,7 +541,9 @@ public final class EntityPlacementHandler {
 				sub.forEach((item, amount) -> need.merge(item, amount, Integer::sum));
 			} else {
 				nbt.remove(field);
-				HaoDebug.log("[hao-entity]   内容物不足,已剔除 " + field);
+				if (HaoDebug.ENABLED) {
+					HaoDebug.log("[hao-entity]   内容物不足,已剔除 " + field);
+				}
 			}
 		}
 	}

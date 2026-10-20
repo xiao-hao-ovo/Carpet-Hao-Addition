@@ -296,7 +296,9 @@ public final class WaterloggedFillHandler {
 			waterlogged = waterlogged.with(Properties.LIT, false);
 		}
 		world.setBlockState(pos, waterlogged, Block.NOTIFY_ALL);
-		HaoDebug.log("[hao-waterlog] 补水 " + pos + " " + state.getBlock() + " -> " + waterlogged);
+		if (HaoDebug.ENABLED) {
+			HaoDebug.log("[hao-waterlog] 补水 " + pos + " " + state.getBlock() + " -> " + waterlogged);
+		}
 		// 排一次流体 tick,保证含的水按流体规则更新(灵魂沙上生成气泡柱)。
 		world.scheduleFluidTick(pos, Fluids.WATER, Fluids.WATER.getTickRate(world));
 		return true;
@@ -354,7 +356,9 @@ public final class WaterloggedFillHandler {
 		world.setBlockState(pos, block.getDefaultState(), Block.NOTIFY_ALL);
 		// 排流体 tick:否则放下的是"死水/死岩浆"(不流动,灵魂沙上也不生成气泡柱)。
 		world.scheduleFluidTick(pos, fluid, fluid.getTickRate(world));
-		HaoDebug.log("[hao-waterlog] 放流体 " + label + " " + pos + (placeholder ? "(把占位方块替换掉)" : ""));
+		if (HaoDebug.ENABLED) {
+			HaoDebug.log("[hao-waterlog] 放流体 " + label + " " + pos + (placeholder ? "(把占位方块替换掉)" : ""));
+		}
 		return true;
 	}
 

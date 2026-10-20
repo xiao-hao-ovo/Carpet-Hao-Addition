@@ -51,7 +51,9 @@ public abstract class ProjectionBlockItemMixin {
             // 标牌文字靠它自己的 updateListeners 同步,只调 World.updateListeners 不够。
             if (be instanceof SignBlockEntity signBe) {
                 ((SignListenerInvoker) signBe).hao$callUpdateListeners();
-                HaoDebug.log("[hao-easyplace] [广播刷新] 标牌 updateListeners: " + pos);
+                if (HaoDebug.ENABLED) {
+                    HaoDebug.log("[hao-easyplace] [广播刷新] 标牌 updateListeners: " + pos);
+                }
             }
         }
         level.updateListeners(pos, now, now, 3);
@@ -60,12 +62,14 @@ public abstract class ProjectionBlockItemMixin {
     @Inject(method = "getPlacementState", at = @At("HEAD"), cancellable = true)
     private void hao$restorePlacementState(ItemPlacementContext context, CallbackInfoReturnable<BlockState> cir) {
         double relativeHitZ = hitOffsetZ(context.getHitPos(), PlacementBitTools.clickedPos(context));
-        HaoDebug.log("[hao-easyplace] [getPlacementState] 规则="
-                + ProjectionPlacement.ruleEnabled()
-                + " hitPos=" + context.getHitPos() + " blockPos=" + PlacementBitTools.clickedPos(context)
-                + " relZ=" + String.format("%.3f", relativeHitZ)
-                + " isProtocol=" + isProtocolHit(relativeHitZ)
-                + " block=" + this.getBlock());
+        if (HaoDebug.ENABLED) {
+            HaoDebug.log("[hao-easyplace] [getPlacementState] 规则="
+                    + ProjectionPlacement.ruleEnabled()
+                    + " hitPos=" + context.getHitPos() + " blockPos=" + PlacementBitTools.clickedPos(context)
+                    + " relZ=" + String.format("%.3f", relativeHitZ)
+                    + " isProtocol=" + isProtocolHit(relativeHitZ)
+                    + " block=" + this.getBlock());
+        }
         if (!ProjectionPlacement.ruleEnabled()) return;
         if (!isProtocolHit(relativeHitZ)) return;
 
@@ -73,9 +77,11 @@ public abstract class ProjectionBlockItemMixin {
         // 所以直接现算一份基础状态（用 Block 的那个重载，不是被本 mixin 包住的路径，不会递归）。
         BlockState baseState = this.getBlock().getPlacementState(context);
         BlockState state = ProjectionPlacement.decodeSchematicState(this.getBlock(), context, baseState);
-        HaoDebug.log("[hao-easyplace]   [放置解码] hitPos=" + context.getHitPos()
-                + " blockPos=" + PlacementBitTools.clickedPos(context) + " side=" + context.getSide()
-                + " 还原状态=" + state);
+        if (HaoDebug.ENABLED) {
+            HaoDebug.log("[hao-easyplace]   [放置解码] hitPos=" + context.getHitPos()
+                    + " blockPos=" + PlacementBitTools.clickedPos(context) + " side=" + context.getSide()
+                    + " 还原状态=" + state);
+        }
         if (state == null) {
             cir.setReturnValue(null);
             return;
@@ -84,8 +90,10 @@ public abstract class ProjectionBlockItemMixin {
         // 若交给原版，它会把坡轨重算成平轨，放出来的就不是投影的样子了；
         // 而如果强行保持投影形状，又会放出之后必然掉落的浮空坡轨。
         if (!ProjectionPlacement.stateCanExist(state, context.getWorld(), context.getBlockPos())) {
-            HaoDebug.log("[hao-easyplace]   [放弃放置] 状态在当前环境立不住 state=" + state
-                    + " pos=" + context.getBlockPos());
+            if (HaoDebug.ENABLED) {
+                HaoDebug.log("[hao-easyplace]   [放弃放置] 状态在当前环境立不住 state=" + state
+                        + " pos=" + context.getBlockPos());
+            }
             cir.setReturnValue(null);
             return;
         }
@@ -127,7 +135,9 @@ public abstract class ProjectionBlockItemMixin {
                 ItemStack withFullNbt = stack.copy();
                 withFullNbt.set(net.minecraft.component.DataComponentTypes.BLOCK_ENTITY_DATA,
                         net.minecraft.component.type.NbtComponent.of(fullNbt));
-                HaoDebug.log("[hao-easyplace] [服务端] 应用完整 NBT: 位置=" + pos + " id=" + fullNbt.getString("id"));
+                if (HaoDebug.ENABLED) {
+                    HaoDebug.log("[hao-easyplace] [服务端] 应用完整 NBT: 位置=" + pos + " id=" + fullNbt.getString("id"));
+                }
                 boolean hao$ok = original.call(instance, pos, level, player, withFullNbt, state);
                 hao$notifyClient(level, pos);
                 return hao$ok;
@@ -136,9 +146,11 @@ public abstract class ProjectionBlockItemMixin {
             hao$notifyClient(level, pos);
             return hao$ok2;
         }
-        HaoDebug.log("[hao-easyplace] [postPlacement] pos=" + pos
-                + " side=" + context.getSide() + " state=" + state
-                + " 世界该处=" + level.getBlockState(pos));
+        if (HaoDebug.ENABLED) {
+            HaoDebug.log("[hao-easyplace] [postPlacement] pos=" + pos
+                    + " side=" + context.getSide() + " state=" + state
+                    + " 世界该处=" + level.getBlockState(pos));
+        }
         ItemStack newStack = ProjectionPlacement.applySchematicItemData(stack, context);
         if (newStack == null) {
             return original.call(instance, pos, level, player, stack, state);

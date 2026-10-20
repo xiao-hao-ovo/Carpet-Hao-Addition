@@ -185,8 +185,10 @@ public final class ProjectionPlacement {
 		}
 		int bits = PlacementBitTools.readBits(hitZ);
 		ItemStack restored = codec.decodeStack(bits, stack);
-		HaoDebug.log("[hao-easyplace] 服务端解码 值=" + bits + " 物品=" + stack.getItem()
-				+ " 还原后BlockEntityTag=" + (restored.get(DataComponentTypes.BLOCK_ENTITY_DATA) != null));
+		if (HaoDebug.ENABLED) {
+			HaoDebug.log("[hao-easyplace] 服务端解码 值=" + bits + " 物品=" + stack.getItem()
+					+ " 还原后BlockEntityTag=" + (restored.get(DataComponentTypes.BLOCK_ENTITY_DATA) != null));
+		}
 		return restored;
 	}
 
