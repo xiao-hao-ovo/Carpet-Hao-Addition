@@ -24,10 +24,12 @@ public final class AutoMendingHandler {
 
 	/** 由 {@code ServerPlayerEntity.tick} 的 mixin 在每 tick 末尾调用。 */
 	public static void tick(ServerPlayerEntity player) {
-		if (!AutoMendingSettings.isEnabled()) {
+		// 时间判断放在规则查询前面:每 tick 每个在线玩家都会走到这里,而 20 次里只有 1 次
+		// 真的该干活。先判时间能把 carpet 规则查询从「每 tick 每人一次」降到「每秒每人一次」。
+		if (player.getWorld().getTime() % INTERVAL != 0) {
 			return;
 		}
-		if (player.getWorld().getTime() % INTERVAL != 0) {
+		if (!AutoMendingSettings.isEnabled()) {
 			return;
 		}
 		mending(player);

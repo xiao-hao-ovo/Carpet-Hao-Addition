@@ -35,11 +35,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class DyeItem_useDyeOnShulkerBoxMixin {
 	@Inject(method = "useOnBlock", at = @At("HEAD"), cancellable = true)
 	private void hao$dyeShulkerBox(ItemUsageContext context, CallbackInfoReturnable<ActionResult> cir) {
-		if (!UseDyeOnShulkerBoxSettings.isEnabled()) {
-			return;
-		}
+		// 先判类型再查规则:这是 @Mixin(Item.class) 的 useOnBlock —— **每一个物品**每次右键
+		// 方块都会走到这条注入,而 instanceof 比下面那次 carpet 规则查询便宜得多。
 		if (!((Object) this instanceof DyeItem dyeItem)) {
 			return; // 只有染料才接管,其它物品交给原版
+		}
+		if (!UseDyeOnShulkerBoxSettings.isEnabled()) {
+			return;
 		}
 		World world = context.getWorld();
 		BlockPos pos = context.getBlockPos();

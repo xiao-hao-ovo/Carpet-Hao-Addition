@@ -35,4 +35,21 @@ public final class HaoDebug {
 			throwable.printStackTrace();
 		}
 	}
+
+	/**
+	 * 输出一条**不受调试开关控制**的错误信息,写入 stderr。
+	 * <p>
+	 * 只用于「出了这件事就说明有东西没生效」的异常/失败路径 —— 这类信息默认就该能看见,
+	 * 套上 {@link #log} 会让问题在默认配置下彻底静默,排查时毫无线索。
+	 * 正常流程里的诊断输出仍然一律走 {@link #log}。
+	 *
+	 * @param message 说明这次失败是什么
+	 * @param cause   异常本体;为 {@code null} 时只输出说明
+	 */
+	public static void error(Object message, Throwable cause) {
+		System.err.println("[carpet-hao-addition] " + message);
+		if (cause != null) {
+			cause.printStackTrace();
+		}
+	}
 }

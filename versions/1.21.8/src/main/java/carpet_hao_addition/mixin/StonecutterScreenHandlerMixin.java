@@ -18,9 +18,12 @@ import java.util.Set;
 /**
  * haoTerracottaUncolor 规则的产出门控。
  * <p>
- * 16 条"染色陶瓦→陶瓦"的切石配方以数据包形式常驻,界面始终可见;
- * 规则关闭时,在切石机中放入染色陶瓦后点选还原应<b>无产出、不消耗</b>,
- * 因此在 StonecutterScreenHandler.onButtonClick 入口拦截。规则开启则放行原逻辑正常产出。
+ * <b>正常路径不靠这里</b>：32 条「染色陶瓦/釉陶瓦 → 上一步」的切石配方由
+ * {@code RecipeDeployHooks} 按规则开关<b>启停数据包</b>——规则关闭时配方整体不可见，
+ * 界面里根本没有可点的选项。
+ * <p>
+ * 本 mixin 是<b>兜底</b>：数据包启停要等一次 {@code reloadResources}，在那段时间差里
+ * （以及数据包因权限/磁盘问题部署失败时）界面上可能还留着配方，点了必须无产出、不消耗。
  */
 @Mixin(StonecutterScreenHandler.class)
 public abstract class StonecutterScreenHandlerMixin {

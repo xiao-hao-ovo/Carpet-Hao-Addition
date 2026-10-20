@@ -28,25 +28,29 @@ public abstract class LivingEntity_witherSkeletonDropMixin {
 					target = "Lnet/minecraft/loot/LootTable;generateLoot(Lnet/minecraft/loot/context/LootWorldContext;JLjava/util/function/Consumer;)V"),
 			index = 2)
 	private Consumer<ItemStack> hao$filterWitherSkeletonLoot(Consumer<ItemStack> consumer) {
-		if (!((Object) this instanceof WitherSkeletonEntity)
-				|| WitherSkeletonDropReductionSettings.storedValue().equals("false")) {
+		// instanceof 放前面:dropLoot 是所有生物死亡都走的路径,这里绝大多数情况不是凋零骷髅。
+		if (!((Object) this instanceof WitherSkeletonEntity)) {
 			return consumer;
 		}
+		// 选项只读一次。原来每个掉落物品都要问三遍(removeEntry 内部各查一次 carpet 规则),
+		// 而 generateLoot 会对掉落表里每一项都回调这个 consumer。
+		String option = WitherSkeletonDropReductionSettings.storedValue();
+		if ("false".equals(option)) {
+			return consumer;
+		}
+		boolean all = "all".equals(option);
+		boolean noBone = all || "bone".equals(option);
+		boolean noCoal = all || "coal".equals(option);
+		boolean noSkull = all || "skull".equals(option);
 
 		return stack -> {
-			if (!shouldRemove(stack.getItem())) {
-				consumer.accept(stack);
+			Item item = stack.getItem();
+			if ((noBone && item == Items.BONE)
+					|| (noCoal && item == Items.COAL)
+					|| (noSkull && item == Items.WITHER_SKELETON_SKULL)) {
+				return;
 			}
+			consumer.accept(stack);
 		};
-	}
-
-	private static boolean shouldRemove(Item item) {
-		if (WitherSkeletonDropReductionSettings.removeEntry("bone") && item == Items.BONE) {
-			return true;
-		}
-		if (WitherSkeletonDropReductionSettings.removeEntry("coal") && item == Items.COAL) {
-			return true;
-		}
-		return WitherSkeletonDropReductionSettings.removeEntry("skull") && item == Items.WITHER_SKELETON_SKULL;
 	}
 }

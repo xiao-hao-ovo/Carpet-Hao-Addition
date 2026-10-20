@@ -40,9 +40,10 @@ public final class DirectDropContext {
 			return;
 		}
 		stack.remove(stack.size() - 1);
-		if (stack.isEmpty()) {
-			STACK.remove();
-		}
+		// 栈空了**不清 ThreadLocal**:留着这个空表复用。
+		// ServerWorld.tickBlock 的 HEAD/RETURN 各调一次 push(null)/pop(),而大型刷石机/农场
+		// 每秒有几千个方块 tick —— 每次都 remove 掉,下次 push 又得 new 一个 ArrayList,
+		// 等于每秒几千次分配。空表不持有任何实体引用,不存在泄漏。
 	}
 
 	/** 当前掉落应归属的玩家;无归属(栈空或栈顶为 null)时返回 null。 */

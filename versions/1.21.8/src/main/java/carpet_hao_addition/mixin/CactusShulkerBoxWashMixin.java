@@ -36,12 +36,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class CactusShulkerBoxWashMixin {
 	@Inject(method = "useOnBlock", at = @At("HEAD"), cancellable = true)
 	private void hao$washShulkerBox(ItemUsageContext context, CallbackInfoReturnable<ActionResult> cir) {
-		if (!UseDyeOnShulkerBoxSettings.isEnabled()) {
-			return;
-		}
+		// 先判物品再查规则:这是 @Mixin(BlockItem.class) 的 useOnBlock —— 所有方块物品每次
+		// 右键方块都会走到这条注入,isOf 比 carpet 规则查询便宜得多。
 		ItemStack stack = context.getStack();
 		if (!stack.isOf(Items.CACTUS)) {
 			return; // 只有仙人掌才接管,其它方块物品交给原版
+		}
+		if (!UseDyeOnShulkerBoxSettings.isEnabled()) {
+			return;
 		}
 		PlayerEntity player = context.getPlayer();
 		if (player == null || !player.isSneaking()) {

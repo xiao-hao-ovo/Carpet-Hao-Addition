@@ -24,10 +24,15 @@ public abstract class Block_bedrockCanBeMinedMixin {
 	@Inject(method = "afterBreak", at = @At("HEAD"))
 	private void hao$bedrockDropsItself(World world, PlayerEntity player, BlockPos pos, BlockState state,
 			BlockEntity blockEntity, ItemStack stack, CallbackInfo ci) {
+		// 这是 @Mixin(Block.class) 的 afterBreak —— 每次玩家破坏任何方块都会走到,
+		// 所以 isOf 放在 carpet 规则查询前面。
+		if (!state.isOf(Blocks.BEDROCK)) {
+			return;
+		}
 		if (player == null || player.getAbilities().creativeMode) {
 			return;
 		}
-		if (!BedrockCanBeMinedSettings.isEnabled() || !state.isOf(Blocks.BEDROCK)) {
+		if (!BedrockCanBeMinedSettings.isEnabled()) {
 			return;
 		}
 

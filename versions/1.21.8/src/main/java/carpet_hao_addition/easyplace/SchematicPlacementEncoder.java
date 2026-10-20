@@ -158,9 +158,8 @@ public class SchematicPlacementEncoder {
                 }
             }
         } catch (Exception e) {
-            if (HaoDebug.ENABLED) {
-                HaoDebug.log("[hao-easyplace]    投影世界直查异常: " + e);
-            }
+            // 异常不走调试开关:这条一旦静默,「方块实体数据偶尔不还原」就彻底没有线索。
+            HaoDebug.error("[hao-easyplace] 投影世界直查异常", e);
         }
         try {
             List<SchematicPlacementManager.PlacementPart> parts = DataManager.getSchematicPlacementManager().getAllPlacementsTouchingChunk(pos);
@@ -226,10 +225,8 @@ public class SchematicPlacementEncoder {
                 }
             }
         } catch (Exception e) {
-            if (HaoDebug.ENABLED) {
-                HaoDebug.log("[hao-easyplace]     schematicBlockEntityNbt 异常: " + e);
-            }
-            HaoDebug.stackTrace(e);
+            // 同上:这是「拿不到投影方块实体 NBT」的唯一线索,不能被调试开关吞掉。
+            HaoDebug.error("[hao-easyplace] 读取投影方块实体 NBT 异常", e);
             return null;
         }
         return null;
