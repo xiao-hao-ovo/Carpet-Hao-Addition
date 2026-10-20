@@ -16,13 +16,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 /** 轻松放置标牌时, 让 postPlacement 的【返回值】为 false。 */
 @Mixin(SignItem.class)
 public class SignPlacementMixin {
-    @Inject(method = "postPlacement", at = @At("RETURN"), cancellable = true)
-    private void hao$suppressSuccess(BlockPos pos, World world, PlayerEntity player, ItemStack stack,
-                                     BlockState state, CallbackInfoReturnable<Boolean> cir) {
-        if (ProjectionPlacement.isProjected()
-                && ProjectionPlacement.placeTarget().equals(pos)
-                && world.getBlockState(pos).getBlock() instanceof SignBlock) {
-            cir.setReturnValue(false);
-        }
-    }
+	    @Inject(method = "postPlacement", at = @At("RETURN"), cancellable = true)
+	    private void hao$suppressSuccess(BlockPos pos, World world, PlayerEntity player, ItemStack stack,
+									                                    BlockState state, CallbackInfoReturnable<Boolean> cir) {
+		        if (ProjectionPlacement.isProjected()
+				                && ProjectionPlacement.placeTarget().equals(pos)
+				                && world.getBlockState(pos).getBlock() instanceof SignBlock) {
+			            cir.setReturnValue(false);
+		        }
+	    }
 }

@@ -1,17 +1,6 @@
 # 命令
 
-命令注册在 Carpet 的默认命令树里。除 `/hao` 外，各命令都受**对应规则**门控：规则关闭时整棵命令树（含 `help`）不可见、不可执行。
-
-## 示例规则 (`/hao`)
-
-### 语法
-
-`/hao`
-
-### 效果
-
-- 打印 Carpet-Hao-Addition 的两个示例规则（`exampleBoolean` / `exampleString`）的当前值
-
+命令注册在 Carpet 的默认命令树里。各命令都受**对应规则**门控：规则关闭时整棵命令树（含 `help`）不可见、不可执行。
 ## 局部侦测器禁用 (`/haoZoneguard`)
 
 需要规则 `/carpet haoZoneguard true` 开启；关闭时整棵命令树（含 `help`）不可见。

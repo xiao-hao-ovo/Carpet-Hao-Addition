@@ -37,7 +37,7 @@ duplicatesStrategy = EXCLUDE             // 同名文件整份覆盖
 > ⚠️ `lang` 等资源**必须**放共享的 `src/main/resources`。放层内不会按 key 合并，
 > 而是**整份覆盖**，会丢掉共享里其他 key。
 
-## 二、共享源码（`src/main/java`，28 个）
+## 二、共享源码（`src/main/java`，27 个）
 
 **根包 · 规则设置与跨层实现**
 
@@ -46,7 +46,6 @@ duplicatesStrategy = EXCLUDE             // 同名文件整份覆盖
 | `AutoMendingSettings.java` | 32 |
 | `BedrockCanBeMinedSettings.java` | 29 |
 | `CarpetHaoAdditionExtension.java` | 310 |
-| `CarpetHaoAdditionSettings.java` | 27 |
 | `CopperStonecuttingSettings.java` | 31 |
 | `CraftableTrimTemplateSettings.java` | 31 |
 | `DirectDropsSettings.java` | 59 |

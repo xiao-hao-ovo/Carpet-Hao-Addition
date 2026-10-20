@@ -1,17 +1,6 @@
 # Commands
 
-Commands are registered in Carpet's default command tree. Except for `/hao`, every command is **gated by its rule**: while the rule is off, the whole command tree (including `help`) is invisible and unusable.
-
-## Example rules (`/hao`)
-
-### Syntax
-
-`/hao`
-
-### Effect
-
-- Prints the current values of the two example rules (`exampleBoolean` / `exampleString`)
-
+Commands are registered in Carpet's default command tree. Every command is **gated by its rule**: while the rule is off, the whole command tree (including `help`) is invisible and unusable.
 ## Zone Guard (`/haoZoneguard`)
 
 Requires `/carpet haoZoneguard true`; while the rule is off the whole command tree (including `help`) is invisible.

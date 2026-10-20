@@ -47,7 +47,6 @@ So there are only two kinds of files:
 | `AutoMendingSettings.java` | 32 |
 | `BedrockCanBeMinedSettings.java` | 29 |
 | `CarpetHaoAdditionExtension.java` | 310 |
-| `CarpetHaoAdditionSettings.java` | 27 |
 | `CopperStonecuttingSettings.java` | 31 |
 | `CraftableTrimTemplateSettings.java` | 31 |
 | `DirectDropsSettings.java` | 59 |

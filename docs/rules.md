@@ -66,25 +66,6 @@
 - 默认值: `ALWAYS`
 - 参考选项: `STANDING`, `SNEAKING`, `ALWAYS`
 - 分类: `Hao`
-
-## 示例布尔规则 (exampleBoolean)
-
-Carpet 扩展模板自带的布尔规则示例，无实际功能。
-
-- 类型: `boolean`
-- 默认值: `false`
-- 参考选项: `false`, `true`
-- 分类: `haoaddition`
-
-## 示例字符串规则 (exampleString)
-
-Carpet 扩展模板自带的字符串规则示例（可选 foo / bar / baz），无实际功能。
-
-- 类型: `String`
-- 默认值: `foo`
-- 参考选项: `foo`, `bar`, `baz`
-- 分类: `haoaddition`
-
 ## 金胡萝卜堆肥 (haoGoldenCarrotCompost)
 
 开启后,手持金胡萝卜对堆肥桶右键可 100% 堆肥(消耗与效果同普通可堆肥物品,满桶流程一致)。

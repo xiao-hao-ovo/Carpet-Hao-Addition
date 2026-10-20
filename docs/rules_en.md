@@ -66,25 +66,6 @@ When the fill feature is allowed to run: always = both poses, standing or sneaki
 - Default: `ALWAYS`
 - Options: `STANDING`, `SNEAKING`, `ALWAYS`
 - Categories: `Hao`
-
-## Example Boolean Rule (exampleBoolean)
-
-Example boolean rule shipped with the Carpet extension template; no gameplay effect.
-
-- Type: `boolean`
-- Default: `false`
-- Options: `false`, `true`
-- Categories: `haoaddition`
-
-## Example String Rule (exampleString)
-
-Example string rule shipped with the Carpet extension template (foo / bar / baz); no gameplay effect.
-
-- Type: `String`
-- Default: `foo`
-- Options: `foo`, `bar`, `baz`
-- Categories: `haoaddition`
-
 ## Golden Carrot Composting (haoGoldenCarrotCompost)
 
 While enabled, right-clicking a composter while holding a golden carrot composts it with 100% chance, exactly like a regular compostable item.

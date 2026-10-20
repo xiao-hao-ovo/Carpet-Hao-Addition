@@ -8,7 +8,7 @@ import carpet.api.settings.Rule;
  * 掉落物直入背包规则 —— {@code haoDirectBlockDrops},
  * 本扩展另有实体掉落版本 {@code haoDirectEntityDrops}。
  * <p>
- * 
+ *
  * ({@code haoDirectBlockDrops} 只处理方块掉落物,实体掉落由本扩展新增)。
  * <p>
  * 两条规则各自独立、默认关闭:

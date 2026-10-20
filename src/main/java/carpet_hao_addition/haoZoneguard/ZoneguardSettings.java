@@ -21,20 +21,20 @@ import carpet.api.settings.Rule;
  */
 public class ZoneguardSettings
 {
-    /** Carpet 规则名(注册在 carpet 默认管理器)。 */
-    public static final String RULE_NAME = "haoZoneguard";
+	    /** Carpet 规则名(注册在 carpet 默认管理器)。 */
+	    public static final String RULE_NAME = "haoZoneguard";
 
-    @Rule(categories = {"Hao"})
-    public static boolean haoZoneguard = false;
+	    @Rule(categories = {"Hao"})
+	    public static boolean haoZoneguard = false;
 
-    /**
-     * 权威读取:Carpet 默认管理器中 haoZoneguard 规则当前是否为 true。
-     * 在 /carpet 命令可用的时机(命令 requires、tick 内)调用是安全的;
-     * 若管理器尚未初始化或规则未注册,按关闭(false)处理。
-     */
-    public static boolean isEnabled()
-    {
-        CarpetRule<?> rule = CarpetServer.settingsManager.getCarpetRule(RULE_NAME);
-        return rule != null && rule.value() instanceof Boolean enabled && enabled;
-    }
+	    /**
+	    * 权威读取:Carpet 默认管理器中 haoZoneguard 规则当前是否为 true。
+	    * 在 /carpet 命令可用的时机(命令 requires、tick 内)调用是安全的;
+	    * 若管理器尚未初始化或规则未注册,按关闭(false)处理。
+	    */
+	    public static boolean isEnabled()
+	    {
+		        CarpetRule<?> rule = CarpetServer.settingsManager.getCarpetRule(RULE_NAME);
+		        return rule != null && rule.value() instanceof Boolean enabled && enabled;
+	    }
 }

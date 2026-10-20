@@ -67,8 +67,6 @@ Java 21+（26.x 需要 Java 25）。
 
 | 规则 | 名称 | 说明 |
 |---|---|---|
-| `exampleBoolean` | 示例布尔规则 | Carpet 扩展模板自带的布尔规则示例，无实际功能。 |
-| `exampleString` | 示例字符串规则 | Carpet 扩展模板自带的字符串规则示例（可选 foo / bar / baz），无实际功能。 |
 
 ### 命令
 
@@ -180,8 +178,6 @@ Example rules shipped with the extension template (no gameplay effect, safe to r
 
 | Rule | Name | Description |
 |---|---|---|
-| `exampleBoolean` | Example Boolean Rule | Example boolean rule shipped with the Carpet extension template; no gameplay effect. |
-| `exampleString` | Example String Rule | Example string rule shipped with the Carpet extension template (foo / bar / baz); no gameplay effect. |
 
 ### Commands
 
