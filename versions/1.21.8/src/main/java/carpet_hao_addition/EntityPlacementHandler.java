@@ -90,14 +90,6 @@ public final class EntityPlacementHandler {
 	/** 可能承载"物品堆"的 NBT 字段(内容物)。 */
 	private static final String[] CONTENT_FIELDS = {"Items", "HandItems", "ArmorItems"};
 
-	/**
-	 * 每个玩家"已经放过"的投影实体身份({@code EntitySpawn.key = 子区域#序号})。
-	 * <p>
-	 * 去重必须按身份、不能按坐标:投影里常见几辆漏斗矿车叠在同一个点上,坐标与 NBT 都一样、
-	 * 只有 UUID 不同 —— 按坐标判定会让第二辆永远放不出来。
-	 */
-	private static final Map<UUID, Map<String, Integer>> PLACED_KEYS = new HashMap<>();
-
 	private EntityPlacementHandler() {
 	}
 
@@ -143,17 +135,11 @@ public final class EntityPlacementHandler {
 		if (type == null) {
 			return;
 		}
-		// 去重按**投影实体身份**(EntitySpawn.key = 子区域#序号),不按坐标 ——
-		// 投影里可能有几个坐标完全重合的实体(两辆叠在一起的漏斗矿车),按坐标去重
-		// 会让第二个永远放不出来。key 为空(旧版客户端)时才退化成"不检查"。
-		// 记账:key → 上次生成的实体 ID。只有那个实体**还活着**才算"已经放过";
-		// 一旦被你打掉,记录自动失效,可以重新放(否则会"放过一次就永久不能再放")。
-		Map<String, Integer> placedKeys = PLACED_KEYS.computeIfAbsent(player.getUuid(),
-				ignored -> new HashMap<>());
-		String key = spawn.key();
-		// 去重**交给客户端**:客户端按"该位置世界已有实体数 >= 投影要求数"过滤候选,
-		// 并对已发出的项标绿、不可重复点。服务端不再按 key 额外拦 —— 否则会出现
-		// "客户端能点、服务端却跳过"的不一致。
+		// 去重**完全交给客户端**:客户端按「该位置世界已有实体数 >= 投影要求数」过滤候选,
+		// 并对已发出的项标绿、不可重复点。服务端**不做**按 key 的拦截 —— 否则会出现
+		// 「客户端能点、服务端却跳过」的不一致。
+		// （这里曾经维护过一张 key → 上次生成实体 ID 的表,但既然服务端不拦就没人读它,
+		//  只会在长时间游戏里无限攒条目,已删除。）
 		int count = Math.max(1, Math.min(EasyPlaceEntitySettings.MAX_COUNT, rawCount));
 		NbtCompound nbt = spawn.nbt().copy();
 		// 乘客(以及嵌套乘客)的 Pos 存的是**投影局部坐标**,必须改成载具当前的世界坐标,
@@ -212,9 +198,6 @@ public final class EntityPlacementHandler {
 					+ String.format("%.3f,%.3f,%.3f", entity.getX(), entity.getY(), entity.getZ())
 					+ " 投影要求=" + String.format("%.3f,%.3f,%.3f", spawn.x(), spawn.y(), spawn.z())
 					+ " yaw=" + String.format("%.1f", spawn.yaw()));
-			if (added && !key.isEmpty() && entity != null) {
-				placedKeys.put(key, entity.getId()); // 生成了才记账;被打掉后自动失效
-			}
 			// 乘客保留**骑乘关系**(与投影完全一致:雪傀儡就是坐在竹筏上的乘客,有坐姿、会动),
 			// 但要把它"已经在骑乘位"这件事**同步给客户端** —— 否则客户端会一直把它画在载具内部,
 			// 表现就是"只看得见载具,打掉载具乘客才出现"。
@@ -468,7 +451,8 @@ public final class EntityPlacementHandler {
 			// 先"试算"这一位(连同它自己驮着的)需要什么,够才真的保留
 			Map<Item, Integer> sub = new LinkedHashMap<>();
 			if (passengerType != null
-					&& hao$collectEntities(passengerType, passenger, count, player, sub)) {
+					&& hao$collectEntities(passengerType, passenger, count, player, sub)
+					&& hao$affordableWith(player, need, sub)) {
 				hao$prunePassengers(player, passenger, count, sub);
 				sub.forEach((item, amount) -> need.merge(item, amount, Integer::sum));
 				kept.add(passenger);
@@ -528,13 +512,33 @@ public final class EntityPlacementHandler {
 					payable = hao$payable(player, stack, count, sub);
 				}
 			}
-			if (payable) {
+			// 还要和**本次已经决定消耗的**合并后再校验:背包只有 1 份料时不能同时留下两件同类内容物
+			if (payable && hao$affordableWith(player, need, sub)) {
 				sub.forEach((item, amount) -> need.merge(item, amount, Integer::sum));
 			} else {
 				nbt.remove(field);
 				HaoDebug.log("[hao-entity]   内容物不足,已剔除 " + field);
 			}
 		}
+	}
+
+	/**
+	 * 把「已经分配掉的量」也算进去再校验一次：背包能不能同时付得起 {@code allocated}
+	 * 和 {@code extra}。
+	 *
+	 * <p>没有这一步会出现白拿：投影里两个乘客都要 1 个雕刻南瓜时，两遍试算看到的
+	 * 都是「背包里有 1 个」而各自通过，最后 {@code need} 累加成 2、
+	 * 扣料却只能扣到 0，于是白送一个。</p>
+	 */
+	private static boolean hao$affordableWith(ServerPlayerEntity player, Map<Item, Integer> allocated,
+			Map<Item, Integer> extra) {
+		for (Map.Entry<Item, Integer> entry : extra.entrySet()) {
+			int already = allocated.getOrDefault(entry.getKey(), 0);
+			if (hao$count(player, entry.getKey()) < already + entry.getValue()) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/** 单个物品堆能否支付(按 count 倍计算);能付则把需求记进 {@code need}。 */
@@ -547,7 +551,9 @@ public final class EntityPlacementHandler {
 			return true; // 认不出来就不拦:留着,也不计消耗
 		}
 		int amount = Math.max(1, stackNbt.getInt("count").orElse(1)) * count;
-		if (hao$count(player, item) < amount) {
+		// 把 need 里**已经分配掉**的同类材料一起算进来 —— 否则两个内容物都要同一材料时，
+		// 每一遍都只跟背包总量比，两次都通过，最后扣料扣不齐就白送。
+		if (hao$count(player, item) < need.getOrDefault(item, 0) + amount) {
 			return false;
 		}
 		need.merge(item, amount, Integer::sum);

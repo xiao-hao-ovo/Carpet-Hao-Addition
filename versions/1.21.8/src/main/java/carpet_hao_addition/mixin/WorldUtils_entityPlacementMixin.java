@@ -126,10 +126,13 @@ public abstract class WorldUtils_entityPlacementMixin {
 			EntityPlacementTrigger.clearHotkeyCount();
 		}
 		if (player == null || !EasyPlaceEntitySettings.isTriggerEnabled(fromHotkey)) {
-			// 诊断(临时):区分"客户端读不到规则值"与"准星没对着方块"
-			HaoDebug.log("[hao-entity] 未进入收集: player=" + (player != null)
-					+ " 取值=" + EasyPlaceEntitySettings.value() + " 快捷键=" + fromHotkey
-					+ " 准星是方块=" + (minecraft.crosshairTarget instanceof BlockHitResult));
+			// 诊断(临时):区分"客户端读不到规则值"与"准星没对着方块"。
+			// 规则关着时每 tick 都会走到这里,所以先看开关再拼接。
+			if (HaoDebug.ENABLED) {
+				HaoDebug.log("[hao-entity] 未进入收集: player=" + (player != null)
+						+ " 取值=" + EasyPlaceEntitySettings.value() + " 快捷键=" + fromHotkey
+						+ " 准星是方块=" + (minecraft.crosshairTarget instanceof BlockHitResult));
+			}
 			// 快捷键是玩家主动按键,不给提示就完全看不出发生了什么(以前这里是静默返回,
 			// 表现就是"快捷键时灵时不灵")。右键路径保持安静,否则照着投影施工会刷屏。
 			if (fromHotkey && player != null) {
@@ -205,8 +208,12 @@ public abstract class WorldUtils_entityPlacementMixin {
 		Vec3d end = start.add(player.getRotationVec(1.0F).multiply(range));
 		// 诊断(临时):玩家眼睛位置 + 视线可达距离。
 		// 用来判断"没命中"到底是"离得太远"还是"litematica 给的有效距离是 0"。
-		HaoDebug.log("[hao-entity] 玩家眼睛=" + String.format("%.2f,%.2f,%.2f", start.x, start.y, start.z)
-				+ " 视线距离=" + String.format("%.2f", range));
+		// 这里每 tick 都会走到,而 String.format 是所有字符串操作里最慢的一档 ——
+		// 必须先看开关再拼,HaoDebug 的 ENABLED 是 static final,JIT 会把整块消掉。
+		if (HaoDebug.ENABLED) {
+			HaoDebug.log("[hao-entity] 玩家眼睛=" + String.format("%.2f,%.2f,%.2f", start.x, start.y, start.z)
+					+ " 视线距离=" + String.format("%.2f", range));
+		}
 		List<EntitySpawn> found = new ArrayList<>();
 		for (SchematicPlacement placement
 				: DataManager.getSchematicPlacementManager().getAllSchematicsPlacements()) {
