@@ -44,22 +44,25 @@ public class SchematicPlacementEncoder {
     }
 
     /**
-     * 物品数据位的来源按可靠性排了三层：手上拿着的东西 → 投影世界的方块实体 →
-     * 投影文件里的方块实体 NBT。取到就停。
+     * 物品数据位的来源按可靠性排三层，从最权威的往下取，取到就停：
+     *
+     * <ol>
+     *   <li><b>投影世界的方块实体</b> —— 最权威。投影里这一处的槽位禁用、信标效果
+     *       就在这里，它才是玩家想照着施工的样子。</li>
+     *   <li><b>投影文件里的方块实体 NBT</b> —— 方块实体拿不到时的退路；同时把完整
+     *       NBT 发给服务端走独立通道（标牌文字这类协议位装不下的内容）。</li>
+     *   <li><b>手持物品</b> —— 只在前两层都没有时才兜底。</li>
+     * </ol>
+     *
+     * <p><b>为什么手持必须放最后：</b>玩家手上那叠方块可能本来就带着旧的方块实体
+     * 数据 —— 比如从地上捡回来的带锁定槽位的合成器、创造模式拿的带 NBT 的方块。
+     * 一旦让它的位优先，投影里每一个位置各自不同的状态就会被手上那一份覆盖掉，
+     * 表现就是「放了一批合成器，有些没按投影锁定」。而且投影里明明有这个方块实体
+     * 时，它说"没有额外数据"也是权威答案，不该再拿手上的旧 NBT 去污染。
+     * </p>
      */
     private static int encodeItemData(ItemDataCodec codec, BlockPos pos, BlockState stateSchematic) {
-        MinecraftClient mc = MinecraftClient.getInstance();
-        if (mc.player != null) {
-            ItemStack handStack = mc.player.getMainHandStack();
-            if (handStack.isEmpty()) {
-                handStack = mc.player.getOffHandStack();
-            }
-            int fromHand = codec.encodeStack(handStack);
-            if (fromHand != 0) {
-                return fromHand;
-            }
-        }
-
+        // ① 投影世界的方块实体
         World world = SchematicWorldHandler.getSchematicWorld();
         BlockEntity blockEntity = world == null ? null : world.getBlockEntity(pos);
         HaoDebug.log("[hao-easyplace]   投影方块实体=" + (blockEntity == null ? "null" : blockEntity.getClass().getSimpleName()));
@@ -71,6 +74,7 @@ public class SchematicPlacementEncoder {
             }
         }
 
+        // ② 投影文件里的完整 NBT
         // 完整 NBT(含标牌文字等)走独立通道单独发送 —— 协议值装不下这些。
         NbtCompound fullNbt = schematicBlockEntityNbt(pos, stateSchematic);
         if (fullNbt != null) {
@@ -79,7 +83,25 @@ public class SchematicPlacementEncoder {
         HaoDebug.log("[hao-easyplace]   投影NBT=" + (fullNbt == null ? "null" : fullNbt));
         int fromNbt = codec.encodeNbt(fullNbt);
         HaoDebug.log("[hao-easyplace]   NBT编码位=" + fromNbt);
-        return fromNbt;
+        if (fromNbt != 0) {
+            return fromNbt;
+        }
+
+        // ③ 手持物品兜底 —— 但仅当投影里根本没有这个位置的方块实体时。
+        // 投影有这个方块实体、两层都没给出位，说明投影就是"没有额外数据"，
+        // 这时拿手上的旧 NBT 顶上去只会把不同位置的状态抹成同一份。
+        if (blockEntity != null) {
+            return 0;
+        }
+        MinecraftClient mc = MinecraftClient.getInstance();
+        if (mc.player != null) {
+            ItemStack handStack = mc.player.getMainHandStack();
+            if (handStack.isEmpty()) {
+                handStack = mc.player.getOffHandStack();
+            }
+            return codec.encodeStack(handStack);
+        }
+        return 0;
     }
 
     /** 判断一个方块实体 NBT 的 id 是否与目标方块相容。 */
