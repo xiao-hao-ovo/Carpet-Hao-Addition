@@ -80,6 +80,13 @@ public final class WaterloggedFillHandler {
 	 */
 	private static final long PENDING_TTL = 1200L;
 
+	/**
+	 * 单个玩家每张表的条数上限。
+	 * <p>大范围照投影施工时，每格都会进一次待处理表，而服务端每 tick 都要遍历它们。
+	 * 不设上限的话单玩家能堆到几千条（60 秒内不会被清），tick 开销会明显上去。</p>
+	 */
+	private static final int MAX_PENDING = 2048;
+
 	private static boolean payloadRegistered;
 	private static boolean receiverRegistered;
 	private static boolean tickRegistered;
@@ -229,6 +236,11 @@ public final class WaterloggedFillHandler {
 				if (action.applyTo(player, world, pending.getKey().pos())) {
 					pendingIterator.remove();
 					if (onePerTick) {
+						// 直接 return 会把已经空掉的内层 map 留在表里，
+						// 下次 tick 开头的 isEmpty() 早退判断就失效了。
+						if (entry.getValue().isEmpty()) {
+							it.remove();
+						}
 						return; // 本 tick 已处理一格,剩下的留到下一 tick
 					}
 				}
@@ -398,6 +410,17 @@ public final class WaterloggedFillHandler {
 	private static void markAsPending(Map<UUID, Map<PendingPos, Long>> table, ServerPlayerEntity player,
 			List<BlockPos> positions, long now) {
 		Map<PendingPos, Long> pending = table.computeIfAbsent(player.getUuid(), key -> new HashMap<>());
+		// 超限时一次淘汰最旧的四分之一 —— 每次插入只做 O(1) 判断，
+		// 而不是每插一条就全表扫一遍找最旧的。
+		if (pending.size() + positions.size() > MAX_PENDING) {
+			int drop = Math.max(1, pending.size() / 4);
+			pending.entrySet().stream()
+					.sorted(Map.Entry.comparingByValue())
+					.limit(drop)
+					.map(Map.Entry::getKey)
+					.toList()
+					.forEach(pending::remove);
+		}
 		// 记下玩家**此刻所在维度**：跨维度之后这条记录就只在原维度有效。
 		net.minecraft.registry.RegistryKey<net.minecraft.world.World> dimension =
 				player.getWorld().getRegistryKey();

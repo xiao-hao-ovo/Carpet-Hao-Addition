@@ -121,18 +121,39 @@ public final class RocketShulkerHandler {
 		}
 		List<ItemStack> contents = new ArrayList<>();
 		container.stream().forEach(s -> contents.add(s.copy()));
-		for (int i = 0; i < contents.size(); i++) {
+
+		// 跨摞累加:盒里常见"一摞 10 + 一摞 64",只取第一摞会让副手永远补不满。
+		// 但不同 NBT 的烟花（爆炸效果不同）不能合并成一摞，否则会丢信息 ——
+		// 所以只累加与第一摞**物品与组件都相同**的那些摞。
+		ItemStack result = ItemStack.EMPTY;
+		int need = amount;
+		boolean touched = false;
+		for (int i = 0; i < contents.size() && need > 0; i++) {
 			ItemStack inner = contents.get(i);
 			if (inner.isEmpty() || !inner.isOf(Items.FIREWORK_ROCKET)) {
 				continue;
 			}
-			int takenCount = Math.min(amount, inner.getCount());
-			ItemStack taken = inner.copyWithCount(takenCount);
-			inner.decrement(takenCount);
-			contents.set(i, inner.isEmpty() ? ItemStack.EMPTY : inner);
-			boxStack.set(DataComponentTypes.CONTAINER, ContainerComponent.fromStacks(contents));
-			return taken;
+			if (result.isEmpty()) {
+				int take = Math.min(need, inner.getCount());
+				result = inner.copyWithCount(take);
+				inner.decrement(take);
+				need -= take;
+				touched = true;
+			} else if (ItemStack.areItemsAndComponentsEqual(result, inner)) {
+				int take = Math.min(need, inner.getCount());
+				result.increment(take);
+				inner.decrement(take);
+				need -= take;
+				touched = true;
+			}
+			if (touched) {
+				contents.set(i, inner.isEmpty() ? ItemStack.EMPTY : inner);
+			}
 		}
-		return ItemStack.EMPTY;
+		if (result.isEmpty()) {
+			return ItemStack.EMPTY;
+		}
+		boxStack.set(DataComponentTypes.CONTAINER, ContainerComponent.fromStacks(contents));
+		return result;
 	}
 }

@@ -44,17 +44,23 @@ public final class RecipeDeployHooks {
 			Path packDir = server.getSavePath(WorldSavePath.DATAPACKS).resolve(PACK_NAME);
 			boolean changed = false;
 
+			// 先无条件把数据包目录建好。
+			// 原来只在「pack.mcmeta 不存在」的分支里 createDirectories，一旦 mcmeta 在、
+			// recipe 目录却缺失（手工删过、备份只恢复了 mcmeta），下面那 32 次写文件
+			// 会全部抛 NoSuchFileException 被 catch 吞掉 —— 表现是陶瓦还原规则
+			// 「开着但切石机里一条配方都没有」。
+			Path recipeDir = packDir.resolve("data/carpet-hao-addition/recipe");
+			Files.createDirectories(recipeDir);
+
 			Path mcmeta = packDir.resolve("pack.mcmeta");
 			if (!Files.exists(mcmeta)) {
-				Files.createDirectories(packDir.resolve("data/carpet-hao-addition/recipe"));
 				Files.writeString(mcmeta, mcmetaContent(), StandardCharsets.UTF_8);
 				changed = true;
 			}
 			for (String color : COLORS) {
-				Path dir = packDir.resolve("data/carpet-hao-addition/recipe");
-				changed |= writeIfChanged(dir.resolve(color + "_terracotta_to_terracotta.json"),
+				changed |= writeIfChanged(recipeDir.resolve(color + "_terracotta_to_terracotta.json"),
 						recipeJson("minecraft:" + color + "_terracotta", "minecraft:terracotta"));
-				changed |= writeIfChanged(dir.resolve(color + "_glazed_terracotta_to_terracotta.json"),
+				changed |= writeIfChanged(recipeDir.resolve(color + "_glazed_terracotta_to_terracotta.json"),
 						recipeJson("minecraft:" + color + "_glazed_terracotta", "minecraft:" + color + "_terracotta"));
 			}
 

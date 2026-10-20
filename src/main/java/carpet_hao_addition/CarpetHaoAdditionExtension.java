@@ -10,6 +10,8 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import carpet_hao_addition.haoZoneguard.ZoneguardHooks;
 import carpet_hao_addition.haoZoneguard.ZoneguardSettings;
@@ -40,6 +42,8 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
     public static final String MOD_NAME = "Carpet-Hao-Addition";
     /** Rule name of the haoZoneguard toggle, registered with Carpet's default manager. */
     public static final String ZONEGUARD_RULE = "haoZoneguard";
+
+    private static final Logger HAO_LOGGER = LoggerFactory.getLogger("carpet-hao-addition");
 
     private final String modVersion;
     private final SettingsManager settingsManager;
@@ -281,9 +285,15 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
                     .getMethod("ensureDeployed", MinecraftServer.class)
                     .invoke(null, haoServer);
         }
-        catch (Throwable ignored)
+        catch (ClassNotFoundException e)
         {
-            // 本层未实现该功能, 跳过
+            // 本层没有这个类 → 该功能本来就没实现, 静默跳过是正常的
+        }
+        catch (Throwable t)
+        {
+            // 其他异常(数据包目录无权限、路径非法、注册表状态不对、方法签名变了)
+            // 必须记下来 —— 否则规则"开着"却什么都没发生, 日志还一片干净, 无从排查。
+            HAO_LOGGER.error("Failed to deploy craftable trim-template recipes", t);
         }
     }
 
@@ -301,9 +311,14 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
                     .getMethod("ensureDeployed", MinecraftServer.class)
                     .invoke(null, haoServer);
         }
-        catch (Throwable ignored)
+        catch (ClassNotFoundException e)
         {
-            // 本层未实现该功能, 跳过
+            // 本层没有这个类 → 该功能本来就没实现, 静默跳过是正常的
+        }
+        catch (Throwable t)
+        {
+            // 同 ensureTrimTemplates:非"类不存在"的失败必须留痕
+            HAO_LOGGER.error("Failed to deploy copper-stonecutting recipes", t);
         }
     }
 }
