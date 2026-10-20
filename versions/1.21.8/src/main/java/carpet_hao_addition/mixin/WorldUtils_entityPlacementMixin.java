@@ -289,8 +289,16 @@ public abstract class WorldUtils_entityPlacementMixin {
 	private static EntitySpawn hao$candidateFor(MinecraftClient mc, SchematicPlacement placement,
 			SubRegionPlacement sub, BlockPos origin, String regionName, int index, EntityInfo info,
 			Vec3d rayStart, Vec3d rayEnd) {
-		// 投影实体的身份 —— 去重只能靠它,不能靠坐标(投影里可能有几个实体坐标完全重合)
-		String key = regionName + "#" + index;
+		// 投影实体的身份 —— 去重只能靠它,不能靠坐标(投影里可能有几个实体坐标完全重合)。
+		// key 里必须带**这个投影自己的标识**:只用「子区域#序号」的话,同时显示两个投影、
+		// 而它们恰好有同名子区域(单区域投影常常都叫 main)且实体序号相同时,两边的 key 会
+		// 撞在一起 —— HAO_COUNTS 与 EntityPlacementCounter.totals 都拿 key 当分组键,
+		// 后写的覆盖先写的,界面上的「需要/已放」就串到另一个投影上去了。
+		// 用投影原点当标识:两个投影叠在同一位置时确实分不开,但那种情况玩家自己也分不清。
+		// 注意 key 会进网络包(buf.writeString(spawn.key(), 256)),子区域名过长必须截断,
+		// 否则序列化时直接抛异常。
+		String regionKey = regionName.length() > 96 ? regionName.substring(0, 96) : regionName;
+		String key = origin.asLong() + "/" + regionKey + "#" + index;
 		// ⚠️ 下面这段诊断里 info.nbt 的 toString 会把整棵 NBT 树序列化一遍,
 		// 而 hao$candidateFor 是"每个投影实体 × 每 tick"都走的路径 —— 必须靠 ENABLED 短路,
 		// 否则玩家按住轻松放置键时这里会持续空转。

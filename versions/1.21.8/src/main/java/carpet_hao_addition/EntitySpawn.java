@@ -12,9 +12,14 @@ import net.minecraft.util.Identifier;
  * 服务端用它还原实体 —— 这样连**乘客**一起还原:例如投影里"矿车镶在船里"其实是
  * 船带着矿车乘客(同一个 NBT 的 {@code Passengers}),只按类型创建的话乘客就丢了。
  * <p>
- * {@code key} 是**投影里那个实体的身份**({@code 子区域#序号})。去重只能靠它:
- * 投影里常常有几个实体坐标完全重合(例如两辆叠在一起的漏斗矿车,局部坐标与 NBT 都一样、
- * 只有 UUID 不同),按坐标根本分不出"这是第二个"。
+ * {@code key} 是**投影里那个实体的身份**（{@code 投影原点/子区域#序号}）。去重只能靠它：
+ * 投影里常常有几个实体坐标完全重合（例如两辆叠在一起的漏斗矿车，局部坐标与 NBT 都一样、
+ * 只有 UUID 不同），按坐标根本分不出"这是第二个"。
+ * <p>
+ * key 里带投影原点是为了让**同时显示的多个投影**互不干扰：只用「子区域#序号」时，
+ * 两个投影若恰好有同名子区域（单区域投影常都叫 {@code main}）就会撞键。
+ * 它只被当分组键用（{@code HAO_COUNTS} / {@code EntityPlacementCounter.totals}），
+ * 没有任何地方解析它的内容；服务端也完全不用它，去重与统计都在客户端完成。
  */
 public record EntitySpawn(Identifier type, String key, double x, double y, double z, float yaw,
 		float pitch, NbtCompound nbt) {
