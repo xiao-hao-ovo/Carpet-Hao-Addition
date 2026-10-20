@@ -52,17 +52,28 @@ import java.util.UUID;
  */
 public final class WaterloggedFillHandler {
 	/**
+	 * 一条待处理记录的位置：**维度 + 坐标**。
+	 *
+	 * <p>维度不能省。PENDING 的键只有 UUID + BlockPos 时，玩家在主世界请求补水、
+	 * 60 秒内进了下界，服务端会拿「主世界的坐标」去玩家**当前所在的维度**（下界）
+	 * 执行 —— 于是下界同坐标那一格被误浇水/误灌岩浆，冰和岩浆块照扣。</p>
+	 */
+	private record PendingPos(net.minecraft.registry.RegistryKey<net.minecraft.world.World> dimension,
+			BlockPos pos) {
+	}
+
+	/**
 	 * 待补水格:玩家 UUID → (格子 → 请求时刻)。服务端每 tick 检查这些格,方块落下即补。
 	 * <p>
 	 * 用"具体格子 + 较长存活期":方块落下稍晚(网络/服务端处理延迟)或玩家快速连放都不会漏。
 	 */
-	private static final Map<UUID, Map<BlockPos, Long>> PENDING_WATERLOG = new HashMap<>();
+	private static final Map<UUID, Map<PendingPos, Long>> PENDING_WATERLOG = new HashMap<>();
 	/** 待灌岩浆的炼药锅格:玩家 UUID → (格子 → 请求时刻)。方块(炼药锅)落下后灌岩浆。 */
-	private static final Map<UUID, Map<BlockPos, Long>> PENDING_LAVA_CAULDRON = new HashMap<>();
+	private static final Map<UUID, Map<PendingPos, Long>> PENDING_LAVA_CAULDRON = new HashMap<>();
 	/** 待放水源的格:玩家 UUID → (格子 → 请求时刻)。等占位方块(冰)落下后换成水。 */
-	private static final Map<UUID, Map<BlockPos, Long>> PENDING_WATER = new HashMap<>();
+	private static final Map<UUID, Map<PendingPos, Long>> PENDING_WATER = new HashMap<>();
 	/** 待放岩浆的格:同上,占位方块是岩浆块。 */
-	private static final Map<UUID, Map<BlockPos, Long>> PENDING_LAVA = new HashMap<>();
+	private static final Map<UUID, Map<PendingPos, Long>> PENDING_LAVA = new HashMap<>();
 	/**
 	 * 待处理记录的存活时长(服务端刻)。放宽到 1 分钟:实际用起来常常是"放完才发现背包里没冰/没岩浆块,
 	 * 去拿一趟再回来",2 秒(40 tick)早就过期了,表现就是"事后拿着冰再也补不上"。
@@ -160,6 +171,17 @@ public final class WaterloggedFillHandler {
 				&& PENDING_WATER.isEmpty() && PENDING_LAVA.isEmpty()) {
 			return;
 		}
+		// 规则关掉之后不能再继续补料 —— 否则玩家关掉规则前点过几格，接下来 60 秒里
+		// 服务端照样给那些格浇水/灌岩浆、照样扣冰和岩浆块，玩家会莫名其妙少东西。
+		// 客户端在规则关闭时不会发包（那边的入口直接 return），也就发不出清理信号，
+		// 所以这里必须自己兜底清空。
+		if (!EasyPlaceWaterloggedSettings.isEnabled()) {
+			PENDING_WATERLOG.clear();
+			PENDING_LAVA_CAULDRON.clear();
+			PENDING_WATER.clear();
+			PENDING_LAVA.clear();
+			return;
+		}
 		// 每 tick 只处理一格:之前攒下多格待处理时不会"一次性全补上"。
 		hao$processPending(server, PENDING_LAVA_CAULDRON, WaterloggedFillHandler::hao$tryFillCauldron, true);
 		hao$processPending(server, PENDING_LAVA, WaterloggedFillHandler::hao$tryPlaceLava, true);
@@ -172,14 +194,14 @@ public final class WaterloggedFillHandler {
 		boolean applyTo(ServerPlayerEntity player, ServerWorld world, BlockPos pos);
 	}
 
-	private static void hao$processPending(MinecraftServer server, Map<UUID, Map<BlockPos, Long>> table,
+	private static void hao$processPending(MinecraftServer server, Map<UUID, Map<PendingPos, Long>> table,
 			PendingAction action, boolean onePerTick) {
 		if (table.isEmpty()) {
 			return;
 		}
-		Iterator<Map.Entry<UUID, Map<BlockPos, Long>>> it = table.entrySet().iterator();
+		Iterator<Map.Entry<UUID, Map<PendingPos, Long>>> it = table.entrySet().iterator();
 		while (it.hasNext()) {
-			Map.Entry<UUID, Map<BlockPos, Long>> entry = it.next();
+			Map.Entry<UUID, Map<PendingPos, Long>> entry = it.next();
 			ServerPlayerEntity player = server.getPlayerManager().getPlayer(entry.getKey());
 			if (player == null || !(player.getWorld() instanceof ServerWorld world)) {
 				it.remove();
@@ -190,14 +212,21 @@ public final class WaterloggedFillHandler {
 				continue;
 			}
 			long now = world.getTime();
-			Iterator<Map.Entry<BlockPos, Long>> pendingIterator = entry.getValue().entrySet().iterator();
+			net.minecraft.registry.RegistryKey<net.minecraft.world.World> currentDimension =
+					world.getRegistryKey();
+			Iterator<Map.Entry<PendingPos, Long>> pendingIterator = entry.getValue().entrySet().iterator();
 			while (pendingIterator.hasNext()) {
-				Map.Entry<BlockPos, Long> pending = pendingIterator.next();
+				Map.Entry<PendingPos, Long> pending = pendingIterator.next();
 				if (now - pending.getValue() > PENDING_TTL) {
 					pendingIterator.remove();
 					continue;
 				}
-				if (action.applyTo(player, world, pending.getKey())) {
+				// 别的维度记下的位置留着,等玩家回到那个维度再处理 ——
+				// 绝不能拿旧维度的坐标在当前维度动手,那样会误改方块、还照扣材料。
+				if (!pending.getKey().dimension().equals(currentDimension)) {
+					continue;
+				}
+				if (action.applyTo(player, world, pending.getKey().pos())) {
 					pendingIterator.remove();
 					if (onePerTick) {
 						return; // 本 tick 已处理一格,剩下的留到下一 tick
@@ -212,6 +241,10 @@ public final class WaterloggedFillHandler {
 
 	/** 该格已经是(空)炼药锅 → 换成装岩浆的炼药锅,扣 1 个岩浆块。 */
 	private static boolean hao$tryFillCauldron(ServerPlayerEntity player, ServerWorld world, BlockPos pos) {
+		// 与 tryPlaceFluid 一致:玩家走远了这次目标就作废,免得在看不见的地方改方块扣材料。
+		if (player.squaredDistanceTo(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) > 64.0) {
+			return true;
+		}
 		BlockState state = world.getBlockState(pos);
 		if (state.isOf(Blocks.LAVA_CAULDRON)) {
 			return true;
@@ -229,6 +262,10 @@ public final class WaterloggedFillHandler {
 
 	/** 该格已放上"可含水却没含水"的方块 → 补上含水,扣 1 个冰。 */
 	private static boolean hao$tryWaterlog(ServerPlayerEntity player, ServerWorld world, BlockPos pos) {
+		// 与 tryPlaceFluid 一致:玩家走远了这次目标就作废。
+		if (player.squaredDistanceTo(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) > 64.0) {
+			return true;
+		}
 		BlockState state = world.getBlockState(pos);
 		if (state.isAir()) {
 			return false; // 还没放上方块:继续等
@@ -358,17 +395,20 @@ public final class WaterloggedFillHandler {
 		};
 	}
 
-	private static void markAsPending(Map<UUID, Map<BlockPos, Long>> table, ServerPlayerEntity player,
+	private static void markAsPending(Map<UUID, Map<PendingPos, Long>> table, ServerPlayerEntity player,
 			List<BlockPos> positions, long now) {
-		Map<BlockPos, Long> pending = table.computeIfAbsent(player.getUuid(), key -> new HashMap<>());
+		Map<PendingPos, Long> pending = table.computeIfAbsent(player.getUuid(), key -> new HashMap<>());
+		// 记下玩家**此刻所在维度**：跨维度之后这条记录就只在原维度有效。
+		net.minecraft.registry.RegistryKey<net.minecraft.world.World> dimension =
+				player.getWorld().getRegistryKey();
 		for (BlockPos pos : positions) {
-			pending.put(pos, now);
+			pending.put(new PendingPos(dimension, pos.toImmutable()), now);
 		}
 	}
 
 	/** 清理过期的待处理记录。 */
-	private static void prunePending(Map<UUID, Map<BlockPos, Long>> table, long now) {
-		for (Map<BlockPos, Long> pending : table.values()) {
+	private static void prunePending(Map<UUID, Map<PendingPos, Long>> table, long now) {
+		for (Map<PendingPos, Long> pending : table.values()) {
 			pending.entrySet().removeIf(entry -> now - entry.getValue() > PENDING_TTL);
 		}
 	}

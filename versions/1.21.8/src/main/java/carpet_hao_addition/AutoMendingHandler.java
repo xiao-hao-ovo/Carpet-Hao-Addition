@@ -48,14 +48,20 @@ public final class AutoMendingHandler {
 		}
 		ServerWorld world = (ServerWorld) player.getWorld();
 		// 这些经验最多能换成多少点耐久(受附魔等级与物品本身的换算影响)。
+		// 注意单位:入参是**经验点数**,返回值是**耐久点数**,两者不是 1:1。
 		int repairable = EnchantmentHelper.getRepairWithExperience(world, target, amount);
 		int repaired = Math.min(repairable, target.getDamage());
 		if (repaired <= 0) {
 			return;
 		}
 		target.setDamage(target.getDamage() - repaired);
-		// 扣掉与修复量等量的经验点,保证"经验换耐久"守恒。
-		player.addExperience(-repaired);
+		// 扣经验必须按**实际用掉的**换算回去,不能拿耐久点数直接当经验扣 ——
+		// 经验修补 1 点经验约换 2 点耐久,直接用 repaired 扣会把玩家的经验吞掉近一倍。
+		// 修满了就用掉手头这些;只修了一部分就按比例折算(至少 1 点)。
+		int cost = repaired >= repairable
+				? amount
+				: Math.max(1, (int) Math.round((double) amount * repaired / repairable));
+		player.addExperience(-Math.min(cost, amount));
 	}
 
 	/** 找一件"带经验修补附魔 + 已损坏"的装备(主手 / 副手 / 各盔甲槽)。 */

@@ -100,6 +100,11 @@ public abstract class WorldUtils_waterloggedFillMixin {
 					&& hao$markRequested(player, target)) {
 				hao$lastSentTick = tick;
 				WaterloggedFillHandler.registerPayloadType();
+				// 服务端不认这个通道（没装本模组/版本对不上）时，别拦原版放置 ——
+				// 否则客户端已经返回 SUCCESS，玩家右键毫无反应、也不扣料，而且没有任何提示。
+				if (!ClientPlayNetworking.canSend(WaterloggedFillPayload.ID)) {
+					return;
+				}
 				ClientPlayNetworking.send(new WaterloggedFillPayload(true, kind, List.of(target)));
 				if (kind != WaterloggedFillPayload.KIND_LAVA_CAULDRON) {
 					// 投影里这一格是水/岩浆,它们没有对应的可放置物品:Litematica 会走内部
@@ -118,6 +123,9 @@ public abstract class WorldUtils_waterloggedFillMixin {
 		// 每次操作都发一包:没有要补的格时也报个空包,服务端据此刷新"正在施工"状态并清理记录。
 		hao$lastSentTick = tick;
 		WaterloggedFillHandler.registerPayloadType();
+		if (!ClientPlayNetworking.canSend(WaterloggedFillPayload.ID)) {
+			return; // 服务端不认这个通道:这一包没意义,直接放弃
+		}
 		ClientPlayNetworking.send(new WaterloggedFillPayload(true,
 				waterlogTargets.isEmpty() ? WaterloggedFillPayload.KIND_NONE : WaterloggedFillPayload.KIND_WATERLOG,
 				waterlogTargets));
