@@ -200,6 +200,9 @@ public class EntityPlacementScreen extends Screen {
 	@Override
 	public void render(DrawContext context, int mouseX, int mouseY, float delta) {
 		super.render(context, mouseX, mouseY, delta);
+		// 每帧重建一次背包总账：下面每个可见格子都要判"材料够不够"，
+		// 若每格各自遍历一遍背包，54 格 × 41 槽 × 60fps 就是每秒二十多万次槽位访问。
+		hao$refreshOwnership();
 		int left = (this.width - PANEL_WIDTH) / 2;
 		int top = hao$panelTop();
 		int right = left + PANEL_WIDTH;
@@ -376,11 +379,21 @@ public class EntityPlacementScreen extends Screen {
 				y, color, true);
 	}
 
-	/** 这个候选**实体本身**需要的材料(不含内容物/乘客 —— 那些是"有就带"的可选项)。 */
+	/**
+	 * 这个候选**实体本身**需要的材料(不含内容物/乘客 —— 那些是"有就带"的可选项)。
+	 * <p>
+	 * 结果按「候选下标 + 当前数量」缓存：它每帧给每个可见格子都要用一次，
+	 * 而 {@code baseCostFor} 每次都会新建一个 Map 并做一次 registry 查找。
+	 */
 	private Map<Item, Integer> hao$baseCost(int index) {
-		EntitySpawn spawn = this.candidates.get(index);
-		int count = this.count;
-		return EntityPlacementCosts.baseCostFor(Registries.ENTITY_TYPE.get(spawn.type()), count);
+		if (this.baseCostCacheCount != this.count) {
+			this.baseCostCache.clear();
+			this.baseCostCacheCount = this.count;
+		}
+		return this.baseCostCache.computeIfAbsent(index, i -> {
+			EntitySpawn spawn = this.candidates.get(i);
+			return EntityPlacementCosts.baseCostFor(Registries.ENTITY_TYPE.get(spawn.type()), this.count);
+		});
 	}
 
 	/** 悬停项的所需材料(缓存,避免每帧重算)。 */
@@ -439,22 +452,40 @@ public class EntityPlacementScreen extends Screen {
 		}
 	}
 
+	/** 背包物品总账与创造模式标记，每帧由 {@link #hao$refreshOwnership()} 重建。 */
+	private Map<Item, Integer> ownershipCache;
+	private boolean ownershipCreative;
+	/** 「实体本身材料」的缓存，键是候选下标；{@link #baseCostCacheCount} 变化时整体作废。 */
+	private final Map<Integer, Map<Item, Integer>> baseCostCache = new java.util.HashMap<>();
+	private int baseCostCacheCount = -1;
+
 	/** 背包里该物品的总数(创造模式视为无限)。 */
 	private int hao$owned(Item item) {
-		if (this.client == null || this.client.player == null) {
-			return 0;
-		}
-		if (this.client.player.isCreative()) {
+		if (this.ownershipCreative) {
 			return Integer.MAX_VALUE;
 		}
-		int total = 0;
-		for (int slot = 0; slot < this.client.player.getInventory().size(); slot++) {
-			ItemStack stack = this.client.player.getInventory().getStack(slot);
-			if (stack.isOf(item)) {
-				total += stack.getCount();
+		// 点击路径(鼠标事件)可能早于本帧的 render，总账还没建就先建一次。
+		if (this.ownershipCache == null) {
+			hao$refreshOwnership();
+		}
+		return this.ownershipCache.getOrDefault(item, 0);
+	}
+
+	/** 重建背包总账：一次遍历，供本帧内所有 {@link #hao$owned} 查询。 */
+	private void hao$refreshOwnership() {
+		this.ownershipCache = new java.util.HashMap<>();
+		var player = this.client == null ? null : this.client.player;
+		this.ownershipCreative = player != null && player.isCreative();
+		if (player == null || this.ownershipCreative) {
+			return;
+		}
+		var inventory = player.getInventory();
+		for (int slot = 0; slot < inventory.size(); slot++) {
+			ItemStack stack = inventory.getStack(slot);
+			if (!stack.isEmpty()) {
+				this.ownershipCache.merge(stack.getItem(), stack.getCount(), Integer::sum);
 			}
 		}
-		return total;
 	}
 
 	/** 清单里的东西是否都够。 */

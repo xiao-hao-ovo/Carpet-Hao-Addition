@@ -32,14 +32,6 @@ public final class BlockDataChannel {
 	/** 服务端:玩家 UUID -> (位置 -> 数据)。 */
 	private static final Map<UUID, Map<BlockPos, PendingData>> HAO_PENDING = new HashMap<>();
 
-	/** 客户端节流:最近一次发出的 (位置 + NBT 指纹),避免每 tick 重复发包。 */
-	@Environment(EnvType.CLIENT)
-	private static BlockPos lastSentPos = null;
-	@Environment(EnvType.CLIENT)
-	private static int lastSentHash = 0;
-	@Environment(EnvType.CLIENT)
-	private static long lastSentTime = 0L;
-
 	private BlockDataChannel() {
 	}
 
