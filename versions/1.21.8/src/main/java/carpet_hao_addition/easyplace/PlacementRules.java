@@ -31,6 +31,7 @@ import net.minecraft.block.LightBlock;
 import net.minecraft.block.MushroomBlock;
 import net.minecraft.block.NoteBlock;
 import net.minecraft.block.RailBlock;
+import net.minecraft.block.PoweredRailBlock;
 import net.minecraft.block.RedstoneLampBlock;
 import net.minecraft.block.RedstoneWireBlock;
 import net.minecraft.block.RepeaterBlock;
@@ -48,6 +49,7 @@ import net.minecraft.block.enums.Attachment;
 import net.minecraft.block.enums.BlockFace;
 import net.minecraft.block.enums.BlockHalf;
 import net.minecraft.block.enums.Orientation;
+import net.minecraft.block.enums.RailShape;
 import net.minecraft.block.enums.StairShape;
 import net.minecraft.block.enums.WallShape;
 import net.minecraft.block.enums.WireConnection;
@@ -300,8 +302,12 @@ public final class PlacementRules {
 		// 阳光探测器：反向 bit0
 		stateCodec(DaylightDetectorBlock.class, boolProp(DaylightDetectorBlock.INVERTED, 0));
 
-		// 探测铁轨：通电 bit0
-		stateCodec(DetectorRailBlock.class, boolProp(DetectorRailBlock.POWERED, 0));
+		// 探测铁轨：和其它铁轨同一套协议（形状占低 4 位 + bit4 标记）。
+		//
+		// 旧实现只写了 boolProp(POWERED, 0)：既完全没有形状位，bit0 又和形状的最低位撞车，
+		// 于是照投影铺探测铁轨时形状全部落成平轨（普通/动力/激活铁轨都正常，只有它不行）。
+		// 协议一共 5 位，已被形状和标记占满，通电位不在协议里 —— 放下后由红石决定。
+		stateCodec(DetectorRailBlock.class, railShapeCodec(DetectorRailBlock.SHAPE));
 
 		// 灯笼：悬挂 bit0
 		stateCodec(LanternBlock.class, boolProp(LanternBlock.HANGING, 0));
@@ -342,17 +348,16 @@ public final class PlacementRules {
 					return out;
 				}));
 
-		// 铁轨：形状低 4 位；bit4 标记「不要自动改形状」
-		stateCodec(RailBlock.class, stackOf(
-				enumProp(RailBlock.SHAPE, 0, 4, 0),
-				custom(state -> 0b0001_0000,
-						(bits, state, ctx) -> {
-							if ((bits & 0b0001_0000) != 0) {
-								ProjectionPlacement.noteFlag(
-										ProjectionPlacement.RAIL_KEEP_SHAPE);
-							}
-							return state;
-						})));
+		// 铁轨：形状低 4 位；bit4 标记「不要自动改形状」。
+		//
+		// 必须把**每一种**铁轨都登记上，不能只登记 RailBlock ——
+		// 动力铁轨的父类是 AbstractRailBlock，而不是 RailBlock，
+		// codec() 沿继承链向上找时够不到 RailBlock，于是查不到 codec、
+		// 整个协议位被丢掉：照投影铺动力铁轨时形状全落成平轨。
+		// 1.21.8 没有单独的 ActivatorRailBlock：powered_rail 与 activator_rail
+		// 共用 PoweredRailBlock 这个类（Blocks.<clinit> 里是同一个工厂），登记它就都覆盖了。
+		stateCodec(RailBlock.class, railShapeCodec(RailBlock.SHAPE));
+		stateCodec(PoweredRailBlock.class, railShapeCodec(PoweredRailBlock.SHAPE));
 
 		// ---------- 堆叠类（需要连续点几次才叠到目标） ----------
 
@@ -528,6 +533,25 @@ public final class PlacementRules {
 
 	private static void stateCodec(Class<? extends Block> type, PlacementCodec codec) {
 		STATE_CODECS.put(type, codec);
+	}
+
+	/**
+	 * 各类铁轨共用的协议：形状占低 4 位，bit4 = 「别自动改形状」。
+	 *
+	 * <p>投影端对普通/动力/激活铁轨用的是同一套编码，所以这里只差一个 {@code SHAPE}
+	 * property 实例（每种铁轨自己声明一个，不能共用）。</p>
+	 */
+	private static PlacementCodec railShapeCodec(EnumProperty<RailShape> shape) {
+		return stackOf(
+				enumProp(shape, 0, 4, 0),
+				custom(state -> 0b0001_0000,
+						(bits, state, ctx) -> {
+							if ((bits & 0b0001_0000) != 0) {
+								ProjectionPlacement.noteFlag(
+										ProjectionPlacement.RAIL_KEEP_SHAPE);
+							}
+							return state;
+						}));
 	}
 
 	private static void itemData(Class<? extends Block> type, ItemDataCodec codec) {

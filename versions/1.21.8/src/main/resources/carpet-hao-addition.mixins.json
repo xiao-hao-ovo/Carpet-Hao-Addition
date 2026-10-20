@@ -32,7 +32,8 @@
 		"easyplace.ProjectionBlockItemMixin",
     "easyplace.AttachableItemPlacementMixin",
     "easyplace.SignListenerInvoker",
-    "easyplace.CopperBulbPlacementMixin"
+    "easyplace.CopperBulbPlacementMixin",
+    "easyplace.AbstractRailBlock_keepShapeMixin"
 	],
 	"client": [
 		"WackoBeacons_BeaconButtonWidgetMixin",
