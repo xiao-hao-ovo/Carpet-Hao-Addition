@@ -29,13 +29,11 @@ duplicatesStrategy = EXCLUDE             // 同名文件整份覆盖
 
 于是只有两种文件：
 
-| 类型 | 放在哪 | 说明 |
-|---|---|---|
-| **共享** | `src/main/java` | 规则设置类、命令、跨层工具。所有版本共用一份 |
-| **本层** | `versions/<版本>/src/main/java` | 各版本 API 不同，必须逐层实现 |
+- 共享：`src/main/java`，放规则设置类、命令、跨层工具，所有版本共用一份
+- 本层：`versions/<版本>/src/main/java`，各版本 API 不同，必须逐层实现
 
-> ⚠️ `lang` 等资源**必须**放共享的 `src/main/resources`。放层内不会按 key 合并，
-> 而是**整份覆盖**，会丢掉共享里其他 key。
+`lang` 等资源必须放共享的 `src/main/resources`。放层内不会按 key 合并，
+而是整份覆盖，会丢掉共享里其他 key。
 
 ## 二、共享源码（`src/main/java`，27 个）
 
@@ -921,11 +919,12 @@ duplicatesStrategy = EXCLUDE             // 同名文件整份覆盖
 <details>
 <summary><b>1.21.8</b>（75 个 java）</summary>
 
-**根包 · 规则设置与跨层实现**（4 个，369 行）
+**根包 · 规则设置与跨层实现**（5 个，490 行）
 
 | 文件 | 行数 |
 |---|---:|
 | `AutoMendingHandler.java` | 99 |
+| `RecipeDeployHooks.java` | 121 |
 | `RocketShulkerHandler.java` | 160 |
 | `ShulkerBoxContentHelper.java` | 83 |
 | `SnowyCalciteHooks.java` | 27 |
@@ -962,21 +961,21 @@ duplicatesStrategy = EXCLUDE             // 同名文件整份覆盖
 | `WorldUtils_entityPlacementMixin.java` | 456 |
 | `WorldUtils_waterloggedFillMixin.java` | 322 |
 
-**轻松放置 · Mixin**（9 个，486 行）
+**轻松放置 · Mixin**（9 个，501 行）
 
 | 文件 | 行数 |
 |---|---:|
 | `AbstractRailBlock_keepShapeMixin.java` | 46 |
 | `AttachableItemPlacementMixin.java` | 60 |
-| `BeaconEffectAccessor.java` | 17 |
+| `BeaconEffectAccessor.java` | 20 |
 | `CopperBulbPlacementMixin.java` | 31 |
-| `ProjectionBlockItemMixin.java` | 161 |
-| `SchematicHitVecMixin.java` | 116 |
-| `SchematicUtilsInvoker.java` | 13 |
+| `ProjectionBlockItemMixin.java` | 166 |
+| `SchematicHitVecMixin.java` | 120 |
+| `SchematicUtilsInvoker.java` | 16 |
 | `SignListenerInvoker.java` | 13 |
 | `SignPlacementMixin.java` | 29 |
 
-**轻松放置 · 协议与规则编解码**（13 个，2234 行）
+**轻松放置 · 协议与规则编解码**（13 个，2238 行）
 
 | 文件 | 行数 |
 |---|---:|
@@ -991,7 +990,7 @@ duplicatesStrategy = EXCLUDE             // 同名文件整份覆盖
 | `PlacementRules.java` | 613 |
 | `PlacementWindow.java` | 52 |
 | `ProjectionPlacement.java` | 204 |
-| `SchematicPlacementEncoder.java` | 235 |
+| `SchematicPlacementEncoder.java` | 239 |
 | `SignItemData.java` | 145 |
 
 **实体放置 · 生成与统计**（4 个，928 行）
@@ -1010,12 +1009,11 @@ duplicatesStrategy = EXCLUDE             // 同名文件整份覆盖
 | `WaterloggedFillHandler.java` | 561 |
 | `WaterloggedFillPayload.java` | 81 |
 
-**配方部署 · 石切机数据包**（3 个，566 行）
+**配方部署 · 石切机数据包**（2 个，444 行）
 
 | 文件 | 行数 |
 |---|---:|
 | `CopperStonecuttingDeployHook.java` | 291 |
-| `RecipeDeployHooks.java` | 122 |
 | `TrimTemplateRecipeDeployHook.java` | 153 |
 
 **直掉 · 掉落上下文**（2 个，192 行）
@@ -1059,14 +1057,14 @@ duplicatesStrategy = EXCLUDE             // 同名文件整份覆盖
 
 | 版本 | 本层 java 数 |
 |---|---:|
-| `26.1.2` | 103 |
-| `26.2` | 103 |
-| `26.3` | 105 |
+| `26.1.2` | 102 |
+| `26.2` | 102 |
+| `26.3` | 104 |
 
 <details>
-<summary><b>26.1.2</b>（103 个 java）</summary>
+<summary><b>26.1.2</b>（102 个 java）</summary>
 
-**根包 · 规则设置与跨层实现**（38 个，3317 行）
+**根包 · 规则设置与跨层实现**（37 个，3279 行）
 
 | 文件 | 行数 |
 |---|---:|
@@ -1075,8 +1073,7 @@ duplicatesStrategy = EXCLUDE             // 同名文件整份覆盖
 | `BedrockCanBeMinedSettings.java` | 29 |
 | `BlockDataChannel.java` | 115 |
 | `BlockDataPayload.java` | 30 |
-| `CarpetHaoAdditionExtension.java` | 271 |
-| `CarpetHaoAdditionSettings.java` | 27 |
+| `CarpetHaoAdditionExtension.java` | 260 |
 | `CopperStonecuttingDeployHook.java` | 294 |
 | `CopperStonecuttingSettings.java` | 31 |
 | `CraftableTrimTemplateSettings.java` | 31 |
@@ -1212,9 +1209,9 @@ duplicatesStrategy = EXCLUDE             // 同名文件整份覆盖
 </details>
 
 <details>
-<summary><b>26.2</b>（103 个 java）</summary>
+<summary><b>26.2</b>（102 个 java）</summary>
 
-**根包 · 规则设置与跨层实现**（38 个，3309 行）
+**根包 · 规则设置与跨层实现**（37 个，3271 行）
 
 | 文件 | 行数 |
 |---|---:|
@@ -1223,8 +1220,7 @@ duplicatesStrategy = EXCLUDE             // 同名文件整份覆盖
 | `BedrockCanBeMinedSettings.java` | 29 |
 | `BlockDataChannel.java` | 115 |
 | `BlockDataPayload.java` | 30 |
-| `CarpetHaoAdditionExtension.java` | 271 |
-| `CarpetHaoAdditionSettings.java` | 27 |
+| `CarpetHaoAdditionExtension.java` | 260 |
 | `CopperStonecuttingDeployHook.java` | 294 |
 | `CopperStonecuttingSettings.java` | 31 |
 | `CraftableTrimTemplateSettings.java` | 31 |
@@ -1360,9 +1356,9 @@ duplicatesStrategy = EXCLUDE             // 同名文件整份覆盖
 </details>
 
 <details>
-<summary><b>26.3</b>（105 个 java）</summary>
+<summary><b>26.3</b>（104 个 java）</summary>
 
-**根包 · 规则设置与跨层实现**（38 个，3693 行）
+**根包 · 规则设置与跨层实现**（37 个，3655 行）
 
 | 文件 | 行数 |
 |---|---:|
@@ -1371,8 +1367,7 @@ duplicatesStrategy = EXCLUDE             // 同名文件整份覆盖
 | `BedrockCanBeMinedSettings.java` | 29 |
 | `BlockDataChannel.java` | 117 |
 | `BlockDataPayload.java` | 30 |
-| `CarpetHaoAdditionExtension.java` | 272 |
-| `CarpetHaoAdditionSettings.java` | 27 |
+| `CarpetHaoAdditionExtension.java` | 261 |
 | `CopperStonecuttingDeployHook.java` | 378 |
 | `CopperStonecuttingSettings.java` | 36 |
 | `CraftableTrimTemplateSettings.java` | 31 |

@@ -17,19 +17,13 @@
 
 ## 依赖
 
-| 名称 | 类型 | 链接 | 备注 |
-|----|----|----|----|
-| Carpet | 必须 | [Modrinth](https://modrinth.com/mod/carpet) &#124; [GitHub](https://github.com/gnembon/fabric-carpet) | |
-| Fabric Loader | 必须 | [官网](https://fabricmc.net/) | ≥0.16.10 |
-| Fabric API | 必须 | [Modrinth](https://modrinth.com/mod/fabric-api) &#124; [CurseForge](https://www.curseforge.com/minecraft/mc-mods/fabric-api) | 自定义网络包与逐 tick 回调需要它 |
+- Carpet —— 必须，[Modrinth](https://modrinth.com/mod/carpet) / [GitHub](https://github.com/gnembon/fabric-carpet)
+- Fabric Loader —— 必须，≥0.16.10，[官网](https://fabricmc.net/)
+- Fabric API —— 必须，[Modrinth](https://modrinth.com/mod/fabric-api) / [CurseForge](https://www.curseforge.com/minecraft/mc-mods/fabric-api)，自定义网络包与逐 tick 回调要用
 
 ## 版本支持
 
-| 游戏版本 | 状态 |
-|----|----|
-| 1.21 / 1.21.1 / 1.21.2 / 1.21.4 / 1.21.6 | 维护中 |
-| 1.21.8 / 1.21.10 / 1.21.11 | 维护中 |
-| 26.1.2 / 26.2 / 26.3 | 维护中 |
+1.21、1.21.1、1.21.2、1.21.4、1.21.6、1.21.8、1.21.10、1.21.11，以及 26.1.2、26.2、26.3，全部维护中。
 
 Java 21+（26.x 需要 Java 25）。
 

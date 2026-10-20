@@ -29,14 +29,11 @@ duplicatesStrategy = EXCLUDE             // same-named file replaces wholly
 
 So there are only two kinds of file:
 
-| Kind | Location | Notes |
-|---|---|---|
-| **Shared** | `src/main/java` | Rule settings, commands, cross-version helpers. One copy for all versions |
-| **Layer** | `versions/<version>/src/main/java` | APIs differ per version, so each layer implements its own |
+- Shared: `src/main/java` — rule settings, commands, cross-version helpers; one copy for all versions
+- Layer: `versions/<version>/src/main/java` — APIs differ per version, so each layer implements its own
 
-> ⚠️ Resources such as `lang` **must** go in the shared `src/main/resources`.
-> Placed inside a layer they are **wholesale replaced** rather than merged by key,
-> which silently drops the other keys.
+Resources such as `lang` must go in the shared `src/main/resources`. Placed inside a layer they are
+wholesale replaced rather than merged by key, which silently drops the other keys.
 
 ## II. Shared sources (`src/main/java`, 27)
 
@@ -922,11 +919,12 @@ Each layer is a **complete implementation**, not an incremental patch — a feat
 <details>
 <summary><b>1.21.8</b> (75 java files)</summary>
 
-**Root package · rule settings and cross-version helpers** (4 files, 369 lines)
+**Root package · rule settings and cross-version helpers** (5 files, 490 lines)
 
 | File | Lines |
 |---|---:|
 | `AutoMendingHandler.java` | 99 |
+| `RecipeDeployHooks.java` | 121 |
 | `RocketShulkerHandler.java` | 160 |
 | `ShulkerBoxContentHelper.java` | 83 |
 | `SnowyCalciteHooks.java` | 27 |
@@ -963,21 +961,21 @@ Each layer is a **complete implementation**, not an incremental patch — a feat
 | `WorldUtils_entityPlacementMixin.java` | 456 |
 | `WorldUtils_waterloggedFillMixin.java` | 322 |
 
-**Easy place · mixins** (9 files, 486 lines)
+**Easy place · mixins** (9 files, 501 lines)
 
 | File | Lines |
 |---|---:|
 | `AbstractRailBlock_keepShapeMixin.java` | 46 |
 | `AttachableItemPlacementMixin.java` | 60 |
-| `BeaconEffectAccessor.java` | 17 |
+| `BeaconEffectAccessor.java` | 20 |
 | `CopperBulbPlacementMixin.java` | 31 |
-| `ProjectionBlockItemMixin.java` | 161 |
-| `SchematicHitVecMixin.java` | 116 |
-| `SchematicUtilsInvoker.java` | 13 |
+| `ProjectionBlockItemMixin.java` | 166 |
+| `SchematicHitVecMixin.java` | 120 |
+| `SchematicUtilsInvoker.java` | 16 |
 | `SignListenerInvoker.java` | 13 |
 | `SignPlacementMixin.java` | 29 |
 
-**Easy place · protocol and rule codecs** (13 files, 2234 lines)
+**Easy place · protocol and rule codecs** (13 files, 2238 lines)
 
 | File | Lines |
 |---|---:|
@@ -992,7 +990,7 @@ Each layer is a **complete implementation**, not an incremental patch — a feat
 | `PlacementRules.java` | 613 |
 | `PlacementWindow.java` | 52 |
 | `ProjectionPlacement.java` | 204 |
-| `SchematicPlacementEncoder.java` | 235 |
+| `SchematicPlacementEncoder.java` | 239 |
 | `SignItemData.java` | 145 |
 
 **Entity placement · spawning and counting** (4 files, 928 lines)
@@ -1011,12 +1009,11 @@ Each layer is a **complete implementation**, not an incremental patch — a feat
 | `WaterloggedFillHandler.java` | 561 |
 | `WaterloggedFillPayload.java` | 81 |
 
-**Recipe deploy · stonecutter datapacks** (3 files, 566 lines)
+**Recipe deploy · stonecutter datapacks** (2 files, 444 lines)
 
 | File | Lines |
 |---|---:|
 | `CopperStonecuttingDeployHook.java` | 291 |
-| `RecipeDeployHooks.java` | 122 |
 | `TrimTemplateRecipeDeployHook.java` | 153 |
 
 **Direct drops · drop context** (2 files, 192 lines)
@@ -1060,14 +1057,14 @@ The 26.x layers are **built separately** and do not share `versions/` gradle con
 
 | Version | java files in layer |
 |---|---:|
-| `26.1.2` | 103 |
-| `26.2` | 103 |
-| `26.3` | 105 |
+| `26.1.2` | 102 |
+| `26.2` | 102 |
+| `26.3` | 104 |
 
 <details>
-<summary><b>26.1.2</b> (103 java files)</summary>
+<summary><b>26.1.2</b> (102 java files)</summary>
 
-**Root package · rule settings and cross-version helpers** (38 files, 3317 lines)
+**Root package · rule settings and cross-version helpers** (37 files, 3279 lines)
 
 | File | Lines |
 |---|---:|
@@ -1076,8 +1073,7 @@ The 26.x layers are **built separately** and do not share `versions/` gradle con
 | `BedrockCanBeMinedSettings.java` | 29 |
 | `BlockDataChannel.java` | 115 |
 | `BlockDataPayload.java` | 30 |
-| `CarpetHaoAdditionExtension.java` | 271 |
-| `CarpetHaoAdditionSettings.java` | 27 |
+| `CarpetHaoAdditionExtension.java` | 260 |
 | `CopperStonecuttingDeployHook.java` | 294 |
 | `CopperStonecuttingSettings.java` | 31 |
 | `CraftableTrimTemplateSettings.java` | 31 |
@@ -1213,9 +1209,9 @@ The 26.x layers are **built separately** and do not share `versions/` gradle con
 </details>
 
 <details>
-<summary><b>26.2</b> (103 java files)</summary>
+<summary><b>26.2</b> (102 java files)</summary>
 
-**Root package · rule settings and cross-version helpers** (38 files, 3309 lines)
+**Root package · rule settings and cross-version helpers** (37 files, 3271 lines)
 
 | File | Lines |
 |---|---:|
@@ -1224,8 +1220,7 @@ The 26.x layers are **built separately** and do not share `versions/` gradle con
 | `BedrockCanBeMinedSettings.java` | 29 |
 | `BlockDataChannel.java` | 115 |
 | `BlockDataPayload.java` | 30 |
-| `CarpetHaoAdditionExtension.java` | 271 |
-| `CarpetHaoAdditionSettings.java` | 27 |
+| `CarpetHaoAdditionExtension.java` | 260 |
 | `CopperStonecuttingDeployHook.java` | 294 |
 | `CopperStonecuttingSettings.java` | 31 |
 | `CraftableTrimTemplateSettings.java` | 31 |
@@ -1361,9 +1356,9 @@ The 26.x layers are **built separately** and do not share `versions/` gradle con
 </details>
 
 <details>
-<summary><b>26.3</b> (105 java files)</summary>
+<summary><b>26.3</b> (104 java files)</summary>
 
-**Root package · rule settings and cross-version helpers** (38 files, 3693 lines)
+**Root package · rule settings and cross-version helpers** (37 files, 3655 lines)
 
 | File | Lines |
 |---|---:|
@@ -1372,8 +1367,7 @@ The 26.x layers are **built separately** and do not share `versions/` gradle con
 | `BedrockCanBeMinedSettings.java` | 29 |
 | `BlockDataChannel.java` | 117 |
 | `BlockDataPayload.java` | 30 |
-| `CarpetHaoAdditionExtension.java` | 272 |
-| `CarpetHaoAdditionSettings.java` | 27 |
+| `CarpetHaoAdditionExtension.java` | 261 |
 | `CopperStonecuttingDeployHook.java` | 378 |
 | `CopperStonecuttingSettings.java` | 36 |
 | `CraftableTrimTemplateSettings.java` | 31 |

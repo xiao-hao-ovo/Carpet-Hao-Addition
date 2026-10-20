@@ -1,24 +1,24 @@
 # 新增一条 Carpet 规则（模板 / 配方）
 
-本项目的规则分散在 **11 个代码基**里，加一条规则要同时照顾它们：
+本项目的规则分散在 11 个代码基里，加一条规则要同时照顾它们：
 
-- **1.21.x 的 8 层共享根 `src/`**（1.21 / 1.21.1 / 1.21.2 / 1.21.4 / 1.21.6 / 1.21.8 / 1.21.10 / 1.21.11）
-- **26.x 的 3 个独立子工程**：`modern/26.1.2`、`modern/26.2`、`modern/26.3`（各自一份 `src`，互不复用）
+- 1.21.x 的 8 层共享根 `src/`（1.21 / 1.21.1 / 1.21.2 / 1.21.4 / 1.21.6 / 1.21.8 / 1.21.10 / 1.21.11）
+- 26.x 的 3 个独立子工程：`modern/26.1.2`、`modern/26.2`、`modern/26.3`（各自一份 `src`，互不复用）
 
-> 约定：规则名带 `hao` 前缀。Carpet 的规则名是**全局唯一**的，重名只有一个生效，所以我们的都加 `hao`。
+> 约定：规则名带 `hao` 前缀。Carpet 的规则名是全局唯一的，重名只有一个生效，所以我们的都加 `hao`。
 
 ---
 
 ## 0. 要改的地方一览
 
-| 要改什么 | 1.21.x（根 src，8 层共享） | 26.1.2 / 26.2 / 26.3（各自独立） |
-|---|---|---|
-| ① Settings 类 | `src/main/java/carpet_hao_addition/XxxSettings.java` | 各层各一份 |
-| ② 语言文件 | `src/main/resources/assets/carpet-hao-addition/lang/{zh_cn,en_us}.json` | 各层各一份 |
-| ③ 注册 | 根 `CarpetHaoAdditionExtension` | 各层各一份 |
-| ④ 挂 mixin（仅当需要改原版行为） | `versions/<mc>/src/main/resources/carpet-hao-addition.mixins.json`（**8 份**） | 各层一份 |
+1.21.x 的 8 层共享根 `src/`，26.x 三层各自独立：
 
-**要想保持"11 层规则完全一致"，四类都得全铺。** 只铺一部分会让 `/carpet` 列出的规则数不一致。
+- Settings 类 —— `src/main/java/carpet_hao_addition/XxxSettings.java`，26.x 每层各一份
+- 语言文件 —— `src/main/resources/assets/carpet-hao-addition/lang/{zh_cn,en_us}.json`，26.x 每层各一份
+- 注册 —— 根 `CarpetHaoAdditionExtension`，26.x 每层各一份
+- 挂 mixin（仅当需要改原版行为）—— `versions/<mc>/src/main/resources/carpet-hao-addition.mixins.json`，1.21.x 有 8 份，26.x 每层一份
+
+要想保持“11 层规则完全一致”，四类都得全铺。只铺一部分会让 `/carpet` 列出的规则数不一致。
 
 ---
 
@@ -108,7 +108,7 @@ public class ExampleNewRuleSettings {
 
 ## 3. 语言文件
 
-在 4 个文件里各加两行（**根 src 的 2 个 + 26.x 每层的 2 个**）：
+在 4 个文件里各加两行（根 src 的 2 个 + 26.x 每层的 2 个）：
 
 `zh_cn.json`
 ```json
@@ -129,7 +129,7 @@ public class ExampleNewRuleSettings {
 
 ## 4. 注册（`CarpetHaoAdditionExtension`）
 
-在 `parseSettingsClass(...)` 那一串里加一行即可（**根 src 的 + 26.x 每层各一处**）：
+在 `parseSettingsClass(...)` 那一串里加一行即可（根 src 的 + 26.x 每层各一处）：
 
 ```java
         CarpetServer.settingsManager.parseSettingsClass(ProjectionPlacementSettings.class);
@@ -142,9 +142,9 @@ public class ExampleNewRuleSettings {
 ## 5. 需要改原版行为时才挂 mixin
 
 1. 类放 `carpet_hao_addition/mixin/XxxMixin.java`，写 `@Mixin(目标类.class)`；
-2. **在对应的 `carpet-hao-addition.mixins.json` 里登记**：
+2. 在对应的 `carpet-hao-addition.mixins.json` 里登记：
    - 服务端/双端逻辑放 `mixins` 段；纯客户端类（GUI/渲染）放 `client` 段，**放错段会在另一侧刷 `@Mixin target ... was not found`**；
-   - 1.21.x 是 **8 份** json（`versions/<mc>/src/main/resources/`），26.x 各 1 份；
+   - 1.21.x 是 8 份 json（`versions/<mc>/src/main/resources/`），26.x 各 1 份；
 3. 运行期铁律（编译期查不出来，只能实测）：
    - mixin 里的普通方法**必须 `private`**，共用逻辑抽到普通类里；
    - `@Inject` **只能注入目标类自己声明的方法** —— 目标类没覆写就换父类、换方法，写之前先核对：
@@ -190,7 +190,7 @@ foreach ($r in $roots) {
 
 ## 7. 已知的坑
 
-- **规则名重名**：Carpet 的规则名是全局唯一的，重名只有一个生效，一律加 `hao` 前缀。
-- **只改一层**：迭代阶段可以先只改 `versions/1.21.8` 或 `modern/26.3` 验证；但**发布前必须 11 层齐全**。
-- **数据包配方的 `result.count`**：26.x 限制在 `[1, 99]`，超限会让**整个 recipe 注册表**加载失败（连原版配方一起消失）。
-- **mixin 注入失败是运行期才炸**：`BUILD SUCCESSFUL` 不代表能加载，改完 mixin 一定要实机跑一次。
+- 规则名重名：Carpet 的规则名是全局唯一的，重名只有一个生效，一律加 `hao` 前缀。
+- 只改一层：迭代阶段可以先只改 `versions/1.21.8` 或 `modern/26.3` 验证；但发布前必须 11 层齐全。
+- 数据包配方的 `result.count`：26.x 限制在 `[1, 99]`，超限会让**整个 recipe 注册表**加载失败（连原版配方一起消失）。
+- mixin 注入失败是运行期才炸：`BUILD SUCCESSFUL` 不代表能加载，改完 mixin 一定要实机跑一次。

@@ -17,19 +17,13 @@ A multi-version [Carpet](https://github.com/gnembon/fabric-carpet) extension mod
 
 ## Dependencies
 
-| Name | Type | Link | Note |
-|----|----|----|----|
-| Carpet | Required | [Modrinth](https://modrinth.com/mod/carpet) &#124; [GitHub](https://github.com/gnembon/fabric-carpet) | |
-| Fabric Loader | Required | [Website](https://fabricmc.net/) | ≥0.16.10 |
-| Fabric API | Required | [Modrinth](https://modrinth.com/mod/fabric-api) &#124; [CurseForge](https://www.curseforge.com/minecraft/mc-mods/fabric-api) | Needed for custom packets and per-tick callbacks |
+- Carpet — required, [Modrinth](https://modrinth.com/mod/carpet) / [GitHub](https://github.com/gnembon/fabric-carpet)
+- Fabric Loader — required, ≥0.16.10, [website](https://fabricmc.net/)
+- Fabric API — required, [Modrinth](https://modrinth.com/mod/fabric-api) / [CurseForge](https://www.curseforge.com/minecraft/mc-mods/fabric-api), used for custom packets and per-tick callbacks
 
 ## Supported versions
 
-| Minecraft | Status |
-|----|----|
-| 1.21 / 1.21.1 / 1.21.2 / 1.21.4 / 1.21.6 | Maintained |
-| 1.21.8 / 1.21.10 / 1.21.11 | Maintained |
-| 26.1.2 / 26.2 / 26.3 | Maintained |
+1.21, 1.21.1, 1.21.2, 1.21.4, 1.21.6, 1.21.8, 1.21.10, 1.21.11, plus 26.1.2, 26.2 and 26.3 — all maintained.
 
 Java 21+ (Java 25 for 26.x).
 
