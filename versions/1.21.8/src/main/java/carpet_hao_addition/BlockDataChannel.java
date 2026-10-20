@@ -68,6 +68,19 @@ public final class BlockDataChannel {
 						.put(payload.pos(), new PendingData(payload.nbt()));
 			});
 		});
+		// 断线时清掉这个玩家还没被消费的条目。
+		// 否则玩家放了方块却没真正放置（取消、切物品、断线）时，这些完整 NBT 会一直
+		// 堆在静态表里；堆得越多，后面的放置越容易在宽容命中那一步被别的条目干扰。
+		net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.DISCONNECT.register(
+				(handler, server) -> {
+					if (handler.getPlayer() != null) {
+						java.util.Map<BlockPos, PendingData> dropped =
+								HAO_PENDING.remove(handler.getPlayer().getUuid());
+						if (dropped != null && !dropped.isEmpty()) {
+							HaoDebug.log("[hao-easyplace] [断线清理] 丢掉 " + dropped.size() + " 条待用 NBT");
+						}
+					}
+				});
 	}
 
 	/** 客户端:把该位置的完整 NBT 发给服务端(同内容不重复发)。 */
@@ -112,38 +125,27 @@ public final class BlockDataChannel {
 		}
 		PendingData nbt = byPos.remove(pos);
 		if (nbt == null) {
-			BlockPos bestKey = null;
-			int bestDist = Integer.MAX_VALUE;
-			boolean ambiguous = false;
-			for (Map.Entry<BlockPos, PendingData> entry : byPos.entrySet()) {
-				BlockPos key = entry.getKey();
+			// 宽容命中：落点可能因点击面不同和投影坐标差一格。
+			// 但**只在缓存里恰好剩一条**时才敢猜 —— 剩多条说明还有别的位置在等
+			// 自己的数据，这时"取最近的一个"很可能把隔壁那条拿过来，于是合成器的
+			// 锁定槽位、标牌的文字就串了。宁可这一处不还原，也不要串号。
+			if (byPos.size() == 1) {
+				Map.Entry<BlockPos, PendingData> only = byPos.entrySet().iterator().next();
+				BlockPos key = only.getKey();
 				int d = Math.abs(key.getX() - pos.getX())
 						+ Math.abs(key.getY() - pos.getY())
 						+ Math.abs(key.getZ() - pos.getZ());
-				if (d > 1) {
-					continue; // 太远,不可能是落点偏移
+				if (d <= 1 && hao$idMatches(only.getValue(), state)) {
+					nbt = byPos.remove(key);
+					HaoDebug.log("[hao-easyplace] [take] 宽容命中: 查找=" + pos
+							+ " 实际=" + key + " 距离=" + d);
+				} else {
+					HaoDebug.log("[hao-easyplace] [take] 宽容未命中: 查找=" + pos
+							+ " 唯一缓存=" + key + " 距离=" + d + " id相容=" + hao$idMatches(only.getValue(), state));
 				}
-				if (!hao$idMatches(entry.getValue(), state)) {
-					continue; // 是另一种方块实体,别拿
-				}
-				if (d < bestDist) {
-					bestDist = d;
-					bestKey = key;
-					ambiguous = false;
-				} else if (d == bestDist) {
-					ambiguous = true; // 同距离出现第二个候选
-				}
-			}
-			if (bestKey != null && !ambiguous) {
-				nbt = byPos.remove(bestKey);
-				HaoDebug.log("[hao-easyplace] [take] 宽容命中: 查找=" + pos
-						+ " 实际=" + bestKey + " 距离=" + bestDist);
-			} else if (ambiguous) {
+			} else if (!byPos.isEmpty()) {
 				HaoDebug.log("[hao-easyplace] [take] 宽容放弃: 查找=" + pos
-						+ " 有多个同距离候选,宁可不还原也不串号 缓存=" + byPos.keySet());
-			} else {
-				HaoDebug.log("[hao-easyplace] [take] 宽容未命中: 查找=" + pos
-						+ " 缓存=" + byPos.keySet());
+						+ " 缓存里还有 " + byPos.size() + " 条,不猜,宁可不还原也不串号");
 			}
 		}
 		if (byPos.isEmpty()) {

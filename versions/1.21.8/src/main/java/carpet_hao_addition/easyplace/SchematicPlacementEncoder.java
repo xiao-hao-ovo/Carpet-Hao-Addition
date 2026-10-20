@@ -75,14 +75,16 @@ public class SchematicPlacementEncoder {
         }
 
         // ② 投影文件里的完整 NBT
-        // 完整 NBT(含标牌文字等)走独立通道单独发送 —— 协议值装不下这些。
         NbtCompound fullNbt = schematicBlockEntityNbt(pos, stateSchematic);
-        if (fullNbt != null) {
+        int fromNbt = codec.encodeNbt(fullNbt);
+        HaoDebug.log("[hao-easyplace]   投影NBT=" + (fullNbt == null ? "null" : fullNbt)
+                + " NBT编码位=" + fromNbt);
+        // 只有协议位装不下的内容（标牌文字等）才走「完整 NBT 通道」。
+        // 合成器/信标这种协议位已经完整的，发了包反而有害：服务端那条通道按位置
+        // 缓存再取，密集放置时相邻位置的数据会互相串，表现就是「个别几个合成器没锁格子」。
+        if (fullNbt != null && !codec.protocolCoversAll()) {
             BlockDataChannel.dispatchPacket(pos, fullNbt);
         }
-        HaoDebug.log("[hao-easyplace]   投影NBT=" + (fullNbt == null ? "null" : fullNbt));
-        int fromNbt = codec.encodeNbt(fullNbt);
-        HaoDebug.log("[hao-easyplace]   NBT编码位=" + fromNbt);
         if (fromNbt != 0) {
             return fromNbt;
         }

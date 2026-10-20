@@ -85,4 +85,14 @@ public final class CrafterItemData implements ItemDataCodec {
 		NbtComponent data = stack.get(DataComponentTypes.BLOCK_ENTITY_DATA);
 		return data == null ? null : data.copyNbt();
 	}
+
+	/**
+	 * 9 位禁用槽位用协议位就装得下，不必再走「完整 NBT 通道」。
+	 * <p>那条通道按位置缓存再取，密集放合成器时容易把隔壁那一个的槽位组合
+	 * 串过来，表现就是"个别几个没锁格子"。</p>
+	 */
+	@Override
+	public boolean protocolCoversAll() {
+		return true;
+	}
 }

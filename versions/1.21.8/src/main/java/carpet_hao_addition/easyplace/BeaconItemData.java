@@ -90,4 +90,10 @@ public final class BeaconItemData implements ItemDataCodec {
 		NbtComponent data = stack.get(DataComponentTypes.BLOCK_ENTITY_DATA);
 		return data == null ? null : data.copyNbt();
 	}
+
+	/** 两个效果 id 用协议位就装得下，不必走「完整 NBT 通道」。 */
+	@Override
+	public boolean protocolCoversAll() {
+		return true;
+	}
 }

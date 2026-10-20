@@ -35,4 +35,21 @@ public interface ItemDataCodec {
 	default int encodeNbt(NbtCompound tag) {
 		return 0;
 	}
+
+	/**
+	 * 协议位是否已经能**完整**表达这一处需要还原的方块实体数据。
+	 *
+	 * <p>能的话就不必再走「完整 NBT 通道」—— 那条通道是客户端按位置发包、服务端
+	 * 按位置缓存在取，密集放置时相邻位置的数据容易互相串（合成器锁定槽位、
+	 * 标牌文字都可能串到隔壁）。</p>
+	 *
+	 * <ul>
+	 *   <li>合成器的 9 位禁用槽位装得下 → {@code true}</li>
+	 *   <li>信标的两个效果 id 装得下 → {@code true}</li>
+	 *   <li>告示牌的文字装不下 → 保持 {@code false}，仍然需要完整 NBT</li>
+	 * </ul>
+	 */
+	default boolean protocolCoversAll() {
+		return false;
+	}
 }
