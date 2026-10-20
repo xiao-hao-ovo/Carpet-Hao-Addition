@@ -115,7 +115,7 @@ public abstract class ProjectionBlockItemMixin {
     private boolean hao$applyItemData(BlockItem instance, BlockPos pos, World level, PlayerEntity player, ItemStack stack, BlockState state, Operation<Boolean> original, @Local(argsOnly = true) ItemPlacementContext context)
     {
         // 优先使用「完整 NBT 通道」送来的数据。
-        carpet_hao_addition.BlockDataChannel.PendingData data = carpet_hao_addition.BlockDataChannel.take(player, pos);
+        carpet_hao_addition.BlockDataChannel.PendingData data = carpet_hao_addition.BlockDataChannel.take(player, pos, state);
         if (data != null) {
             net.minecraft.nbt.NbtCompound fullNbt = data.nbt();
             if (fullNbt != null) {

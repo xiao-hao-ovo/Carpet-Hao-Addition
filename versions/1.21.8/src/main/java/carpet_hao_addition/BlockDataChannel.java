@@ -6,9 +6,11 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.HashMap;
@@ -82,8 +84,23 @@ public final class BlockDataChannel {
 		}
 	}
 
-	/** 服务端:取走该位置缓存的数据(取走即删)。 */
-	public static PendingData take(PlayerEntity player, BlockPos pos) {
+	/**
+	 * 服务端:取走该位置缓存的数据(取走即删)。
+	 *
+	 * <p>优先精确命中。落点可能因为点击面不同和投影坐标差一格，所以留了一条宽容路径 ——
+	 * 但密集放置时缓存里会同时存着相邻好几个位置的数据，简单地"取最近的"很容易把
+	 * **隔壁那一个**的方块实体数据写到这一格上（合成器锁定槽位、标牌文字都会串）。
+	 * 因此宽容命中必须同时满足三条：</p>
+	 *
+	 * <ol>
+	 *   <li><b>距离 ≤ 1</b> —— 再远就不是"落点偏移"能解释的了；</li>
+	 *   <li><b>id 与这一格要放的方块相容</b> —— 相邻的另一种方块实体不会被误取；</li>
+	 *   <li><b>候选唯一</b> —— 有多个同距离候选说明存在歧义，宁可不还原也不要串号。</li>
+	 * </ol>
+	 *
+	 * @param state 这一格即将放置的方块状态，用于校验缓存条目的方块实体类型
+	 */
+	public static PendingData take(PlayerEntity player, BlockPos pos, BlockState state) {
 		if (!(player instanceof ServerPlayerEntity serverPlayer)) {
 			return null;
 		}
@@ -95,22 +112,35 @@ public final class BlockDataChannel {
 		}
 		PendingData nbt = byPos.remove(pos);
 		if (nbt == null) {
-			// 服务端落点可能比投影位置差 1 格,方向随点击面变,所以取曼哈顿距离 <= 2 的最近项。
 			BlockPos bestKey = null;
-			int bestDist = 3;
-			for (BlockPos key : byPos.keySet()) {
+			int bestDist = Integer.MAX_VALUE;
+			boolean ambiguous = false;
+			for (Map.Entry<BlockPos, PendingData> entry : byPos.entrySet()) {
+				BlockPos key = entry.getKey();
 				int d = Math.abs(key.getX() - pos.getX())
 						+ Math.abs(key.getY() - pos.getY())
 						+ Math.abs(key.getZ() - pos.getZ());
+				if (d > 1) {
+					continue; // 太远,不可能是落点偏移
+				}
+				if (!hao$idMatches(entry.getValue(), state)) {
+					continue; // 是另一种方块实体,别拿
+				}
 				if (d < bestDist) {
 					bestDist = d;
 					bestKey = key;
+					ambiguous = false;
+				} else if (d == bestDist) {
+					ambiguous = true; // 同距离出现第二个候选
 				}
 			}
-			if (bestKey != null) {
+			if (bestKey != null && !ambiguous) {
 				nbt = byPos.remove(bestKey);
 				HaoDebug.log("[hao-easyplace] [take] 宽容命中: 查找=" + pos
 						+ " 实际=" + bestKey + " 距离=" + bestDist);
+			} else if (ambiguous) {
+				HaoDebug.log("[hao-easyplace] [take] 宽容放弃: 查找=" + pos
+						+ " 有多个同距离候选,宁可不还原也不串号 缓存=" + byPos.keySet());
 			} else {
 				HaoDebug.log("[hao-easyplace] [take] 宽容未命中: 查找=" + pos
 						+ " 缓存=" + byPos.keySet());
@@ -120,5 +150,23 @@ public final class BlockDataChannel {
 			HAO_PENDING.remove(serverPlayer.getUuid());
 		}
 		return nbt;
+	}
+
+	/** 缓存条目的方块实体 id 是否与即将放置的方块相容。 */
+	private static boolean hao$idMatches(PendingData data, BlockState state) {
+		if (data == null || data.nbt() == null || state == null) {
+			return true; // 没有 id 可校验时不做额外限制
+		}
+		String nbtId = data.nbt().getString("id").orElse("");
+		if (nbtId.isEmpty()) {
+			return true;
+		}
+		Identifier id = Identifier.tryParse(nbtId);
+		if (id == null) {
+			return false;
+		}
+		net.minecraft.block.entity.BlockEntityType<?> type =
+				net.minecraft.registry.Registries.BLOCK_ENTITY_TYPE.get(id);
+		return type != null && type.supports(state);
 	}
 }
