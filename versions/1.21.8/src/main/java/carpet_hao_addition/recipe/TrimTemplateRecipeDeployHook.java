@@ -20,7 +20,7 @@ import carpet_hao_addition.CraftableTrimTemplateSettings;
  * 原版复制配方的形状是 {@code #S# / #C# / ###}(# 钻石、S 本体模板、C 材料),
  * 这里把 S 那格留空就成了"从零合成"。
  * <p>
- * 做法与 {@link RecipeDeployHooks}(陶瓦还原)完全一致:fabric-loader 不会自动把 mod 的 data/ 当数据包,
+ * 做法与 {@link carpet_hao_addition.RecipeDeployHooks}(陶瓦还原)完全一致:fabric-loader 不会自动把 mod 的 data/ 当数据包,
  * 所以由本类在服务器首个 tick、数据包重载、规则变化时:
  * 1. 把配方写进 world/datapacks/hao-trim-templates/(内容变化才重写);
  * 2. 规则开启 → scanPacks + enable;关闭 → disable;

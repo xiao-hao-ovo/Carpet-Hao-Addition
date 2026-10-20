@@ -23,7 +23,7 @@ import carpet_hao_addition.CopperStonecuttingSettings;
 import carpet_hao_addition.CraftableTrimTemplateSettings;
 import carpet_hao_addition.EasyPlaceEntitySettings;
 import carpet_hao_addition.EasyPlaceWaterloggedSettings;
-import carpet_hao_addition.recipe.RecipeDeployHooks;
+import carpet_hao_addition.RecipeDeployHooks;
 import carpet_hao_addition.TerracottaUncolorSettings;
 
 

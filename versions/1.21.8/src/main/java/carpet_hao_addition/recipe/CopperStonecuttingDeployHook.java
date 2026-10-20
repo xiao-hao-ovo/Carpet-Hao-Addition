@@ -17,7 +17,7 @@ import carpet_hao_addition.CopperStonecuttingSettings;
 
 /**
  * 把"切石机切铜"配方自动部署到当前世界的数据包,并按 haoCopperStonecutting 规则启停。
- * 做法与 {@link RecipeDeployHooks}(陶瓦还原)一致。
+ * 做法与 {@link carpet_hao_addition.RecipeDeployHooks}(陶瓦还原)一致。
  * <p>
  * <b>核心原则:按"当量"转换,绝不产生套利。</b>
  * 每种铜形态有一个当量(取自原版配方,以 1 个铜块 = {@value #BLOCK_VALUE} 为单位):
