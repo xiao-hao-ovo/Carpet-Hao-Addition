@@ -70,6 +70,7 @@
   "haoZoneguard.commands.op.remove.notFound": "%s has no ZoneGuard access.",
   "haoZoneguard.commands.op.remove.success": "Removed ZoneGuard access from %s.",
   "haoZoneguard.commands.set.success": "Set region %s: %s [%s] -> [%s]",
+  "haoZoneguard.commands.set.tooLarge": "Region too large (%s chunks, limit %s): turning the rule off scans chunk by chunk, so a huge region can stall the server",
   "haoZoneguard.commands.view.empty": "There are no configured detector-disabled regions yet.",
   "haoZoneguard.commands.view.header": "Detector-disabled regions:",
   "haoZoneguard.commands.view.item": "%s: %s [%s] -> [%s]",

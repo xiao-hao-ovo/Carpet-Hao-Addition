@@ -50,6 +50,15 @@ public final class ZoneguardCommands {
 
 	private static final String MSG = "haoZoneguard.commands.";
 
+	/**
+	 * 单个区域最多覆盖多少个 chunk（水平投影）。
+	 * <p>
+	 * {@code RegionObserverRefresh} 是按 chunk 遍历区域的，不设上限时一个
+	 * {@code /haoZoneguard set 1 ~ ~ ~ 30000000 320 30000000} 就是上百万个 chunk，
+	 * 规则一关就卡死。4096 = 64×64 个 chunk（1024×1024 格），真实机器绰绰有余。
+	 */
+	private static final long MAX_REGION_CHUNKS = 4096L;
+
 	public static void registerCommand(CommandDispatcher<ServerCommandSource> dispatcher) {
 		dispatcher.register(literal("haoZoneguard")
 				.requires(ZoneguardPermissions::canUse)
@@ -89,6 +98,20 @@ public final class ZoneguardCommands {
 		int id = IntegerArgumentType.getInteger(context, "id");
 		BlockPos from = BlockPosArgumentType.getBlockPos(context, "from");
 		BlockPos to = BlockPosArgumentType.getBlockPos(context, "to");
+
+		// 区域大小必须挡一道。规则由开启切回关闭时会调 RegionObserverRefresh，它按 chunk
+		// 遍历整个区域；输入 /haoZoneguard set 1 ~ ~ ~ 30000000 320 30000000 这种范围
+		// 就是上百万个 chunk 坐标，一次切换直接把服务器卡死。真实机器几十格见方，
+		// 1024×1024（=64×64 个 chunk）已经宽松到不可能误伤。
+		long chunkSpanX = ((long) (Math.max(from.getX(), to.getX()) >> 4)
+				- (Math.min(from.getX(), to.getX()) >> 4) + 1L);
+		long chunkSpanZ = ((long) (Math.max(from.getZ(), to.getZ()) >> 4)
+				- (Math.min(from.getZ(), to.getZ()) >> 4) + 1L);
+		if (chunkSpanX * chunkSpanZ > MAX_REGION_CHUNKS) {
+			source.sendError(msg("set.tooLarge",
+					String.valueOf(chunkSpanX * chunkSpanZ), String.valueOf(MAX_REGION_CHUNKS)));
+			return 0;
+		}
 
 		DetectorRegion region = ZoneguardSavedData.getData(source.getServer()).setRegion(id, world, from, to);
 		source.sendFeedback(() -> msg("set.success",
