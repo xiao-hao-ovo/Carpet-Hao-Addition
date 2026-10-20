@@ -24,11 +24,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * {@code RailPlacementHelper} 会直接 {@code World.setBlockState} 把重算结果写回世界。
  * 在这里返回原 state 就等于「这次不改形状」。</p>
  *
- * <p><b>物理上立不住的形状根本不会走到这里</b>：{@code ProjectionBlockItemMixin}
- * 在 {@code getPlacementState} 阶段已经用 {@link ProjectionPlacement#stateCanExist}
- * 把这类放置拒掉了（例如坡顶没方块的坡轨）。这里再做一次同样的判断，
- * 是为了防住「放下之后坡顶的方块被挖掉」这种情况 —— 那时该让原版照常降级，
- * 而不是继续强行保持一个悬空的坡。</p>
+ * <p><b>关于 {@code stateCanExist} 那一半判断：</b>它在这里实际是<b>防御性冗余</b>。
+ * {@code updateCurves} 只在 {@code onBlockAdded}（放置瞬间）被调用（javap 确认：
+ * {@code AbstractRailBlock} 与 {@code DetectorRailBlock} 各一处），而那一步之前
+ * {@code ProjectionBlockItemMixin} 已经用同一个 {@code stateCanExist} 把立不住的放置拒掉了。
+ * 保留它只是为了 {@code updateCurves} 的调用面随后续版本扩大时不至于失守 ——
+ * <b>不要指望它挡住「放下之后坡顶方块被挖」</b>：那种情况走的是
+ * {@code neighborUpdate → shouldDropRail}（原版掉落逻辑），根本不经过这里。</p>
  */
 @Mixin(value = AbstractRailBlock.class, priority = 900)
 public abstract class AbstractRailBlock_keepShapeMixin {

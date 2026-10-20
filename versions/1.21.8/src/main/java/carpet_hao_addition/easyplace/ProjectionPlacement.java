@@ -96,7 +96,9 @@ public final class ProjectionPlacement {
 	 * 那一条原版已在 {@code canPlaceAt} 里查过。</p>
 	 */
 	public static boolean stateCanExist(BlockState state, BlockView world, BlockPos pos) {
-		if (!(state.getBlock() instanceof AbstractRailBlock rail)) {
+		if (!(state.getBlock() instanceof AbstractRailBlock rail)
+				|| !state.contains(rail.getShapeProperty())) {
+			// 不是铁轨，或是没声明 SHAPE 的第三方铁轨 —— 不归这里管
 			return true;
 		}
 		Direction top = switch (state.get(rail.getShapeProperty())) {

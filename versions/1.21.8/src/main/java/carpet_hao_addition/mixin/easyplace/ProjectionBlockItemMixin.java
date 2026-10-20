@@ -70,10 +70,9 @@ public abstract class ProjectionBlockItemMixin {
         if (!ProjectionPlacement.ruleEnabled()) return;
         if (!isProtocolHit(relativeHitZ)) return;
 
-        BlockState baseState = cir.getReturnValue();
-        if (baseState == null) {
-            baseState = this.getBlock().getPlacementState(context);
-        }
+        // HEAD 注入时方法体还没执行，cir.getReturnValue() 恒为 null，
+        // 所以直接现算一份基础状态（用 Block 的那个重载，不是被本 mixin 包住的路径，不会递归）。
+        BlockState baseState = this.getBlock().getPlacementState(context);
         BlockState state = ProjectionPlacement.decodeSchematicState(this.getBlock(), context, baseState);
         HaoDebug.log("[hao-easyplace]   [放置解码] hitPos=" + context.getHitPos()
                 + " blockPos=" + PlacementBitTools.clickedPos(context) + " side=" + context.getSide()

@@ -53,6 +53,7 @@ import net.minecraft.block.enums.RailShape;
 import net.minecraft.block.enums.StairShape;
 import net.minecraft.block.enums.WallShape;
 import net.minecraft.block.enums.WireConnection;
+import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
@@ -512,11 +513,6 @@ public final class PlacementRules {
 		return null;
 	}
 
-	/** 本表是否登记过该方块（含继承链）。 */
-	public static boolean covered(Block block) {
-		return codec(block) != null;
-	}
-
 	/**
 	 * 取某个方块的物品数据编解码器；没登记返回 {@code null}
 	 * （表示该方块的物品数据不由本模组还原）。
@@ -538,20 +534,38 @@ public final class PlacementRules {
 	/**
 	 * 各类铁轨共用的协议：形状占低 4 位，bit4 = 「别自动改形状」。
 	 *
-	 * <p>投影端对普通/动力/激活铁轨用的是同一套编码，所以这里只差一个 {@code SHAPE}
+	 * <p>这里自己解 ordinal，不复用 {@link PlacementCodecs#enumProp} —— 那个实现会用
+	 * {@code floorMod} 把越界值绕回合法区间。协议位一旦是垃圾（多次叠加、版本不一致），
+	 * 绕回 2..5 正好落在四种坡轨上，会被 {@link ProjectionPlacement#stateCanExist}
+	 * 当成真坡去查「坡顶有没有方块」，连带把本来正常的一格误拒掉。<b>越界就不动形状。</b></p>
+	 *
+	 * <p>投影端对普通/动力/探测铁轨用的是同一套编码，所以只差一个 {@code SHAPE}
 	 * property 实例（每种铁轨自己声明一个，不能共用）。</p>
 	 */
 	private static PlacementCodec railShapeCodec(EnumProperty<RailShape> shape) {
-		return stackOf(
-				enumProp(shape, 0, 4, 0),
-				custom(state -> 0b0001_0000,
-						(bits, state, ctx) -> {
-							if ((bits & 0b0001_0000) != 0) {
-								ProjectionPlacement.noteFlag(
-										ProjectionPlacement.RAIL_KEEP_SHAPE);
-							}
-							return state;
-						}));
+		return new PlacementCodec() {
+			@Override
+			public int pack(BlockState state, int bits) {
+				int shapeBits = state.contains(shape) ? (state.get(shape).ordinal() & 0b1111) : 0;
+				return bits | shapeBits | 0b0001_0000;
+			}
+
+			@Override
+			public BlockState unpack(int bits, BlockState state, ItemPlacementContext context) {
+				if ((bits & 0b0001_0000) != 0) {
+					ProjectionPlacement.noteFlag(ProjectionPlacement.RAIL_KEEP_SHAPE);
+				}
+				if (!state.contains(shape)) {
+					return state;
+				}
+				int ordinal = bits & 0b1111;
+				RailShape[] values = RailShape.values();
+				if (ordinal >= values.length) {
+					return state; // 越界不猜
+				}
+				return state.with(shape, values[ordinal]);
+			}
+		};
 	}
 
 	private static void itemData(Class<? extends Block> type, ItemDataCodec codec) {
