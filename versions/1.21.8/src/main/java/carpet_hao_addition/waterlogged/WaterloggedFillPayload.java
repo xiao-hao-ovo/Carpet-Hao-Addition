@@ -1,4 +1,4 @@
-package carpet_hao_addition;
+package carpet_hao_addition.waterlogged;
 
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
@@ -7,6 +7,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.List;
+import carpet_hao_addition.CarpetHaoAdditionExtension;
 
 /**
  * haoProjectionWaterlogged 的自定义包。三样信息合并在一个包里:

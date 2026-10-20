@@ -1,4 +1,4 @@
-package carpet_hao_addition;
+package carpet_hao_addition.recipe;
 
 import net.minecraft.resource.ResourcePackManager;
 import net.minecraft.server.MinecraftServer;
@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import carpet_hao_addition.CopperStonecuttingSettings;
 
 /**
  * 把"切石机切铜"配方自动部署到当前世界的数据包,并按 haoCopperStonecutting 规则启停。

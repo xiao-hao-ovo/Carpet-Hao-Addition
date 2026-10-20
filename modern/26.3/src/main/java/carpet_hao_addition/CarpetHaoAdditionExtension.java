@@ -11,10 +11,10 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.commands.CommandSourceStack;
 
-import carpet_hao_addition.haoZoneguard.ZoneguardHooks;
-import carpet_hao_addition.haoZoneguard.ZoneguardSettings;
+import carpet_hao_addition.zoneguard.ZoneguardHooks;
+import carpet_hao_addition.zoneguard.ZoneguardSettings;
 import carpet_hao_addition.portal.PlayerNoEndPortalTeleportCommands;
-import carpet_hao_addition.haoZoneguard.command.ZoneguardCommands;
+import carpet_hao_addition.zoneguard.command.ZoneguardCommands;
 
 import java.util.Map;
 

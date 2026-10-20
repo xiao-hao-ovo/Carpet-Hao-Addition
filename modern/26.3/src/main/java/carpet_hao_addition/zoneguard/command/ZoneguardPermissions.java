@@ -1,7 +1,7 @@
-package carpet_hao_addition.haoZoneguard.command;
+package carpet_hao_addition.zoneguard.command;
 
-import carpet_hao_addition.haoZoneguard.ZoneguardSettings;
-import carpet_hao_addition.haoZoneguard.region.ZoneguardSavedData;
+import carpet_hao_addition.zoneguard.ZoneguardSettings;
+import carpet_hao_addition.zoneguard.region.ZoneguardSavedData;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.players.NameAndId;

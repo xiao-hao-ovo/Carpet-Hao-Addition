@@ -1,11 +1,11 @@
 package carpet_hao_addition.mixin;
 
-import carpet_hao_addition.EntityPlacementCounter;
-import carpet_hao_addition.EntityPlacementHandler;
-import carpet_hao_addition.EntityPlacementPayload;
+import carpet_hao_addition.entity.EntityPlacementCounter;
+import carpet_hao_addition.entity.EntityPlacementHandler;
+import carpet_hao_addition.entity.EntityPlacementPayload;
 import carpet_hao_addition.EasyPlaceEntitySettings;
 import carpet_hao_addition.EntityPlacementTrigger;
-import carpet_hao_addition.EntitySpawn;
+import carpet_hao_addition.entity.EntitySpawn;
 import carpet_hao_addition.client.EntityPlacementScreen;
 
 import fi.dy.masa.litematica.data.DataManager;

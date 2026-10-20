@@ -1,4 +1,4 @@
-package carpet_hao_addition.haoZoneguard.region;
+package carpet_hao_addition.zoneguard.region;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.Codec;

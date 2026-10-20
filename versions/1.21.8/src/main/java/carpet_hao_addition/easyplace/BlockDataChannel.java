@@ -1,4 +1,4 @@
-package carpet_hao_addition;
+package carpet_hao_addition.easyplace;
 
 import carpet_hao_addition.HaoDebug;
 

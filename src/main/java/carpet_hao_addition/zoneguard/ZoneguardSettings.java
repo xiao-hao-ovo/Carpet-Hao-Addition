@@ -1,4 +1,4 @@
-package carpet_hao_addition.haoZoneguard;
+package carpet_hao_addition.zoneguard;
 
 import carpet.CarpetServer;
 import carpet.api.settings.CarpetRule;

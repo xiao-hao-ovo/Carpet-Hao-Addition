@@ -1,4 +1,4 @@
-package carpet_hao_addition;
+package carpet_hao_addition.recipe;
 
 import net.minecraft.resource.ResourcePackManager;
 import net.minecraft.server.MinecraftServer;
@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import carpet_hao_addition.CraftableTrimTemplateSettings;
 
 /**
  * 把"可合成纹饰模板"的 19 条合成配方部署到当前世界的数据包,按 {@code haoCraftableTrimTemplates} 规则启停。

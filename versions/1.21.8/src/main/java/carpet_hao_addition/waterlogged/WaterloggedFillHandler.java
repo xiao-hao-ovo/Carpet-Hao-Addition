@@ -1,4 +1,4 @@
-package carpet_hao_addition;
+package carpet_hao_addition.waterlogged;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
@@ -31,6 +31,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import carpet_hao_addition.EasyPlaceWaterloggedSettings;
+import carpet_hao_addition.HaoDebug;
 
 /**
  * haoProjectionWaterlogged 的注册与结算。

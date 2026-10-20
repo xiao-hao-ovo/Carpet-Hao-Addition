@@ -2,7 +2,7 @@ package carpet_hao_addition.easyplace;
 
 import carpet_hao_addition.HaoDebug;
 
-import carpet_hao_addition.BlockDataChannel;
+import carpet_hao_addition.easyplace.BlockDataChannel;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.schematic.LitematicaSchematic;
 import fi.dy.masa.litematica.schematic.container.LitematicaBlockStateContainer;

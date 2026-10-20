@@ -1,10 +1,10 @@
-package carpet_hao_addition.haoZoneguard.command;
+package carpet_hao_addition.zoneguard.command;
 
 import carpet.utils.Translations;
 
-import carpet_hao_addition.haoZoneguard.region.DetectorRegion;
-import carpet_hao_addition.haoZoneguard.region.RegionObserverRefresh;
-import carpet_hao_addition.haoZoneguard.region.ZoneguardSavedData;
+import carpet_hao_addition.zoneguard.region.DetectorRegion;
+import carpet_hao_addition.zoneguard.region.RegionObserverRefresh;
+import carpet_hao_addition.zoneguard.region.ZoneguardSavedData;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;

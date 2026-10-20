@@ -1,6 +1,6 @@
-package carpet_hao_addition.haoZoneguard.region;
+package carpet_hao_addition.zoneguard.region;
 
-import carpet_hao_addition.haoZoneguard.ZoneguardSettings;
+import carpet_hao_addition.zoneguard.ZoneguardSettings;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;

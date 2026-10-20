@@ -1,4 +1,4 @@
-package carpet_hao_addition;
+package carpet_hao_addition.entity;
 
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -19,6 +19,8 @@ import net.minecraft.util.math.Box;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import carpet_hao_addition.EasyPlaceEntitySettings;
+import carpet_hao_addition.HaoDebug;
 
 /**
  * haoProjectionEntity 的服务端实现:按客户端上报的实体 NBT,在投影对应的位置还原实体,并扣除对应物品。

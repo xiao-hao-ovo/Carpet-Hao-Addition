@@ -1,8 +1,8 @@
-package carpet_hao_addition.haoZoneguard;
+package carpet_hao_addition.zoneguard;
 
-import carpet_hao_addition.haoZoneguard.region.DetectorRegion;
-import carpet_hao_addition.haoZoneguard.region.RegionObserverRefresh;
-import carpet_hao_addition.haoZoneguard.region.ZoneguardSavedData;
+import carpet_hao_addition.zoneguard.region.DetectorRegion;
+import carpet_hao_addition.zoneguard.region.RegionObserverRefresh;
+import carpet_hao_addition.zoneguard.region.ZoneguardSavedData;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;

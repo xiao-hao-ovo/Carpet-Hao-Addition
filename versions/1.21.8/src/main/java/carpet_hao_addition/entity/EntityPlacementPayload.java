@@ -1,4 +1,4 @@
-package carpet_hao_addition;
+package carpet_hao_addition.entity;
 
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
@@ -7,6 +7,7 @@ import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
+import carpet_hao_addition.CarpetHaoAdditionExtension;
 
 /**
  * haoProjectionEntity 的自定义包:客户端告诉服务端「投影里这一格有这些实体,请按精确位置放出来」。

@@ -1,4 +1,4 @@
-package carpet_hao_addition;
+package carpet_hao_addition.entity;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;

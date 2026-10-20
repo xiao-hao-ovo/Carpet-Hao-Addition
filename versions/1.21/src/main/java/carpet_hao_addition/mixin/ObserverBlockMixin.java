@@ -1,6 +1,6 @@
 package carpet_hao_addition.mixin;
 
-import carpet_hao_addition.haoZoneguard.region.ZoneguardState;
+import carpet_hao_addition.zoneguard.region.ZoneguardState;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ObserverBlock;

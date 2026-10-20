@@ -1,9 +1,9 @@
 package carpet_hao_addition.client;
 
-import carpet_hao_addition.EntityPlacementHandler;
-import carpet_hao_addition.EntityPlacementPayload;
+import carpet_hao_addition.entity.EntityPlacementHandler;
+import carpet_hao_addition.entity.EntityPlacementPayload;
 import carpet_hao_addition.EasyPlaceEntitySettings;
-import carpet_hao_addition.EntitySpawn;
+import carpet_hao_addition.entity.EntitySpawn;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 
@@ -129,7 +129,7 @@ public class EntityPlacementScreen extends Screen {
 	 */
 	private void hao$refreshNames() {
 		// 整体重算:位置上的「需要/已放」要按整处统计,逐条单独算做不到这件事
-		this.counts.putAll(carpet_hao_addition.EntityPlacementCounter.totals(this.candidates));
+		this.counts.putAll(carpet_hao_addition.entity.EntityPlacementCounter.totals(this.candidates));
 
 		for (int index = 0; index < this.candidates.size(); index++) {
 			EntitySpawn spawn = this.candidates.get(index);

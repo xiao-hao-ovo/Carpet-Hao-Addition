@@ -12,12 +12,19 @@ import net.minecraft.server.command.ServerCommandSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import carpet_hao_addition.haoZoneguard.ZoneguardHooks;
-import carpet_hao_addition.haoZoneguard.ZoneguardSettings;
+import carpet_hao_addition.zoneguard.ZoneguardHooks;
+import carpet_hao_addition.zoneguard.ZoneguardSettings;
 import carpet_hao_addition.portal.PlayerNoEndPortalTeleportCommands;
-import carpet_hao_addition.haoZoneguard.command.ZoneguardCommands;
+import carpet_hao_addition.zoneguard.command.ZoneguardCommands;
 
 import java.util.Map;
+import carpet_hao_addition.CarpetHaoAdditionExtension;
+import carpet_hao_addition.CopperStonecuttingSettings;
+import carpet_hao_addition.CraftableTrimTemplateSettings;
+import carpet_hao_addition.EasyPlaceEntitySettings;
+import carpet_hao_addition.EasyPlaceWaterloggedSettings;
+import carpet_hao_addition.recipe.RecipeDeployHooks;
+import carpet_hao_addition.TerracottaUncolorSettings;
 
 
 /**
@@ -272,7 +279,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
 	    {
 		        try
 		        {
-			            Class.forName("carpet_hao_addition.TrimTemplateRecipeDeployHook")
+			            Class.forName("carpet_hao_addition.recipe.TrimTemplateRecipeDeployHook")
 					                    .getMethod("ensureDeployed", MinecraftServer.class)
 					                    .invoke(null, haoServer);
 		        }
@@ -298,7 +305,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
 	    {
 		        try
 		        {
-			            Class.forName("carpet_hao_addition.CopperStonecuttingDeployHook")
+			            Class.forName("carpet_hao_addition.recipe.CopperStonecuttingDeployHook")
 					                    .getMethod("ensureDeployed", MinecraftServer.class)
 					                    .invoke(null, haoServer);
 		        }

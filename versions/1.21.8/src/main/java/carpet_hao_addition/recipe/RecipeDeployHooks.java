@@ -1,4 +1,4 @@
-package carpet_hao_addition;
+package carpet_hao_addition.recipe;
 
 import net.minecraft.resource.ResourcePackManager;
 import net.minecraft.server.MinecraftServer;
@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import carpet_hao_addition.TerracottaUncolorSettings;
 
 /**
  * 把切石机“还原”配方自动部署到当前世界的数据包,并按 haoTerracottaUncolor 规则启停。

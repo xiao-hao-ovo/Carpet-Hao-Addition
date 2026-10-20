@@ -1,8 +1,8 @@
 package carpet_hao_addition.mixin;
 
 import carpet_hao_addition.EasyPlaceWaterloggedSettings;
-import carpet_hao_addition.WaterloggedFillHandler;
-import carpet_hao_addition.WaterloggedFillPayload;
+import carpet_hao_addition.waterlogged.WaterloggedFillHandler;
+import carpet_hao_addition.waterlogged.WaterloggedFillPayload;
 
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.util.RayTraceUtils;

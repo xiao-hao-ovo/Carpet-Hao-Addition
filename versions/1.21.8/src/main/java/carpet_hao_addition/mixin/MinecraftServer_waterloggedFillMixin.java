@@ -1,8 +1,8 @@
 package carpet_hao_addition.mixin;
 
-import carpet_hao_addition.EntityPlacementHandler;
-import carpet_hao_addition.BlockDataChannel;
-import carpet_hao_addition.WaterloggedFillHandler;
+import carpet_hao_addition.entity.EntityPlacementHandler;
+import carpet_hao_addition.easyplace.BlockDataChannel;
+import carpet_hao_addition.waterlogged.WaterloggedFillHandler;
 
 import net.minecraft.server.MinecraftServer;
 
