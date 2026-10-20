@@ -2,10 +2,8 @@ package carpet_hao_addition.mixin.easyplace;
 
 import carpet_hao_addition.easyplace.ProjectionPlacement;
 import net.minecraft.block.AbstractRailBlock;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -26,40 +24,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * {@code RailPlacementHelper} 会直接 {@code World.setBlockState} 把重算结果写回世界。
  * 在这里返回原 state 就等于「这次不改形状」。</p>
  *
- * <p><b>但「保持投影形状」不能凌驾于物理可行性。</b>
- * 原版遇到坡顶没有方块的坡轨会把它降级成平轨（见 {@code shouldDropRail} 的支撑要求）。
- * 如果无条件保持投影形状，就会放出浮空坡轨 —— 而之后任何一次邻居更新又会让它掉下来。
- * 所以这里用 {@link #hao$shapeIsSupported} 做与原版一致的支撑检查：
- * 物理上立不住时放行，让原版照旧降级。</p>
+ * <p><b>物理上立不住的形状根本不会走到这里</b>：{@code ProjectionBlockItemMixin}
+ * 在 {@code getPlacementState} 阶段已经用 {@link ProjectionPlacement#stateCanExist}
+ * 把这类放置拒掉了（例如坡顶没方块的坡轨）。这里再做一次同样的判断，
+ * 是为了防住「放下之后坡顶的方块被挖掉」这种情况 —— 那时该让原版照常降级，
+ * 而不是继续强行保持一个悬空的坡。</p>
  */
 @Mixin(value = AbstractRailBlock.class, priority = 900)
 public abstract class AbstractRailBlock_keepShapeMixin {
 	@Inject(method = "updateCurves", at = @At("HEAD"), cancellable = true)
 	private void hao$keepProjectedRailShape(BlockState state, World world, BlockPos pos, boolean force,
 			CallbackInfoReturnable<BlockState> cir) {
-		if (ProjectionPlacement.keepRailShapeAt(pos) && hao$shapeIsSupported(state, world, pos)) {
+		if (ProjectionPlacement.keepRailShapeAt(pos)
+				&& ProjectionPlacement.stateCanExist(state, world, pos)) {
 			cir.setReturnValue(state);
 		}
-	}
-
-	/**
-	 * 这一节坡轨在物理上立得住吗？
-	 *
-	 * <p>判据与原版 {@code AbstractRailBlock.shouldDropRail} 一致：坡顶那一格要有实心顶面。
-	 * 非坡轨（直轨、弯轨）一律返回 {@code true} —— 它们只要求坡脚下方有方块，
-	 * 那一条原版已在 {@code canPlaceAt} 里查过。</p>
-	 */
-	private static boolean hao$shapeIsSupported(BlockState state, World world, BlockPos pos) {
-		if (!(state.getBlock() instanceof AbstractRailBlock rail)) {
-			return true;
-		}
-		Direction top = switch (state.get(rail.getShapeProperty())) {
-			case ASCENDING_EAST -> Direction.EAST;
-			case ASCENDING_WEST -> Direction.WEST;
-			case ASCENDING_NORTH -> Direction.NORTH;
-			case ASCENDING_SOUTH -> Direction.SOUTH;
-			default -> null;
-		};
-		return top == null || Block.hasTopRim(world, pos.offset(top));
 	}
 }

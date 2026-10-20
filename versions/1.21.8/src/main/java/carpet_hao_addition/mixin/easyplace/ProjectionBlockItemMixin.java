@@ -82,6 +82,15 @@ public abstract class ProjectionBlockItemMixin {
             cir.setReturnValue(null);
             return;
         }
+        // 投影给的形状在当前位置立不住（例如坡轨坡顶没有方块）→ 这一格直接放弃。
+        // 若交给原版，它会把坡轨重算成平轨，放出来的就不是投影的样子了；
+        // 而如果强行保持投影形状，又会放出之后必然掉落的浮空坡轨。
+        if (!ProjectionPlacement.stateCanExist(state, context.getWorld(), context.getBlockPos())) {
+            HaoDebug.log("[hao-easyplace]   [放弃放置] 状态在当前环境立不住 state=" + state
+                    + " pos=" + context.getBlockPos());
+            cir.setReturnValue(null);
+            return;
+        }
         if (!this.canPlace(context, state)) return;
         cir.setReturnValue(state);
     }
