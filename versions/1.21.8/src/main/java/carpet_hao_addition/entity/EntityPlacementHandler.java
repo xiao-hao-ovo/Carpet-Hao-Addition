@@ -152,16 +152,19 @@ public final class EntityPlacementHandler {
 		if (hao$wantedPassengerCount(nbt) > 0) {
 			java.util.List<Entity> existingVehicles = hao$findExistingVehicles(world, spawn, type, nbt);
 			if (!existingVehicles.isEmpty()) {
-				if (HaoDebug.ENABLED) {
-					HaoDebug.log("[hao-entity]   该位置已有载具 " + existingVehicles.size()
-							+ " 辆缺乘客,走补齐路径(本次最多补 " + count + " 位)");
-				}
+				// 这条不能只在调试开关下打:走补齐路径时玩家看不到新载具出现,
+				// 会以为"点了没反应"。打出来才能分清是补乘客还是根本没放。
+				System.out.println("[hao-entity] 已有载具 " + existingVehicles.size()
+						+ " 辆缺乘客,走补齐路径(本次最多补 " + count + " 位) 类型=" + type
+						+ " 位置=" + String.format("%.2f,%.2f,%.2f", spawn.x(), spawn.y(), spawn.z()));
 				hao$fillMissingPassengers(player, world, existingVehicles, spawn, count);
 				return;
 			}
 			// 载具有了、乘客也齐了 —— 再放就会多出一份载具,直接不做
 			if (hao$countVehiclesNear(world, spawn, type) > 0) {
-				HaoDebug.log("[hao-entity]   该位置的载具乘客已齐,不再重建");
+				// 同上:这条决定了"什么都不放",必须能在普通日志里看到。
+				System.out.println("[hao-entity] 该位置的载具乘客已齐,不再重建 类型=" + type
+						+ " 位置=" + String.format("%.2f,%.2f,%.2f", spawn.x(), spawn.y(), spawn.z()));
 				return;
 			}
 		}
@@ -194,6 +197,9 @@ public final class EntityPlacementHandler {
 			}
 			entity.refreshPositionAndAngles(spawn.x(), spawn.y(), spawn.z(), spawn.yaw(), spawn.pitch());
 			boolean added = world.spawnNewEntityAndPassengers(entity);
+			// 打归属标记:并排的两处投影只差一格,放出来之后光看世界坐标分不清这一台属于哪一处。
+			// 统计时按这个标记认,就不再靠距离猜(矿车会滑、船会漂,猜不准)。
+			entity.addCommandTag(EntitySpawn.placementTag(spawn));
 			if (HaoDebug.ENABLED) {
 				HaoDebug.log("[hao-entity]   生成后 " + entity.getType() + " @ "
 						+ String.format("%.3f,%.3f,%.3f", entity.getX(), entity.getY(), entity.getZ())
@@ -292,29 +298,51 @@ public final class EntityPlacementHandler {
 	 */
 	private static int hao$countVehiclesNear(ServerWorld world, EntitySpawn spawn, EntityType<?> type) {
 		Box target = type.getSpawnBox(spawn.x(), spawn.y(), spawn.z());
-		Box accepted = target.expand(2.0D);
+		String hereTag = EntitySpawn.placementTag(spawn);
 		int count = 0;
 		for (Entity candidate : world.getOtherEntities(null, target.expand(4.0D))) {
-			if (candidate.getType() == type && candidate.isAlive()
-					&& candidate.getBoundingBox().intersects(accepted)) {
+			if (candidate.getType() != type || !candidate.isAlive()) {
+				continue;
+			}
+			// 和 findExistingVehicles 用同一套判据:有归属标记的按标记认,
+			// 没有标记的旧实体只认中心 0.6 格内。
+			// 原来用"碰撞箱碰 2 格盒",并排的两处只差一格时,隔壁那辆会被数成"这里已有载具",
+			// 于是直接 return —— 玩家点旁边那处放不出来任何东西。
+			if (candidate.getCommandTags().contains(hereTag)
+					|| candidate.getPos().squaredDistanceTo(spawn.x(), spawn.y(), spawn.z())
+							<= VEHICLE_ACCEPT_SQ) {
 				count++;
 			}
 		}
 		return count;
 	}
 
+	/** 「本处已有载具」的中心距离上限(格的平方)。碰撞箱不能用来判:竹筏/矿车宽近 1 格,
+	 *  并排两处又常差 1 格,泊靠时边缘几乎贴着隔壁那处的坐标,怎么放宽都会串。
+	 *  0.6 格足够容忍浮起/落地的小偏移;偏移更大的由放置时打下的归属标记认。 */
+	private static final double VEHICLE_ACCEPT_SQ = 0.36D;
+
 	private static java.util.List<Entity> hao$findExistingVehicles(ServerWorld world, EntitySpawn spawn,
 			EntityType<?> type, NbtCompound wantedNbt) {
 		Box target = type.getSpawnBox(spawn.x(), spawn.y(), spawn.z());
-		Box accepted = target.expand(2.0D);
 		String wantedName = spawn.nbt().getString("CustomName").orElse("");
+		String hereTag = EntitySpawn.placementTag(spawn);
 		java.util.List<Entity> found = new java.util.ArrayList<>();
 		int candidates = 0;
 		for (Entity candidate : world.getOtherEntities(null, target.expand(4.0D))) {
 			if (candidate.getType() != type || !candidate.isAlive()) {
 				continue;
 			}
-			if (!candidate.getBoundingBox().intersects(accepted)) {
+			// 判定"这是不是本处已有的载具":
+			// ① 有归属标记且标记就是本处 → 一定是,直接认;
+			// ② 没有标记(旧版本放的)才按中心距离认,而且只认 0.6 格内的。
+			//    原来用"碰撞箱碰 2 格盒",并排的两处只差一格时,隔壁那辆会被当成自己的,
+			//    于是走"补齐乘客"而不是新建 —— 玩家点旁边那处就什么都不出来。
+			final boolean taggedHere = candidate.getCommandTags().contains(hereTag);
+
+			if (!taggedHere
+					&& candidate.getPos().squaredDistanceTo(spawn.x(), spawn.y(), spawn.z())
+							> VEHICLE_ACCEPT_SQ) {
 				continue;
 			}
 			String name = candidate.getCustomName() == null ? "" : candidate.getCustomName().getString();
@@ -475,10 +503,14 @@ public final class EntityPlacementHandler {
 				sub.forEach((item, amount) -> need.merge(item, amount, Integer::sum));
 				kept.add(passenger);
 			} else {
-				if (HaoDebug.ENABLED) {
-					HaoDebug.log("[hao-entity]   乘客材料不足,已剔除 "
-							+ passenger.getString("id").orElse("?"));
-				}
+				// 这一条不能只在调试开关下打:乘客被剪掉时玩家只会看到"少了一个雪傀儡",
+				// 却完全不知道是自己材料不够,还是模组算错了。
+				final StringBuilder wanted = new StringBuilder();
+				sub.forEach((item, amount) -> wanted.append(item).append(" x").append(amount).append(" "));
+				System.out.println("[hao-entity] 乘客材料不足,已剔除 "
+						+ passenger.getString("id").orElse("?")
+						+ " (载体=" + nbt.getString("id").orElse("?") + ") 这一位需要: "
+						+ (wanted.length() == 0 ? "(算不出材料,可能实体类型无效)" : wanted.toString()));
 			}
 		}
 		if (kept.isEmpty()) {

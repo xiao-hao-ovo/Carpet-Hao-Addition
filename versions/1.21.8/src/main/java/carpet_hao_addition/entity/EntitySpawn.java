@@ -44,4 +44,18 @@ public record EntitySpawn(Identifier type, String key, double x, double y, doubl
 							buf.readFloat(),
 							buf.readFloat(),
 							buf.readNbt()));
+
+	/**
+	 * 放置时写到实体记分板标签上的「归属标记」,统计「这一处已放几个」时按它认。
+	 *
+	 * <p>并排的两处投影常常只差一格,而放出来的矿车会顺铁轨滑、船会漂、盔甲架会落地 ——
+	 * 光比世界坐标分不清某一台属于哪一处,表现就是打开第二处却显示第一处的数量。
+	 * 放置的那一刻把投影坐标写进标签,之后按标签精确匹配,不再靠距离猜。</p>
+	 *
+	 * <p>只写坐标不写实体类型:同一格放不同类型时统计那边本来还会再比一次类型。</p>
+	 */
+	public static String placementTag(EntitySpawn spawn) {
+		return "hao:" + (int) Math.floor(spawn.x()) + "_" + (int) Math.floor(spawn.y())
+				+ "_" + (int) Math.floor(spawn.z());
+	}
 }

@@ -90,6 +90,17 @@ public abstract class WorldUtils_entityPlacementMixin {
 	private static final long HAO_ENTITY_REQUEST_TTL = 40L;
 
 	/**
+	 * 射线到投影坐标的最短距离在多少以内算「瞄准了这一处」(单位:格的平方)。
+	 *
+	 * <p>取 1.2 格:实体出生盒本身不到一格宽,要求射线精确穿过太苛刻 —— 玩家看到的是投影渲染
+	 * 出来的虚影,鼠标压在虚影上时人眼误差折算到十来格外的射线末端会差一大截,差一点就判不中,
+	 * 表现就是"同一处有时能开界面、有时开不了"。放宽到 1.2 格后准星大致对着就能选中;
+	 * 再大就会把并排的相邻那一处也算进来。</p>
+	 */
+	@Unique
+	private static final double AIM_SQUARED = 1.44D;
+
+	/**
 	 * 每个候选的「投影里几个 / 世界里已有几个」,键是 {@code EntitySpawn#key()}。
 	 * <p>
 	 * 刻意**不**放进 {@link EntitySpawn}:那是个带 {@code PacketCodec} 的 record,加字段会改动
@@ -159,13 +170,19 @@ public abstract class WorldUtils_entityPlacementMixin {
 			if (fromHotkey) {
 				hao$notify(player, "carpet-hao-addition.entity.noTarget");
 			}
+			// 没收集到候选也把选择器弹出来:让玩家看到"确实是 0 个",
+			// 而不是按了没反应、也分不清是没瞄准还是功能没生效。
+			// 已经有别的界面开着时不抢。
+			if (minecraft.currentScreen == null) {
+				minecraft.setScreen(new EntityPlacementScreen(candidates, HAO_COUNTS));
+				cir.setReturnValue(ActionResult.SUCCESS);
+			}
 			return;
 		}
 		hao$lastEntityTick = tick;
 		if (candidates.size() > 1 || EasyPlaceEntitySettings.uiEnabled(player.getUuid())) {
 			// 多个候选时必须让玩家点(代码猜不出来"你指着谁");只命中一个时是否还弹界面,
 			// 由 /easyPlaceEntityUi 决定 —— 开着就总是弹界面,关掉就直接放置(更快)。
-			// 界面会一直弹(即使这一处已经放满),玩家据此核对缺口、或继续加放。
 			minecraft.setScreen(new EntityPlacementScreen(candidates, HAO_COUNTS));
 			cir.setReturnValue(ActionResult.SUCCESS);
 			return;
@@ -174,7 +191,8 @@ public abstract class WorldUtils_entityPlacementMixin {
 		// TTL 的键统一用"视线终点所在格":快捷键路径没有可靠的 crosshairTarget
 		// (可能被实体挡住),而这条射线两条路径都能拿到。
 		Vec3d eye = player.getCameraPosVec(1.0F);
-		Vec3d lookEnd = eye.add(player.getRotationVec(1.0F).multiply(WorldUtils.getValidBlockRange(minecraft)));
+		Vec3d lookEnd = eye.add(player.getRotationVec(1.0F).multiply(Math.max(4.5D, Math.max(
+				WorldUtils.getValidBlockRange(minecraft), player.getBlockInteractionRange()))));
 		BlockPos target = BlockPos.ofFloored(lookEnd);
 		long key = target.asLong();
 		Long last = hao$recentEntityRequests.get(key);
@@ -193,6 +211,24 @@ public abstract class WorldUtils_entityPlacementMixin {
 		player.sendMessage(net.minecraft.text.Text.translatable(translationKey), true);
 	}
 
+	/** 点到视线线段的最短距离,用来判断"准星更接近哪一处"。 */
+	@Unique
+	private static double hao$distanceToRay(Vec3d start, Vec3d end, double x, double y, double z) {
+		final Vec3d direction = end.subtract(start);
+		final double length = direction.length();
+
+		if (length <= 1.0E-4D) {
+			return Math.sqrt(start.squaredDistanceTo(x, y, z));
+		}
+
+		final Vec3d unit = direction.multiply(1.0D / length);
+		final Vec3d toTarget = new Vec3d(x - start.x, y - start.y, z - start.z);
+		final double along = Math.max(0.0D, Math.min(length, toTarget.dotProduct(unit)));
+		final Vec3d closest = start.add(unit.multiply(along));
+
+		return Math.sqrt(closest.squaredDistanceTo(x, y, z));
+	}
+
 	/** 视线射线命中的、还没放过的投影实体,由近到远。 */
 	@Unique
 	private static List<EntitySpawn> hao$collectCandidates(MinecraftClient mc) {
@@ -202,7 +238,11 @@ public abstract class WorldUtils_entityPlacementMixin {
 		}
 		// 判定"指着哪个":视线射线。起点是眼睛,终点是眼睛 + 视线方向 × 交互距离。
 		Vec3d start = player.getCameraPosVec(1.0F);
-		double range = WorldUtils.getValidBlockRange(mc);
+		// 交互距离取三者的最大值:Litematica 给的有效放置距离、玩家自身的方块交互距离、
+		// 以及原版 4.5 的下限。只取 Litematica 那个值时,某些设置下它只有两三格,
+		// 射线够不到稍远处那台实体 —— 玩家明明瞄准了却判成"没命中",界面打不开。
+		double range = Math.max(4.5D, Math.max(WorldUtils.getValidBlockRange(mc),
+				player.getBlockInteractionRange()));
 		Vec3d end = start.add(player.getRotationVec(1.0F).multiply(range));
 		// 诊断(临时):玩家眼睛位置 + 视线可达距离。
 		// 用来判断"没命中"到底是"离得太远"还是"litematica 给的有效距离是 0"。
@@ -222,6 +262,63 @@ public abstract class WorldUtils_entityPlacementMixin {
 		}
 		found.sort(Comparator.comparingDouble(spawn ->
 				new Vec3d(spawn.x(), spawn.y(), spawn.z()).squaredDistanceTo(start)));
+		// 只留一处:并排的两处投影常常只差一格,射线是一整条线,会**连续穿过一串格子** ——
+		// 站在一处旁边往另一处看时,两处都会被判成"穿过",再比距离就会选回近的那一处,
+		// 表现就是"对着 17032 却弹出 17033"。所以判据按精确度分三档:
+		// ① 准星命中的那个方块位置(只有一个点,最接近"我盯着哪一格")
+		// ② 射线穿过实体出生盒的那些
+		// ③ 都没有才退回"离射线最近"
+		if (found.size() > 1) {
+			String keep = null;
+
+			if (mc.crosshairTarget instanceof net.minecraft.util.hit.BlockHitResult blockHit) {
+				final Vec3d hitPos = blockHit.getPos();
+				double best = Double.MAX_VALUE;
+
+				for (EntitySpawn spawn : found) {
+					final double distance = hitPos.squaredDistanceTo(spawn.x(), spawn.y(), spawn.z());
+
+					if (distance < best) {
+						best = distance;
+						keep = EntityPlacementCounter.positionKey(spawn);
+					}
+				}
+			}
+
+			if (keep == null) {
+				final List<EntitySpawn> exactHits = new ArrayList<>();
+
+				for (EntitySpawn spawn : found) {
+					final EntityType<?> type = Registries.ENTITY_TYPE.get(spawn.type());
+
+					if (type == null) {
+						continue;
+					}
+
+					if (!type.getSpawnBox(spawn.x(), spawn.y(), spawn.z())
+							.raycast(start, end).isEmpty()) {
+						exactHits.add(spawn);
+					}
+				}
+
+				final List<EntitySpawn> pool = exactHits.isEmpty() ? found : exactHits;
+				double nearestAim = Double.MAX_VALUE;
+
+				for (EntitySpawn spawn : pool) {
+					final double aim = hao$distanceToRay(start, end, spawn.x(), spawn.y(), spawn.z());
+
+					if (aim < nearestAim) {
+						nearestAim = aim;
+						keep = EntityPlacementCounter.positionKey(spawn);
+					}
+				}
+			}
+
+			if (keep != null) {
+				final String chosen = keep;
+				found.removeIf(spawn -> !EntityPlacementCounter.positionKey(spawn).equals(chosen));
+			}
+		}
 		// 按"位置 + 类型"计数:同一处投影里有 N 个实体,世界里已有 M 个。
 		// ⚠️ 这里**不再**把"已放满"的候选从列表里去掉 —— 选择器界面要能随时打开,玩家才能
 		// ①继续加放(比如投影 2 个只放了 1 个,或想多放几个)②核对投影到底缺不缺。
@@ -357,6 +454,34 @@ public abstract class WorldUtils_entityPlacementMixin {
 		// 表现就是"候选 0 个、点了没反应"。放宽成"准星指到实体所在格也算选中"。
 		boolean hitBox = !type.getSpawnBox(x, y, z).raycast(rayStart, rayEnd).isEmpty();
 		boolean hitCell = !new Box(BlockPos.ofFloored(x, y, z)).raycast(rayStart, rayEnd).isEmpty();
+		// 兜底:准星命中了世界里某个同类型实体。矿车会顺铁轨滚、船会漂、盔甲架会落地,
+		// 放出来之后常常离投影坐标一两格 —— 这时射线穿到的是**实体**,不是投影位置,
+		// 上面两条都判不中,玩家明明指着那台矿车却打不开界面。所以再看一眼准星命中物。
+		if (!hitBox && !hitCell
+				&& mc.crosshairTarget instanceof net.minecraft.util.hit.EntityHitResult entityHit
+				&& entityHit.getEntity().getType() == type
+				&& entityHit.getEntity().getPos().squaredDistanceTo(x, y, z) <= 4.0D) {
+			hitBox = true;
+		}
+		// 再兜一层:射线到投影坐标的**最短距离**够近就算瞄准。
+		// 上面两条都要求射线精确穿过出生盒(不到一格宽),而玩家看到的是投影渲染出来的虚影 ——
+		// 鼠标压在虚影上时,人眼误差折算到十格外的射线末端就是一大截,差一点就判不中。
+		// 表现就是"同一个位置有时能开、有时开不了"。
+		if (!hitBox && !hitCell) {
+			final Vec3d direction = rayEnd.subtract(rayStart);
+			final double length = direction.length();
+
+			if (length > 1.0E-4D) {
+				final Vec3d unit = direction.multiply(1.0D / length);
+				final Vec3d toTarget = new Vec3d(x - rayStart.x, y - rayStart.y, z - rayStart.z);
+				final double along = Math.max(0.0D, Math.min(length, toTarget.dotProduct(unit)));
+				final Vec3d closest = rayStart.add(unit.multiply(along));
+
+				if (closest.squaredDistanceTo(x, y, z) <= AIM_SQUARED) {
+					hitBox = true;
+				}
+			}
+		}
 		if (!hitBox && !hitCell) {
 			if (HaoDebug.ENABLED) {
 				HaoDebug.log("[hao-entity]     × 视线射线没命中 " + identifier + " @ "

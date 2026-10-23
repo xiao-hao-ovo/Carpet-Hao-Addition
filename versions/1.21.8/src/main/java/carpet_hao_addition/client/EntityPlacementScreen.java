@@ -118,6 +118,7 @@ public class EntityPlacementScreen extends Screen {
 			this.names.add(hao$nameOf(spawn.type()));
 		}
 		hao$refreshNames();
+
 	}
 
 	/**
@@ -128,7 +129,9 @@ public class EntityPlacementScreen extends Screen {
 	 * 世界里,所以这里每 tick 重算一次,放出来的那一刻界面就会跟着变成"完成"。
 	 */
 	private void hao$refreshNames() {
-		// 整体重算:位置上的「需要/已放」要按整处统计,逐条单独算做不到这件事
+		// 整体重算:位置上的「需要/已放」要按整处统计,逐条单独算做不到这件事。
+		// 先清空 —— 换投影或换位置后候选变了,旧键留着会让某个 key 拿到上一份的数字。
+		this.counts.clear();
 		this.counts.putAll(carpet_hao_addition.entity.EntityPlacementCounter.totals(this.candidates));
 
 		for (int index = 0; index < this.candidates.size(); index++) {
@@ -325,6 +328,11 @@ public class EntityPlacementScreen extends Screen {
 			hao$renderMaterials(context, hovered, mouseX, mouseY);
 		} else if (this.noticeTicks > 0 && this.notice != null) {
 			hao$centeredShadow(context, Text.literal(this.notice), this.width / 2, infoY, 0xFFFF8080);
+		} else if (this.candidates.isEmpty()) {
+			// 空列表也会被弹出来(视线内没收集到任何投影实体)。这里必须写清原因,
+			// 否则玩家只看到一块空面板,分不清是没瞄准、没渲染、还是功能没生效。
+			hao$centeredShadow(context, Text.literal("视线内没有可放的投影实体"), this.width / 2,
+					infoY, 0xFFFF8080);
 		} else {
 			// 把「一次放几个」也写出来:这个值来自 /easyPlaceEntityCount 或配套客户端的设置,
 			// 改了之后界面上必须能看到,否则玩家会以为设置没生效。
