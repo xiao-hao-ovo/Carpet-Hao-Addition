@@ -146,6 +146,28 @@ python tools/publish_modrinth.py publish                # 把项目提交公开�
 - 与其它 Carpet 扩展同名规则会互相覆盖（Carpet 默认管理器按规则名索引），新增规则请使用本模组自有命名（如 `haoBedrockMines`）。
 - 改规则集后请同步 `docs/rules.md` / `docs/rules_en.md`（模板见 [new-rule-template.md](new-rule-template.md)）。
 
+## 协同开发与同步
+
+本仓库只有一份工作副本（GitHub `origin` 的 clone），DSH 与 Reasonix 都在同一个目录里改：**谁改都要先拉、改完就推**，否则两边各改一份、互相覆盖。
+
+```powershell
+.\tools\sync.cmd          # 动手前: fetch, 落后就 rebase 到 origin/main
+.\tools\sync.cmd -Push    # 改完并构建通过后: 干净工作区 + rebase + push origin/main
+```
+
+> 系统禁止运行 `.ps1` 时用 `.cmd` 包装（内部带 `-ExecutionPolicy Bypass`，只作用于那一次进程）；想直接跑脚本就 `powershell -ExecutionPolicy Bypass -File tools\sync.ps1`。
+
+- 历史只有一条 `origin/main`；不开长命分支、不强推。紧急回退先 `git branch backup-<日期>` 留底（Reasonix 曾用 `reasonix/backup-local-*` 兜底）。
+- 落后一律 rebase（本仓库已设 `pull.rebase=true`），不要用 merge 提交把历史搅成两叉。
+- 两边同时改同一文件时，后动手的一方先 `\tools\sync.cmd` 再改；冲突解完再推。
+- 共享层改动不会自动进 26.x：`versions/` 八层与 `modern/` 三层是各自独立的实现，需要逐层再改一遍。
+- 直连 GitHub 常报 `curl 28 Failed to connect to github.com:443`，给**本仓库**配代理即可（不要改全局）：
+
+```powershell
+git config --local http.proxy http://127.0.0.1:7897
+git config --local https.proxy http://127.0.0.1:7897
+```
+
 ## 许可与致谢
 
 本项目以 GNU LGPL-3.0 授权，见 [LICENSE](../LICENSE)。

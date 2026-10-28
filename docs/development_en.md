@@ -146,6 +146,28 @@ The root `build.gradle` aggregates both the versions and modern sub-modules.
 - Rules with the same name as another Carpet extension override each other (Carpet's default manager indexes by rule name), so new rules should use this mod's own naming (e.g. `haoBedrockMines`).
 - After changing the rule set, update `docs/rules.md` / `docs/rules_en.md` (template: [new-rule-template.md](new-rule-template.md)).
 
+## Working together & syncing
+
+There is exactly one working copy (this clone of GitHub `origin`); DSH and Reasonix both edit it, so **pull before touching anything and push when you are done** — otherwise the two drift apart and overwrite each other.
+
+```powershell
+.\tools\sync.cmd          # before editing: fetch, rebase onto origin/main when behind
+.\tools\sync.cmd -Push    # after a green build: clean tree + rebase + push origin/main
+```
+
+> Where the machine forbids running `.ps1`, use the `.cmd` wrapper (it passes `-ExecutionPolicy Bypass`, scoped to that one process); to call the script directly use `powershell -ExecutionPolicy Bypass -File tools\sync.ps1`.
+
+- One history, `origin/main`. No long-lived branches, no force pushes. For an emergency rollback cut `git branch backup-<date>` first (Reasonix used `reasonix/backup-local-*` as its safety net).
+- Always rebase when behind (this clone has `pull.rebase=true`); never merge-commit your way into a two-headed history.
+- If both sides touch the same file, whoever starts second runs `\tools\sync.cmd` first and resolves conflicts before pushing.
+- A shared-layer change does not reach 26.x: `versions/` (eight layers) and `modern/` (three layers) are independent implementations, so re-apply it per layer.
+- Direct GitHub access often dies with `curl 28 Failed to connect to github.com:443`; set the proxy **per repository**, not globally:
+
+```powershell
+git config --local http.proxy http://127.0.0.1:7897
+git config --local https.proxy http://127.0.0.1:7897
+```
+
 ## License & Credits
 
 This project is licensed under the GNU LGPL-3.0 — see [LICENSE](../LICENSE).
