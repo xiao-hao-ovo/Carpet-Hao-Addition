@@ -9,6 +9,7 @@ import carpet_hao_addition.zoneguard.region.ZoneguardSavedData;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
@@ -63,11 +64,17 @@ public final class ZoneguardCommands {
 		dispatcher.register(literal("haoZoneguard")
 				.requires(ZoneguardPermissions::canUse)
 				.executes(ZoneguardCommands::viewRef)
+				// set <序号> <起始坐标> <终点坐标>：用两个对角点定义一个立方区域。
+				// 坐标支持绝对坐标和相对坐标(~)，两个点的先后顺序不限；相同序号会覆盖原区域。
 				.then(literal("set")
 						.then(argument("id", IntegerArgumentType.integer(0))
+								// 名称是可选末尾参数：set <编号> <起点> <终点> [名称]，支持中文与空格。
+								// 放在末尾可避免 Brigadier 在「起点坐标」与「名称」两个兄弟分支间的解析歧义。
 								.then(argument("from", BlockPosArgumentType.blockPos())
 										.then(argument("to", BlockPosArgumentType.blockPos())
-												.executes(ZoneguardCommands::setRegion)))))
+												.executes(ZoneguardCommands::setRegion)
+												.then(argument("name", StringArgumentType.greedyString())
+														.executes(ZoneguardCommands::setRegion))))))
 				.then(literal("view")
 						.executes(ZoneguardCommands::viewRef))
 				.then(literal("help")
@@ -89,13 +96,19 @@ public final class ZoneguardCommands {
 	}
 
 	/**
-	 * 设置/覆盖一个区域:两个对角坐标经 DetectorRegion.fromCorners 归一化
-	 * (自动取最小/最大角),写入随世界存档持久化的 SavedData 并落盘。
+	 * 设置/覆盖一个区域。
+	 * <p>
+	 * 两个坐标会自动归一化为最小角和最大角，所以不要求 from 一定小于 to。
+	 * 区域按执行命令时所在的维度保存；使用相对坐标(~)时，也以执行者当前位置为基准。
+	 * 同一个序号再次 set 会直接替换旧区域，不会额外创建新区域。
+	 * <p>
+	 * 数据写入随世界存档持久化的 SavedData 并落盘。
 	 */
 	private static int setRegion(CommandContext<ServerCommandSource> context) {
 		ServerCommandSource source = context.getSource();
 		ServerWorld world = source.getWorld();
 		int id = IntegerArgumentType.getInteger(context, "id");
+		String name = context.getNodes().stream().anyMatch(node -> node.getNode().getName().equals("name")) ? StringArgumentType.getString(context, "name") : "";
 		BlockPos from = BlockPosArgumentType.getBlockPos(context, "from");
 		BlockPos to = BlockPosArgumentType.getBlockPos(context, "to");
 
@@ -113,9 +126,9 @@ public final class ZoneguardCommands {
 			return 0;
 		}
 
-		DetectorRegion region = ZoneguardSavedData.getData(source.getServer()).setRegion(id, world, from, to);
+		DetectorRegion region = ZoneguardSavedData.getData(source.getServer()).setRegion(id, world, name, from, to);
 		source.sendFeedback(() -> msg("set.success",
-				String.valueOf(id), regionDimension(region), formatPos(region.min()), formatPos(region.max())), true);
+				String.valueOf(id), displayName(region), regionDimension(region), formatPos(region.min()), formatPos(region.max())), true);
 		return 1;
 	}
 
@@ -128,7 +141,7 @@ public final class ZoneguardCommands {
 
 		context.getSource().sendFeedback(() -> msg("view.header"), false);
 		data.regions().forEach((id, region) -> context.getSource().sendFeedback(
-				() -> msg("view.item", id, regionDimension(region), formatPos(region.min()), formatPos(region.max())),
+				() -> msg("view.item", id, displayName(region), regionDimension(region), formatPos(region.min()), formatPos(region.max())),
 				false
 		));
 		return data.regions().size();
@@ -163,7 +176,7 @@ public final class ZoneguardCommands {
 			ServerWorld world = source.getServer().getWorld(region.dimension());
 			int startedPairs = world == null ? 0 : RegionObserverRefresh.startLoadedFaceToFacePairs(world, region);
 			source.sendFeedback(() -> msg("clear.success",
-					String.valueOf(id), regionDimension(region), formatPos(region.min()), formatPos(region.max()),
+					String.valueOf(id), displayName(region), regionDimension(region), formatPos(region.min()), formatPos(region.max()),
 					String.valueOf(startedPairs)), true);
 			return 1;
 		}).orElseGet(() -> {
@@ -236,6 +249,10 @@ public final class ZoneguardCommands {
 	private static Text msg(String key, String... args) {
 		String pattern = Translations.tr(MSG + key);
 		return Text.literal(args.length == 0 ? pattern : pattern.formatted((Object[]) args));
+	}
+
+	private static String displayName(DetectorRegion region) {
+		return region.name().isBlank() ? Translations.tr(MSG + "unnamed") : region.name();
 	}
 
 	private static String regionDimension(DetectorRegion region) {

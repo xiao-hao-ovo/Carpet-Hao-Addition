@@ -8,6 +8,7 @@
     "LavaFluid_snowyCalciteMixin",
     "FluidBlock_snowyCalciteMixin",
     "FluidState_breakWaterloggedMixin",
+		"Block_explosionResistanceMixin",
     "EndPortalTeleportMixin",
     "StonecutterScreenHandlerMixin",
     "Block_bedrockCanBeMinedMixin",

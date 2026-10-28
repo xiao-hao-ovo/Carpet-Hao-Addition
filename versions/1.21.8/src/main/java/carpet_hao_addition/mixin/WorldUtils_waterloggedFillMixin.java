@@ -1,8 +1,10 @@
 package carpet_hao_addition.mixin;
 
 import carpet_hao_addition.EasyPlaceWaterloggedSettings;
+import carpet_hao_addition.HaoDebug;
 import carpet_hao_addition.waterlogged.WaterloggedFillHandler;
 import carpet_hao_addition.waterlogged.WaterloggedFillPayload;
+import carpet_hao_addition.waterlogged.FluidSourceTarget;
 
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.util.RayTraceUtils;
@@ -28,6 +30,7 @@ import net.minecraft.item.Items;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -93,9 +96,13 @@ public abstract class WorldUtils_waterloggedFillMixin {
 		}
 
 		// 1) 投影里是水/岩浆/装岩浆的炼药锅:它们都没有可放置物品,Litematica 不会放下它们。
-		BlockPos target = hao$fluidTarget(minecraft, player);
+		BlockPos target = hao$fluidTarget(minecraft, player, schematicWorld);
 		if (target != null) {
 			int kind = hao$missingKind(player, schematicWorld, target);
+			if (HaoDebug.ENABLED) {
+				HaoDebug.log("[hao-fluid] branch1 target=" + target + " kind=" + kind
+						+ " hasMaterial=" + hao$hasMaterial(player, kind));
+			}
 			if (kind != WaterloggedFillPayload.KIND_NONE && hao$hasMaterial(player, kind)
 					&& hao$markRequested(player, target)) {
 				hao$lastSentTick = tick;
@@ -103,6 +110,10 @@ public abstract class WorldUtils_waterloggedFillMixin {
 				// 服务端不认这个通道（没装本模组/版本对不上）时，别拦原版放置 ——
 				// 否则客户端已经返回 SUCCESS，玩家右键毫无反应、也不扣料，而且没有任何提示。
 				if (!ClientPlayNetworking.canSend(WaterloggedFillPayload.ID)) {
+					return;
+				}
+				// 与 doItemUse 那条入口互斥:同一条水柱这一次只放一格(详见 FluidSourceTarget#claim)。
+				if (!FluidSourceTarget.claim(player, target)) {
 					return;
 				}
 				ClientPlayNetworking.send(new WaterloggedFillPayload(true, kind, List.of(target)));
@@ -118,62 +129,42 @@ public abstract class WorldUtils_waterloggedFillMixin {
 
 		// 2) 含水方块补水:在中心附近小范围里,把"投影里含水、实际还没水"的格**整批**报给服务端。
 		//    不去赌某一格"完全对上" —— 服务端会在这些格真的放上方块后补水,避免偶发漏补。
-		BlockPos waterlogCenter = target != null ? target : hao$litematicaTarget(minecraft, player);
+		BlockPos waterlogCenter = target;
+		// 流体目标没命中时,直接看准星正对着的那一格(与 ClientWaterlogNotifier 同一判定),
+		// 不依赖 hao$litematicaTarget:它跟着 Litematica 的"目标流体/紧贴显示"设置走,
+		// 而"没水 vs 有水"在射线里往往不算"不同方块",会命中不到,导致补水中心落空。
+		if (waterlogCenter == null && minecraft.crosshairTarget instanceof BlockHitResult chit) {
+			waterlogCenter = chit.getBlockPos();
+		}
 		List<BlockPos> waterlogTargets = hao$collectWaterlogTargets(player, schematicWorld, waterlogCenter);
-		// 每次操作都发一包:没有要补的格时也报个空包,服务端据此刷新"正在施工"状态并清理记录。
+		// 没有要补的格就不发包(服务端清理只靠 active=false 与规则关闭兜底,空包本就是 no-op,纯浪费带宽)。
+		if (waterlogTargets.isEmpty()) {
+			return;
+		}
 		hao$lastSentTick = tick;
 		WaterloggedFillHandler.registerPayloadType();
 		if (!ClientPlayNetworking.canSend(WaterloggedFillPayload.ID)) {
 			return; // 服务端不认这个通道:这一包没意义,直接放弃
 		}
 		ClientPlayNetworking.send(new WaterloggedFillPayload(true,
-				waterlogTargets.isEmpty() ? WaterloggedFillPayload.KIND_NONE : WaterloggedFillPayload.KIND_WATERLOG,
-				waterlogTargets));
+				WaterloggedFillPayload.KIND_WATERLOG, waterlogTargets));
+		// 方块已经放好、只差含水 → 这次操作只为补水,拦下它,Litematica/原版别把手上的方块再放一遍。
+		// 方块还没放下的格不拦:那一下要靠放置流程把方块放下来,服务端随后再补水。
+		if (waterlogTargets.size() == 1 && hao$isPureRefill(player, schematicWorld, waterlogTargets.get(0))) {
+			cir.setReturnValue(ActionResult.SUCCESS);
+		}
 	}
 
 	/** 目标格投影里该放什么、而实际还没有 —— 返回请求类型;不需要处理时返回 {@code KIND_NONE}。 */
 	@Unique
 	private static int hao$missingKind(PlayerEntity player, WorldSchematic schematicWorld, BlockPos pos) {
-		BlockState desired = schematicWorld.getBlockState(pos);
-		FluidState fluid = player.getWorld().getFluidState(pos);
-		// 流动的水/岩浆不算"已经有了":源格被流动流体覆盖时仍要放一格源把它补正。
-		boolean fluidMissing = fluid.isEmpty() || !fluid.isStill();
-
-		// 灵魂沙/岩浆块上方的水在投影里存成 bubble_column(气泡柱)方块,它不是 WATER,但同样该补。
-		if (desired.isOf(Blocks.LAVA_CAULDRON)) {
-			return player.getWorld().getBlockState(pos).isOf(Blocks.LAVA_CAULDRON)
-					? WaterloggedFillPayload.KIND_NONE
-					: WaterloggedFillPayload.KIND_LAVA_CAULDRON;
-		}
-		if ((desired.isOf(Blocks.WATER) && desired.getFluidState().isStill()) || desired.isOf(Blocks.BUBBLE_COLUMN)) {
-			return fluidMissing ? WaterloggedFillPayload.KIND_WATER : WaterloggedFillPayload.KIND_NONE;
-		}
-		if (desired.isOf(Blocks.LAVA) && desired.getFluidState().isStill()) {
-			return fluidMissing ? WaterloggedFillPayload.KIND_LAVA : WaterloggedFillPayload.KIND_NONE;
-		}
-		// 投影里是火 / 灵魂火(常见于灵魂沙、岩浆块、下界岩上方),或需要点出的下界传送门 → 点火。
-		if (desired.isOf(Blocks.FIRE) || desired.isOf(Blocks.SOUL_FIRE) || desired.isOf(Blocks.NETHER_PORTAL)) {
-			BlockState current = player.getWorld().getBlockState(pos);
-			boolean lit = current.isOf(Blocks.FIRE) || current.isOf(Blocks.SOUL_FIRE)
-					|| current.isOf(Blocks.NETHER_PORTAL);
-			return lit ? WaterloggedFillPayload.KIND_NONE : WaterloggedFillPayload.KIND_IGNITE;
-		}
-		return WaterloggedFillPayload.KIND_NONE;
+		return FluidSourceTarget.missingKind(player, schematicWorld, pos);
 	}
 
 	/** 请求类型需要消耗的材料是否充足:水→冰,岩浆→岩浆块,装岩浆的炼药锅→炼药锅+岩浆块。 */
 	@Unique
 	private static boolean hao$hasMaterial(PlayerEntity player, int kind) {
-		return switch (kind) {
-			case WaterloggedFillPayload.KIND_WATER -> hao$hasItem(player, Items.ICE);
-			case WaterloggedFillPayload.KIND_LAVA -> hao$hasItem(player, Items.MAGMA_BLOCK);
-			// 炼药锅本身由正常放置流程消耗(见 WaterloggedFillHandler),这里只要求岩浆块。
-			case WaterloggedFillPayload.KIND_LAVA_CAULDRON -> hao$hasItem(player, Items.MAGMA_BLOCK);
-			// 点火:火焰弹(消耗 1 个)或打火石(消耗 1 点耐久)任一即可。
-			case WaterloggedFillPayload.KIND_IGNITE ->
-					hao$hasItem(player, Items.FIRE_CHARGE) || hao$hasItem(player, Items.FLINT_AND_STEEL);
-			default -> false;
-		};
+		return FluidSourceTarget.hasMaterial(player, kind);
 	}
 
 	/** 同一格短时间内只请求一次(流体的更新要下一 tick 才生效,否则会被重复放)。 */
@@ -190,20 +181,21 @@ public abstract class WorldUtils_waterloggedFillMixin {
 	}
 
 	/**
-	 * 用<b>含流体</b>的最近投影命中取目标格({@code getGenericTrace} 的 3 参重载,内部即
-	 * {@code respectRenderRange=true, targetFluids=true, false})。
+	 * 取「这一下右键该补水/岩浆/点火的那一格」。
 	 * <p>
-	 * Litematica 本部在关掉"目标流体"时的射线看不见流体,所以这条路径必须绕开它的设置,
-	 * 否则灵魂沙上方的水/岩浆永远放不上。不是投影方块时返回 null。
+	 * 判定与射线拾取都放在 {@link FluidSourceTarget},与 {@code ClientWaterlogNotifier.onUseItem}
+	 * 共用同一份逻辑:水源格在现实里是空气,准星打不到任何方块,{@code doItemUse} 那条钩子才是
+	 * 唯一能拦住它的入口,两条路径必须给出同一个答案,否则一边能放、一边不能。
+	 * 两条入口都先查「投影轻松放置是否开着」,关掉时本规则不参与任何操作。
 	 */
 	@Unique
-	private static BlockPos hao$fluidTarget(MinecraftClient minecraft, PlayerEntity player) {
-		RayTraceWrapper wrapper = RayTraceUtils.getGenericTrace(minecraft.world, player, HAO_TRACE_RANGE);
-		if (wrapper == null || wrapper.getHitType() != RayTraceWrapper.HitType.SCHEMATIC_BLOCK) {
-			return null;
+	private static BlockPos hao$fluidTarget(MinecraftClient minecraft, PlayerEntity player,
+			WorldSchematic schematicWorld) {
+		BlockPos target = FluidSourceTarget.lookedAt(minecraft, player, schematicWorld);
+		if (HaoDebug.ENABLED) {
+			HaoDebug.log("[hao-fluid] fluidTarget=" + target);
 		}
-		BlockHitResult hit = wrapper.getBlockHitResult();
-		return hit == null ? null : hit.getBlockPos();
+		return target;
 	}
 
 	/**
@@ -233,6 +225,9 @@ public abstract class WorldUtils_waterloggedFillMixin {
 	/** 该格在投影里是否「含水、而实际还没水」—— 是则会被上报给服务端,在其放上方块后补含水并扣冰。 */
 	@Unique
 	private static boolean hao$needsWaterlog(PlayerEntity player, WorldSchematic schematicWorld, BlockPos pos) {
+		if (!FluidSourceTarget.withinRenderLayers(pos)) {
+			return false; // 不在玩家当前渲染的层里:不补
+		}
 		BlockState desired = schematicWorld.getBlockState(pos);
 		if (!desired.contains(Properties.WATERLOGGED) || !Boolean.TRUE.equals(desired.get(Properties.WATERLOGGED))) {
 			return false;
@@ -242,39 +237,33 @@ public abstract class WorldUtils_waterloggedFillMixin {
 	}
 
 	/**
-	 * 在中心附近 ±1 格内找"投影里含水、而实际还没水"的格,<b>只取离中心最近的那一个</b>。
+	 * 只检查投影命中的<i>那一格</i>:投影里含水、实际还没水才上报。
 	 * <p>
-	 * 用 ±1 找是为了容忍准星格与实际落点的偏移;但只上报一格,避免一次操作把周围攒下的
-	 * 多个待补水格一起补上(表现为"一次性冒出好几格水")。
+	 * 之前用 ±1 容差找"最近的待补水格",导致没对准也会把旁边一格补掉;
+	 * 按用户要求改为严格按投影所对准的位置补水,不再带容差。
 	 */
 	@Unique
 	private static List<BlockPos> hao$collectWaterlogTargets(PlayerEntity player, WorldSchematic schematicWorld,
 			BlockPos center) {
 		List<BlockPos> result = new ArrayList<>();
-		if (center == null || !hao$hasItem(player, Items.ICE)) {
-			return result;
-		}
-		BlockPos best = null;
-		double bestDistance = Double.MAX_VALUE;
-		for (int dx = -1; dx <= 1; dx++) {
-			for (int dy = -1; dy <= 1; dy++) {
-				for (int dz = -1; dz <= 1; dz++) {
-					BlockPos pos = center.add(dx, dy, dz);
-					if (!hao$needsWaterlog(player, schematicWorld, pos)) {
-						continue;
-					}
-					double distance = pos.getSquaredDistance(center.getX(), center.getY(), center.getZ());
-					if (distance < bestDistance) {
-						bestDistance = distance;
-						best = pos;
-					}
-				}
-			}
-		}
-		if (best != null) {
-			result.add(best);
+		if (center != null && hao$hasItem(player, Items.ICE)
+				&& hao$needsWaterlog(player, schematicWorld, center)) {
+			result.add(center);
 		}
 		return result;
+	}
+
+	/**
+	 * 该格是否「已经放着投影里那个方块、只是没含水」。
+	 * <p>
+	 * 只有这种情况才算「纯补水」:方块还没放(空气/别的方块)时,这一次操作仍然要靠放置流程
+	 * 把方块放下,服务端随后补含水 —— 拦掉就会变成「右键毫无反应」。
+	 */
+	@Unique
+	private static boolean hao$isPureRefill(PlayerEntity player, WorldSchematic schematicWorld, BlockPos pos) {
+		BlockState desired = schematicWorld.getBlockState(pos);
+		BlockState current = player.getWorld().getBlockState(pos);
+		return current.getBlock() == desired.getBlock() && hao$needsWaterlog(player, schematicWorld, pos);
 	}
 
 	/** 清理过期的请求记录。 */

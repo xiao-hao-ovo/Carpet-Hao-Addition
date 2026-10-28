@@ -3,24 +3,24 @@ package carpet_hao_addition;
 import carpet.api.settings.Rule;
 
 /**
- * 增强世界吞噬者 ProMax:让**含水方块**也能被爆炸炸掉。
+ * 增强世界吞噬者 ProMax：让含水方块和黑曜石等高抗性方块也能被爆炸炸毁。
  * <p>
- * 原版算抗性用 {@code max(方块抗性, 流体抗性)},水的流体抗性是 100 —— 所以含水方块
- * (台阶、珊瑚扇、栅栏……)的有效抗性等于 100,TNT 根本炸不动,这就是原版
- * "含水方块防爆"的原因。本规则只让"流体那一项不参与"。
- * <p>
- * 高抗性方块(黑曜石/铁块/远古残骸等)也能被炸是另一回事 ,本项目不实现。
+ * 参照 Carpet-AMS-Addition 的 enhancedWorldEater：规则值设为大于等于 0 时，爆炸抗性
+ * 大于等于 17 的方块按该值参与爆炸；-1 关闭。基岩、铁砧、末地传送门相关方块仍受保护。
  */
 public class WorldEaterProMaxSettings {
-	/** Carpet 规则名(注册在 carpet 默认管理器)。 */
+	/** Carpet 规则名（注册在 carpet 默认管理器）。 */
 	public static final String RULE_NAME = "haoEnhancedWorldEaterProMax";
 
-	/** 是否让含水方块也能被炸(水的流体抗性按 0 算)。 */
-	@Rule(categories = {"Hao"})
-	public static boolean haoEnhancedWorldEaterProMax = false;
+	/** 高抗性方块的爆炸抗性上限；-1 关闭。 */
+	@Rule(options = {"-1", "0", "1", "2", "4", "8", "16"}, categories = {"Hao"}, strict = false)
+	public static double haoEnhancedWorldEaterProMax = -1.0D;
 
-	/** 规则是否开启。 */
 	public static boolean isEnabled() {
-		return haoEnhancedWorldEaterProMax;
+		return haoEnhancedWorldEaterProMax >= 0.0D;
+	}
+
+	public static float resistanceCap() {
+		return (float) Math.min(16.0D, Math.max(0.0D, haoEnhancedWorldEaterProMax));
 	}
 }

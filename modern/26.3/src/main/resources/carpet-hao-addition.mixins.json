@@ -24,6 +24,7 @@
     "ServerLevel_tickBlockMixin",
     "MinecraftServer_waterloggedFillMixin",
     "FluidState_breakWaterloggedMixin",
+		"Block_explosionResistanceMixin",
     "easyplace.BeaconEffectAccessor",
     "easyplace.ProjectionBlockItemMixin",
     "easyplace.AttachableItemPlacementMixin",

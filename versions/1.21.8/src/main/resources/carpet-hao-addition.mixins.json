@@ -27,6 +27,7 @@
 		"CactusShulkerBoxWashMixin",
 		"ServerPlayerEntity_autoMendingMixin",
 		"FluidState_breakWaterloggedMixin",
+		"Block_explosionResistanceMixin",
 		"easyplace.BeaconEffectAccessor",
 		"easyplace.SignPlacementMixin",
 		"easyplace.ProjectionBlockItemMixin",
@@ -40,9 +41,12 @@
 		"WackoBeacons_BeaconBlockEntityMixin",
 		"ClientPlayerInteractionManager_bedrockMinesMixin",
 		"WorldUtils_waterloggedFillMixin",
+		"MinecraftClient_waterloggedFillMixin",
+		"ClientPlayerInteractionManager_waterloggedFillMixin",
 		"WorldUtils_entityPlacementMixin",
 		"easyplace.SchematicHitVecMixin",
-		"easyplace.SchematicUtilsInvoker"
+		"easyplace.SchematicUtilsInvoker",
+		"ClientTickHandler_litematicaGuardMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
