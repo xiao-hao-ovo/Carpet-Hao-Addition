@@ -114,7 +114,9 @@ public abstract class ProjectionBlockItemMixin {
 				if (ProjectionPlacement.ruleEnabled()
 								&& isProtocolHit(hitOffsetZ(context.getHitPos(), PlacementBitTools.clickedPos(context)))) {
 						ProjectionPlacement.markProjectedState(true);
-						ProjectionPlacement.assignPlaceTargetPos(PlacementBitTools.clickedPos(context));
+						// 记落点而不是被点的方块:真正落下的位置是「被点的方块」沿点击面偏移一格
+						// (可替换方块则是它自己)。铁轨形状保护、告示牌判定都按落点算才准。
+						ProjectionPlacement.assignPlaceTargetPos(context.getBlockPos());
 				}
 				try {
 						return original.call(context);

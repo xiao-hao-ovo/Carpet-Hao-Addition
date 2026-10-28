@@ -35,28 +35,37 @@ public final class AutoMendingHandler {
 		mending(player);
 	}
 
-	/** 把等级进度里已攒下的经验拿去修补一件带「经验修补」的受损装备。 */
+	/** 把攒下的经验 —— 进度条里的,或者必要时退掉整级换来的 —— 拿去修补一件带「经验修补」的受损装备。 */
 	private static void mending(ServerPlayerEntity player) {
-		// 等级进度条里已经攒下、尚未消费掉的经验(点数)。
-		//
-		// 进度为 0 时就是没有可用经验:原版同样不会拿等级里的经验去修补,等级是一道不可分割的
-		// 门槛。早先这里"至少给 1 点"兜底,结果是 addExperience(-1) 在 experienceProgress == 0
-		// 时进入降级分支(见 PlayerEntity.addExperience:progress < 0 时 addExperienceLevels(-1)),
-		// 玩家白白掉一整级,只换来两点耐久。
-		int amount = (int) Math.floor(player.experienceProgress * player.getNextLevelExperience());
-		if (amount <= 0) {
-			return;
-		}
 		ItemStack target = findDamagedMendingItem(player);
 		if (target == null) {
 			return;
 		}
+		// 先花进度条里已经攒下、尚未消费掉的经验(点数)。
+		int available = (int) Math.floor(player.experienceProgress * player.getNextLevelExperience());
+		boolean fromLevel = false;
+		if (available <= 0) {
+			// 进度条空了,退掉一级来换。原版的经验修补只认捡到的经验球,不掉等级;
+			// 这条规则的意思正是"用手里已有的经验和等级换修补",所以这里要主动扣级。
+			if (player.experienceLevel <= 0) {
+				return;
+			}
+			// 扣掉一级、进度条随之归零,损失的正好是当前级的升级门槛那么多点经验。
+			available = player.getNextLevelExperience();
+			player.addExperienceLevels(-1);
+			player.experienceProgress = 0.0F;
+			fromLevel = true;
+		}
 		ServerWorld world = (ServerWorld) player.getWorld();
 		// 这些经验最多能换成多少点耐久(受附魔等级与物品本身的换算影响)。
 		// 注意单位:入参是**经验点数**,返回值是**耐久点数**,两者不是 1:1。
-		int repairable = EnchantmentHelper.getRepairWithExperience(world, target, amount);
+		int repairable = EnchantmentHelper.getRepairWithExperience(world, target, available);
 		int repaired = Math.min(repairable, target.getDamage());
 		if (repaired <= 0) {
+			if (fromLevel) {
+				// 一点耐久也换不来,把这一级原样还回去,别白扣。
+				player.addExperience(available);
+			}
 			return;
 		}
 		target.setDamage(target.getDamage() - repaired);
@@ -64,9 +73,15 @@ public final class AutoMendingHandler {
 		// 经验修补 1 点经验约换 2 点耐久,直接用 repaired 扣会把玩家的经验吞掉近一倍。
 		// 修满了就用掉手头这些;只修了一部分就按比例折算(至少 1 点)。
 		int cost = repaired >= repairable
-				? amount
-				: Math.max(1, (int) Math.round((double) amount * repaired / repairable));
-		player.addExperience(-Math.min(cost, amount));
+				? available
+				: Math.max(1, (int) Math.round((double) available * repaired / repairable));
+		if (fromLevel) {
+			// 一整级换来的经验通常用不完,余下的还回去。退还时按扣级后的门槛折算,
+			// 攒够一级会自己升回去,不会凭空多给。
+			player.addExperience(available - cost);
+		} else {
+			player.addExperience(-Math.min(cost, available));
+		}
 	}
 
 	/** 找一件"带经验修补附魔 + 已损坏"的装备(主手 / 副手 / 各盔甲槽)。 */

@@ -69,19 +69,13 @@ public final class ProjectionPlacement {
 	 * {@code PlacementRules} 的 RailBlock 解码器）。以前这个 bit 只是被记进 flag，
 	 * 全仓没有任何读方 —— 于是照投影铺弯曲铁轨时，原版会把每节都重算成直轨。</p>
 	 *
-	 * <p>判据只看 flag 与「目标格及其直接相邻格」：{@code placeTarget()} 记的是
-	 * **被点的那个方块**，真正落下的铁轨可能是它本身（替换式放置）或它旁边一格。
-	 * 限制在这个范围是为了不误伤放置点旁边的既有铁轨 —— 它们的形状该照常更新。</p>
+	 * <p>判据是「正好是这次的落点」。{@code placeTarget()} 记的是
+	 * {@code ItemPlacementContext.getBlockPos()}，也就是方块真正落在哪一格，
+	 * 不是被点击的那一格。只认这一格是因为旁边的既有铁轨要按自己的情况更新 ——
+	 * 它们若是投影放过的，会由 {@link RailShapeMemory} 单独还原。</p>
 	 */
 	public static boolean keepRailShapeAt(BlockPos pos) {
-		if (!flagsContain(RAIL_KEEP_SHAPE)) {
-			return false;
-		}
-		BlockPos target = placeTarget();
-		int dx = Math.abs(pos.getX() - target.getX());
-		int dy = Math.abs(pos.getY() - target.getY());
-		int dz = Math.abs(pos.getZ() - target.getZ());
-		return dx + dy + dz <= 1;
+		return flagsContain(RAIL_KEEP_SHAPE) && placeTarget().equals(pos);
 	}
 
 	/**
