@@ -52,8 +52,12 @@ import java.util.List;
  * 钩子选 {@code WorldUtils.doEasyPlaceAction}(轻松放置总入口,每次操作都会调用)。
  * <b>不能挂在 {@code easyPlaceBlockChecksCancel} 上</b> —— 投影里是水(必需建造物品为空)或
  * 投影与现状相同时,Litematica 会提前 return,那个判定根本不会被调用,灵魂沙上方的水就永远补不上。
+ * <p>
+ * <b>priority = 800</b>:litematica-printer(Hana)dev459+ 在 {@code doEasyPlaceAction} 的 HEAD
+ * 以 priority 900 整体取消方法(投影里没有可放置物品的水/岩浆/火格会直接 return),Mixin 会把
+ * 已取消之后的 HEAD 注入短路掉。本模组必须排在它前面,否则补料请求一个都发不出去。
  */
-@Mixin(WorldUtils.class)
+@Mixin(value = WorldUtils.class, priority = 800)
 public abstract class WorldUtils_waterloggedFillMixin {
 	/** 上次发包所在的客户端 tick,用于每 tick 限一次。 */
 	@Unique

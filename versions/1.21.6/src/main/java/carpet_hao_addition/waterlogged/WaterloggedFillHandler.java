@@ -1,4 +1,4 @@
-package carpet_hao_addition;
+package carpet_hao_addition.waterlogged;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
@@ -31,6 +31,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import carpet_hao_addition.EasyPlaceWaterloggedSettings;
+import carpet_hao_addition.HaoDebug;
 
 /**
  * haoProjectionWaterlogged 的注册与结算。
@@ -52,15 +54,40 @@ import java.util.UUID;
  */
 public final class WaterloggedFillHandler {
 	/**
+	 * 一条待处理记录的位置：**维度 + 坐标**。
+	 *
+	 * <p>维度不能省。PENDING 的键只有 UUID + BlockPos 时，玩家在主世界请求补水、
+	 * 60 秒内进了下界，服务端会拿「主世界的坐标」去玩家**当前所在的维度**（下界）
+	 * 执行 —— 于是下界同坐标那一格被误浇水/误灌岩浆，冰和岩浆块照扣。</p>
+	 */
+	private record PendingPos(net.minecraft.registry.RegistryKey<net.minecraft.world.World> dimension,
+			BlockPos pos) {
+	}
+
+	/**
 	 * 待补水格:玩家 UUID → (格子 → 请求时刻)。服务端每 tick 检查这些格,方块落下即补。
 	 * <p>
 	 * 用"具体格子 + 较长存活期":方块落下稍晚(网络/服务端处理延迟)或玩家快速连放都不会漏。
 	 */
-	private static final Map<UUID, Map<BlockPos, Long>> PENDING_WATERLOG = new HashMap<>();
+	private static final Map<UUID, Map<PendingPos, Long>> PENDING_WATERLOG = new HashMap<>();
 	/** 待灌岩浆的炼药锅格:玩家 UUID → (格子 → 请求时刻)。方块(炼药锅)落下后灌岩浆。 */
-	private static final Map<UUID, Map<BlockPos, Long>> PENDING_LAVA_CAULDRON = new HashMap<>();
-	/** 待处理记录的存活时长(服务端刻)。 */
-	private static final long PENDING_TTL = 40L;
+	private static final Map<UUID, Map<PendingPos, Long>> PENDING_LAVA_CAULDRON = new HashMap<>();
+	/** 待放水源的格:玩家 UUID → (格子 → 请求时刻)。等占位方块(冰)落下后换成水。 */
+	private static final Map<UUID, Map<PendingPos, Long>> PENDING_WATER = new HashMap<>();
+	/** 待放岩浆的格:同上,占位方块是岩浆块。 */
+	private static final Map<UUID, Map<PendingPos, Long>> PENDING_LAVA = new HashMap<>();
+	/**
+	 * 待处理记录的存活时长(服务端刻)。放宽到 1 分钟:实际用起来常常是"放完才发现背包里没冰/没岩浆块,
+	 * 去拿一趟再回来",2 秒(40 tick)早就过期了,表现就是"事后拿着冰再也补不上"。
+	 */
+	private static final long PENDING_TTL = 1200L;
+
+	/**
+	 * 单个玩家每张表的条数上限。
+	 * <p>大范围照投影施工时，每格都会进一次待处理表，而服务端每 tick 都要遍历它们。
+	 * 不设上限的话单玩家能堆到几千条（60 秒内不会被清），tick 开销会明显上去。</p>
+	 */
+	private static final int MAX_PENDING = 2048;
 
 	private static boolean payloadRegistered;
 	private static boolean receiverRegistered;
@@ -92,6 +119,8 @@ public final class WaterloggedFillHandler {
 				if (!EasyPlaceWaterloggedSettings.isEnabled() || !payload.active()) {
 					PENDING_WATERLOG.remove(player.getUuid());
 					PENDING_LAVA_CAULDRON.remove(player.getUuid());
+					PENDING_WATER.remove(player.getUuid());
+					PENDING_LAVA.remove(player.getUuid());
 					return;
 				}
 				ServerWorld world = player.getWorld() instanceof ServerWorld sw ? sw : null;
@@ -109,6 +138,16 @@ public final class WaterloggedFillHandler {
 						// 只记下"待灌岩浆的炼药锅格",炼药锅本身交给正常放置流程。
 						markAsPending(PENDING_LAVA_CAULDRON, player, payload.positions(), now);
 						prunePending(PENDING_LAVA_CAULDRON, now);
+					}
+					case WaterloggedFillPayload.KIND_WATER -> {
+						// 记为"待放水源格":原版会把占位方块(冰)真放下去,等它落下后由 hao$tryPlaceWater 换成水。
+						markAsPending(PENDING_WATER, player, payload.positions(), now);
+						prunePending(PENDING_WATER, now);
+					}
+					case WaterloggedFillPayload.KIND_LAVA -> {
+						// 同上,占位方块是岩浆块。
+						markAsPending(PENDING_LAVA, player, payload.positions(), now);
+						prunePending(PENDING_LAVA, now);
 					}
 					default -> {
 						for (BlockPos pos : payload.positions()) {
@@ -137,11 +176,25 @@ public final class WaterloggedFillHandler {
 	 * </ol>
 	 */
 	private static void hao$onServerTick(MinecraftServer server) {
-		if (PENDING_WATERLOG.isEmpty() && PENDING_LAVA_CAULDRON.isEmpty()) {
+		if (PENDING_WATERLOG.isEmpty() && PENDING_LAVA_CAULDRON.isEmpty()
+				&& PENDING_WATER.isEmpty() && PENDING_LAVA.isEmpty()) {
+			return;
+		}
+		// 规则关掉之后不能再继续补料 —— 否则玩家关掉规则前点过几格，接下来 60 秒里
+		// 服务端照样给那些格浇水/灌岩浆、照样扣冰和岩浆块，玩家会莫名其妙少东西。
+		// 客户端在规则关闭时不会发包（那边的入口直接 return），也就发不出清理信号，
+		// 所以这里必须自己兜底清空。
+		if (!EasyPlaceWaterloggedSettings.isEnabled()) {
+			PENDING_WATERLOG.clear();
+			PENDING_LAVA_CAULDRON.clear();
+			PENDING_WATER.clear();
+			PENDING_LAVA.clear();
 			return;
 		}
 		// 每 tick 只处理一格:之前攒下多格待处理时不会"一次性全补上"。
 		hao$processPending(server, PENDING_LAVA_CAULDRON, WaterloggedFillHandler::hao$tryFillCauldron, true);
+		hao$processPending(server, PENDING_LAVA, WaterloggedFillHandler::hao$tryPlaceLava, true);
+		hao$processPending(server, PENDING_WATER, WaterloggedFillHandler::hao$tryPlaceWater, true);
 		hao$processPending(server, PENDING_WATERLOG, WaterloggedFillHandler::hao$tryWaterlog, true);
 	}
 
@@ -150,14 +203,14 @@ public final class WaterloggedFillHandler {
 		boolean applyTo(ServerPlayerEntity player, ServerWorld world, BlockPos pos);
 	}
 
-	private static void hao$processPending(MinecraftServer server, Map<UUID, Map<BlockPos, Long>> table,
+	private static void hao$processPending(MinecraftServer server, Map<UUID, Map<PendingPos, Long>> table,
 			PendingAction action, boolean onePerTick) {
 		if (table.isEmpty()) {
 			return;
 		}
-		Iterator<Map.Entry<UUID, Map<BlockPos, Long>>> it = table.entrySet().iterator();
+		Iterator<Map.Entry<UUID, Map<PendingPos, Long>>> it = table.entrySet().iterator();
 		while (it.hasNext()) {
-			Map.Entry<UUID, Map<BlockPos, Long>> entry = it.next();
+			Map.Entry<UUID, Map<PendingPos, Long>> entry = it.next();
 			ServerPlayerEntity player = server.getPlayerManager().getPlayer(entry.getKey());
 			if (player == null || !(player.getWorld() instanceof ServerWorld world)) {
 				it.remove();
@@ -168,16 +221,28 @@ public final class WaterloggedFillHandler {
 				continue;
 			}
 			long now = world.getTime();
-			Iterator<Map.Entry<BlockPos, Long>> pendingIterator = entry.getValue().entrySet().iterator();
+			net.minecraft.registry.RegistryKey<net.minecraft.world.World> currentDimension =
+					world.getRegistryKey();
+			Iterator<Map.Entry<PendingPos, Long>> pendingIterator = entry.getValue().entrySet().iterator();
 			while (pendingIterator.hasNext()) {
-				Map.Entry<BlockPos, Long> pending = pendingIterator.next();
+				Map.Entry<PendingPos, Long> pending = pendingIterator.next();
 				if (now - pending.getValue() > PENDING_TTL) {
 					pendingIterator.remove();
 					continue;
 				}
-				if (action.applyTo(player, world, pending.getKey())) {
+				// 别的维度记下的位置留着,等玩家回到那个维度再处理 ——
+				// 绝不能拿旧维度的坐标在当前维度动手,那样会误改方块、还照扣材料。
+				if (!pending.getKey().dimension().equals(currentDimension)) {
+					continue;
+				}
+				if (action.applyTo(player, world, pending.getKey().pos())) {
 					pendingIterator.remove();
 					if (onePerTick) {
+						// 直接 return 会把已经空掉的内层 map 留在表里，
+						// 下次 tick 开头的 isEmpty() 早退判断就失效了。
+						if (entry.getValue().isEmpty()) {
+							it.remove();
+						}
 						return; // 本 tick 已处理一格,剩下的留到下一 tick
 					}
 				}
@@ -190,6 +255,10 @@ public final class WaterloggedFillHandler {
 
 	/** 该格已经是(空)炼药锅 → 换成装岩浆的炼药锅,扣 1 个岩浆块。 */
 	private static boolean hao$tryFillCauldron(ServerPlayerEntity player, ServerWorld world, BlockPos pos) {
+		// 与 tryPlaceFluid 一致:玩家走远了这次目标就作废,免得在看不见的地方改方块扣材料。
+		if (player.squaredDistanceTo(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) > 64.0) {
+			return true;
+		}
 		BlockState state = world.getBlockState(pos);
 		if (state.isOf(Blocks.LAVA_CAULDRON)) {
 			return true;
@@ -207,6 +276,10 @@ public final class WaterloggedFillHandler {
 
 	/** 该格已放上"可含水却没含水"的方块 → 补上含水,扣 1 个冰。 */
 	private static boolean hao$tryWaterlog(ServerPlayerEntity player, ServerWorld world, BlockPos pos) {
+		// 与 tryPlaceFluid 一致:玩家走远了这次目标就作废。
+		if (player.squaredDistanceTo(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) > 64.0) {
+			return true;
+		}
 		BlockState state = world.getBlockState(pos);
 		if (state.isAir()) {
 			return false; // 还没放上方块:继续等
@@ -217,7 +290,17 @@ public final class WaterloggedFillHandler {
 		if (!consumeOne(player, Items.ICE)) {
 			return false; // 暂时没有冰:留着,等有材料或过期
 		}
-		world.setBlockState(pos, state.with(Properties.WATERLOGGED, true), Block.NOTIFY_ALL);
+		BlockState waterlogged = state.with(Properties.WATERLOGGED, true);
+		// 含水方块里"点燃"的状态要一起熄掉(营火/灵魂营火/蜡烛):原版是在 getPlacementState 里
+		// 设 LIT = !waterlogged 的,我们事后补水得自己补这一步,否则营火含水但 LIT 还是 true,
+		// 看起来照样在烧 —— 这就是"含水营火不熄灭"的原因。
+		if (waterlogged.contains(Properties.LIT)) {
+			waterlogged = waterlogged.with(Properties.LIT, false);
+		}
+		world.setBlockState(pos, waterlogged, Block.NOTIFY_ALL);
+		if (HaoDebug.ENABLED) {
+			HaoDebug.log("[hao-waterlog] 补水 " + pos + " " + state.getBlock() + " -> " + waterlogged);
+		}
 		// 排一次流体 tick,保证含的水按流体规则更新(灵魂沙上生成气泡柱)。
 		world.scheduleFluidTick(pos, Fluids.WATER, Fluids.WATER.getTickRate(world));
 		return true;
@@ -227,38 +310,58 @@ public final class WaterloggedFillHandler {
 	private static void hao$placeRequested(ServerPlayerEntity player, ServerWorld world, BlockPos pos, int kind) {
 		switch (kind) {
 			case WaterloggedFillPayload.KIND_WATER ->
-					hao$placeFluid(player, world, pos, Fluids.WATER, Blocks.WATER, Items.ICE, "水源");
+					hao$tryPlaceWater(player, world, pos);
 			case WaterloggedFillPayload.KIND_LAVA ->
-					hao$placeFluid(player, world, pos, Fluids.LAVA, Blocks.LAVA, Items.MAGMA_BLOCK, "岩浆");
+					hao$tryPlaceLava(player, world, pos);
 			case WaterloggedFillPayload.KIND_IGNITE -> hao$ignite(player, world, pos);
 			default -> {
 			}
 		}
 	}
 
-	/** 放一格流体源:逐格校验(距离、位置可替换、不能已是同种源流体),并扣掉 1 个材料。 */
-	private static void hao$placeFluid(ServerPlayerEntity player, ServerWorld world, BlockPos pos,
-			Fluid fluid, Block block, Item cost, String label) {
+	/** 该格该有水(源) → 扣 1 个冰,放成水;占位方块(冰)落下前会一直重试。 */
+	private static boolean hao$tryPlaceWater(ServerPlayerEntity player, ServerWorld world, BlockPos pos) {
+		return hao$tryPlaceFluid(player, world, pos, Fluids.WATER, Blocks.WATER, Items.ICE, Blocks.ICE, "水源");
+	}
+
+	/** 该格该有岩浆(源) → 扣 1 个岩浆块,放成岩浆。 */
+	private static boolean hao$tryPlaceLava(ServerPlayerEntity player, ServerWorld world, BlockPos pos) {
+		return hao$tryPlaceFluid(player, world, pos, Fluids.LAVA, Blocks.LAVA, Items.MAGMA_BLOCK, Blocks.MAGMA_BLOCK, "岩浆");
+	}
+
+	/**
+	 * 放一格流体源;返回 false 表示这次没成,条目保留、下一 tick 再试(没材料时会一直等,直到过期)。
+	 * <p>
+	 * 关键参数 {@code placeholderBlock}:投影里是流体、而玩家手上只有"能顶一下"的物品时,原版放置流程
+	 * 会把这个物品真放进世界当占位(水源 → 冰,岩浆 → 岩浆块)。它会挡住这一次替换,所以这里允许把它换成
+	 * 流体;这种时候材料在放占位方块那一下已经扣过了,不再重复扣。
+	 */
+	private static boolean hao$tryPlaceFluid(ServerPlayerEntity player, ServerWorld world, BlockPos pos,
+			Fluid fluid, Block block, Item cost, Block placeholderBlock, String label) {
 		if (player.squaredDistanceTo(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) > 64.0) {
-			return;
+			return true; // 玩家走远了:这次目标作废
 		}
 		FluidState current = world.getFluidState(pos);
 		if (!current.isEmpty() && current.isStill()) {
-			// 已经是源流体,不必再放。
-			return;
+			return true; // 已经是目标源流体
 		}
 		BlockState state = world.getBlockState(pos);
 		// 流动流体格要允许被源覆盖:否则流体一旦流到投影里的源格,那格就永远补不上源。
+		boolean placeholder = state.isOf(placeholderBlock);
 		boolean flowingFluid = !current.isEmpty();
-		if (!state.isAir() && !state.isReplaceable() && !flowingFluid) {
-			return;
+		if (!placeholder && !state.isAir() && !state.isReplaceable() && !flowingFluid) {
+			return !state.isAir(); // 落的是别的实体方块:目标作废
 		}
-		if (!consumeOne(player, cost)) {
-			return;
+		if (!placeholder && !consumeOne(player, cost)) {
+			return false; // 暂时没有材料:留着,等有材料或过期
 		}
 		world.setBlockState(pos, block.getDefaultState(), Block.NOTIFY_ALL);
 		// 排流体 tick:否则放下的是"死水/死岩浆"(不流动,灵魂沙上也不生成气泡柱)。
 		world.scheduleFluidTick(pos, fluid, fluid.getTickRate(world));
+		if (HaoDebug.ENABLED) {
+			HaoDebug.log("[hao-waterlog] 放流体 " + label + " " + pos + (placeholder ? "(把占位方块替换掉)" : ""));
+		}
+		return true;
 	}
 
 	/**
@@ -310,17 +413,31 @@ public final class WaterloggedFillHandler {
 		};
 	}
 
-	private static void markAsPending(Map<UUID, Map<BlockPos, Long>> table, ServerPlayerEntity player,
+	private static void markAsPending(Map<UUID, Map<PendingPos, Long>> table, ServerPlayerEntity player,
 			List<BlockPos> positions, long now) {
-		Map<BlockPos, Long> pending = table.computeIfAbsent(player.getUuid(), key -> new HashMap<>());
+		Map<PendingPos, Long> pending = table.computeIfAbsent(player.getUuid(), key -> new HashMap<>());
+		// 超限时一次淘汰最旧的四分之一 —— 每次插入只做 O(1) 判断，
+		// 而不是每插一条就全表扫一遍找最旧的。
+		if (pending.size() + positions.size() > MAX_PENDING) {
+			int drop = Math.max(1, pending.size() / 4);
+			pending.entrySet().stream()
+					.sorted(Map.Entry.comparingByValue())
+					.limit(drop)
+					.map(Map.Entry::getKey)
+					.toList()
+					.forEach(pending::remove);
+		}
+		// 记下玩家**此刻所在维度**：跨维度之后这条记录就只在原维度有效。
+		net.minecraft.registry.RegistryKey<net.minecraft.world.World> dimension =
+				player.getWorld().getRegistryKey();
 		for (BlockPos pos : positions) {
-			pending.put(pos, now);
+			pending.put(new PendingPos(dimension, pos.toImmutable()), now);
 		}
 	}
 
 	/** 清理过期的待处理记录。 */
-	private static void prunePending(Map<UUID, Map<BlockPos, Long>> table, long now) {
-		for (Map<BlockPos, Long> pending : table.values()) {
+	private static void prunePending(Map<UUID, Map<PendingPos, Long>> table, long now) {
+		for (Map<PendingPos, Long> pending : table.values()) {
 			pending.entrySet().removeIf(entry -> now - entry.getValue() > PENDING_TTL);
 		}
 	}
@@ -349,8 +466,10 @@ public final class WaterloggedFillHandler {
 		return switch (EasyPlaceWaterloggedSettings.shulkerMode()) {
 			// 方案一:直接在潜影盒里扣除,材料不拿到背包。
 			case DIRECT -> consumeFromShulker(player, item);
-			// 方案二:先把材料取到背包,材料留在背包里(不再从背包扣掉)。
-			case TAKE -> takeFromShulker(player, item);
+			// 方案二:先把材料取到背包,再从背包扣掉这 1 个(取一组只是省得反复取)。
+			// 这里必须和 damageOne 的 TAKE 分支对称地"取了再扣":早先只调 takeFromShulker
+			// 就返回 true,每补一格白送一整组冰/岩浆块 —— 材料和消耗完全脱钩。
+			case TAKE -> takeFromShulker(player, item) && consumeOne(player, item);
 			case FALSE -> false;
 		};
 	}

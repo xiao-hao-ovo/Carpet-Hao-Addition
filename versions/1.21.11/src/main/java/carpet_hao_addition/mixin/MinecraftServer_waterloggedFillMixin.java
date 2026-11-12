@@ -1,7 +1,8 @@
 package carpet_hao_addition.mixin;
 
-import carpet_hao_addition.EntityPlacementHandler;
-import carpet_hao_addition.WaterloggedFillHandler;
+import carpet_hao_addition.BlockDataChannel;
+import carpet_hao_addition.entity.EntityPlacementHandler;
+import carpet_hao_addition.waterlogged.WaterloggedFillHandler;
 
 import net.minecraft.server.MinecraftServer;
 
@@ -21,6 +22,7 @@ public abstract class MinecraftServer_waterloggedFillMixin {
 	@Inject(method = "<init>", at = @At("TAIL"))
 	private void hao$registerWaterloggedPayload(CallbackInfo ci) {
 		WaterloggedFillHandler.registerServerReceiver();
+		BlockDataChannel.registerServerReceiver();
 		EntityPlacementHandler.registerServerReceiver();
 	}
 }
