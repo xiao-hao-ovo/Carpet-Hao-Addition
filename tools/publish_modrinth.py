@@ -33,7 +33,7 @@ CATEGORIES = ["utility", "management"]
 LICENSE_ID = "CC0-1.0"
 CLASSIFIER = "release"          # 版本渠道: release / beta / alpha
 GAME_VERSIONS = ["1.21", "1.21.1", "1.21.2", "1.21.4", "1.21.6", "1.21.8",
-                 "1.21.10", "1.21.11", "26.1.2", "26.2"]
+                 "1.21.10", "1.21.11", "26.1.2", "26.2", "26.3"]
 DEFAULT_ICON = REPO / "tools" / "icon-512.png"
 DEFAULT_BODY = REPO / "tools" / "modrinth-body.md"
 
@@ -126,7 +126,7 @@ def local_jars(directory=None, prefix=None):
         paths = sorted(pathlib.Path(directory).glob("*.jar"))
     else:
         paths = []
-        for pat in ("build/libs/*.jar", "modern/*/build/libs/*.jar"):
+        for pat in ("build/libs/*.jar", "versions/*/build/libs/*.jar", "modern/*/build/libs/*.jar"):
             paths += sorted(REPO.glob(pat))
     out = []
     for p in paths:
@@ -139,7 +139,19 @@ def local_jars(directory=None, prefix=None):
 
 def project_id(tok):
     st, body = request("GET", f"/project/{SLUG}", tok)
-    return body["id"] if st == 200 and isinstance(body, dict) else None
+    if st == 200 and isinstance(body, dict):
+        return body["id"]
+    # 项目可能处于 withheld 等非公开状态:公开端点返回 404,但自己的项目列表里仍看得到。
+    # 不回退的话 ensure_project 会误判成"项目不存在"并尝试重建,slug 已被占用只会失败。
+    st2, user = request("GET", "/user", tok)
+    if st2 == 200 and isinstance(user, dict) and user.get("username"):
+        st3, projects = request("GET", f"/user/{user['username']}/projects", tok)
+        if st3 == 200 and isinstance(projects, list):
+            for p in projects:
+                if p.get("slug") == SLUG:
+                    print(f"注意: 项目 {SLUG} 未公开(status={p.get('status')}),按项目 id 继续")
+                    return p.get("id")
+    return None
 
 def make_changelog(total):
     override = os.environ.get("MODRINTH_CHANGELOG", "").strip()
