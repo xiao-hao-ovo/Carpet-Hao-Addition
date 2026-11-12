@@ -79,6 +79,8 @@ git tag v0.2.4; git push origin v0.2.4
 
 ### 本地手动上传
 
+> 正常发版不要用下面的命令 —— 推送 tag 后 CI 已经自动完成上传。这里的脚本只用于 CI 失败后补救、或核对项目里已有的重复文件。
+
 ```powershell
 # CurseForge
 python tools/publish_curseforge.py versions --dry-run   # 先看会上传哪些 jar

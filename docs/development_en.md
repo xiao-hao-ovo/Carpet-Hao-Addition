@@ -79,6 +79,8 @@ One-time setup (repository `Settings → Secrets and variables → Actions`):
 
 ### Manual local upload
 
+> Do not use these commands for a normal release — pushing the tag already uploads everything through CI. They exist for recovering from a failed CI run, or for auditing duplicate files already on the project.
+
 ```powershell
 # CurseForge
 python tools/publish_curseforge.py versions --dry-run   # see which jars would be uploaded
