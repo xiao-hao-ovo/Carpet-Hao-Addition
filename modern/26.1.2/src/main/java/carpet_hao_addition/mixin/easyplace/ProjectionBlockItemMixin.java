@@ -173,7 +173,11 @@ public abstract class ProjectionBlockItemMixin {
                 + " 世界该处=" + level.getBlockState(pos));
         ItemStack newStack = ProjectionPlacement.applySchematicItemData(stack, context);
         if (newStack == null) {
-            return original.call(pos, level, player, stack, state);
+            boolean hao$plain = original.call(pos, level, player, stack, state);
+            // 该分支同样要广播:投影里没有额外数据,但 stack 可能自带方块实体数据,
+            // 不广播客户端就收不到,表现为告示牌空白、右键一次才出现文字。
+            hao$notifyClient(level, pos);
+            return hao$plain;
         }
         boolean result = original.call(pos, level, player, newStack, state);
         // 兜底分支也要广播：客户端预测放置的方块实体没有投影数据，不回传就一直空白。

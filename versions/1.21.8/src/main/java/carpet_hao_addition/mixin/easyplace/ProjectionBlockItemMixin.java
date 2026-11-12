@@ -189,10 +189,14 @@ public abstract class ProjectionBlockItemMixin {
 				if (newStack == null) {
 						boolean hao$plain = original.call(instance, pos, level, player, stack, state);
 						hao$applyBlockEntityData(level, pos, stack, state);
+						// 四条分支都必须广播:少了这一句,客户端收不到方块实体数据,
+						// 表现为告示牌空白、右键一次才出现文字。
+						hao$notifyClient(level, pos);
 						return hao$plain;
 				}
 				boolean result = original.call(instance, pos, level, player, newStack, state);
 				hao$applyBlockEntityData(level, pos, newStack, state);
+				hao$notifyClient(level, pos);
 				return result;
 		}
 
