@@ -39,6 +39,7 @@
     "easyplace.SignPlacementMixin"
   ],
   "client": [
+		"ClientTickHandler_litematicaGuardMixin",
     "MultiPlayerGameMode_bedrockMinesMixin",
     "WorldUtils_waterloggedFillMixin",
     "MultiPlayerGameMode_waterloggedFillMixin",

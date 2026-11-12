@@ -38,6 +38,7 @@
     "MinecraftServer_rocketShulkerMixin"
   ],
   "client": [
+		"ClientTickHandler_litematicaGuardMixin",
     "WackoBeacons_BeaconPowerButtonMixin",
     "WackoBeacons_BeaconBlockEntityMixin",
     "MultiPlayerGameMode_bedrockMinesMixin",
