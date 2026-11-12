@@ -13,6 +13,7 @@ import net.minecraft.world.level.block.TurtleEggBlock;
 import net.minecraft.world.level.block.VineBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.CopperBulbBlock;
 import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.ChiseledBookShelfBlock;
@@ -30,6 +31,7 @@ import net.minecraft.world.level.block.LeverBlock;
 import net.minecraft.world.level.block.LightBlock;
 import net.minecraft.world.level.block.HugeMushroomBlock;
 import net.minecraft.world.level.block.NoteBlock;
+import net.minecraft.world.level.block.PoweredRailBlock;
 import net.minecraft.world.level.block.RailBlock;
 import net.minecraft.world.level.block.RedstoneLampBlock;
 import net.minecraft.world.level.block.RedStoneWireBlock;
@@ -54,6 +56,7 @@ import net.minecraft.world.level.block.state.properties.WallSide;
 import net.minecraft.world.level.block.state.properties.RedstoneSide;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.core.Direction;
 
@@ -301,8 +304,12 @@ public final class PlacementRules {
 		// 阳光探测器：反向 bit0
 		stateCodec(DaylightDetectorBlock.class, boolProp(DaylightDetectorBlock.INVERTED, 0));
 
-		// 探测铁轨：通电 bit0
-		stateCodec(DetectorRailBlock.class, boolProp(DetectorRailBlock.POWERED, 0));
+		// 探测铁轨：和其它铁轨同一套协议（形状占低 4 位 + bit4 标记）。
+		//
+		// 旧实现只写了 boolProp(POWERED, 0)：既完全没有形状位，bit0 又和形状的最低位撞车，
+		// 于是照投影铺探测铁轨时形状全部落成平轨（普通/动力/激活铁轨都正常，只有它不行）。
+		// 协议一共 5 位，已被形状和标记占满，通电位不在协议里 —— 放下后由红石决定。
+		stateCodec(DetectorRailBlock.class, railShapeCodec(DetectorRailBlock.SHAPE));
 
 		// 灯笼：悬挂 bit0
 		stateCodec(LanternBlock.class, boolProp(LanternBlock.HANGING, 0));
@@ -343,17 +350,14 @@ public final class PlacementRules {
 					return out;
 				}));
 
-		// 铁轨：形状低 4 位；bit4 标记「不要自动改形状」
-		stateCodec(RailBlock.class, stackOf(
-				enumProp(RailBlock.SHAPE, 0, 4, 0),
-				custom(state -> 0b0001_0000,
-						(bits, state, ctx) -> {
-							if ((bits & 0b0001_0000) != 0) {
-								ProjectionPlacement.noteFlag(
-										ProjectionPlacement.RAIL_KEEP_SHAPE);
-							}
-							return state;
-						})));
+		// 铁轨：形状低 4 位；bit4 标记「不要自动改形状」。
+		//
+		// 必须把**每一种**铁轨都登记上，不能只登记 RailBlock ——
+		// 动力铁轨的父类是 BaseRailBlock 而不是 RailBlock，codec() 沿继承链向上找时够不到
+		// RailBlock，于是查不到 codec、整个协议位被丢掉：照投影铺动力铁轨时形状全落成平轨。
+		// 26.x 的 powered_rail 与 activator_rail 共用 PoweredRailBlock，登记它就都覆盖了。
+		stateCodec(RailBlock.class, railShapeCodec(RailBlock.SHAPE));
+		stateCodec(PoweredRailBlock.class, railShapeCodec(PoweredRailBlock.SHAPE));
 
 		// ---------- 堆叠类（需要连续点几次才叠到目标） ----------
 
@@ -525,6 +529,40 @@ public final class PlacementRules {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * 各类铁轨共用的协议：形状占低 4 位，bit4 = 「别自动改形状」。
+	 *
+	 * <p>这里自己解 ordinal，不复用 {@code PlacementCodecs#enumProp} —— 那个实现会把越界值
+	 * 绕回合法区间。协议位一旦是垃圾（多次叠加、版本不一致），绕回 2..5 正好落在四种坡轨上，
+	 * 会被 {@link ProjectionPlacement#stateCanExist} 当成真坡去查「坡顶有没有方块」，
+	 * 连带把本来正常的一格误拒掉。<b>越界就不动形状。</b></p>
+	 */
+	private static PlacementCodec railShapeCodec(EnumProperty<RailShape> shape) {
+		return new PlacementCodec() {
+			@Override
+			public int pack(BlockState state, int bits) {
+				int shapeBits = state.hasProperty(shape) ? (state.getValue(shape).ordinal() & 0b1111) : 0;
+				return bits | shapeBits | 0b0001_0000;
+			}
+
+			@Override
+			public BlockState unpack(int bits, BlockState state, BlockPlaceContext context) {
+				if ((bits & 0b0001_0000) != 0) {
+					ProjectionPlacement.noteFlag(ProjectionPlacement.RAIL_KEEP_SHAPE);
+				}
+				if (!state.hasProperty(shape)) {
+					return state;
+				}
+				int ordinal = bits & 0b1111;
+				RailShape[] values = RailShape.values();
+				if (ordinal >= values.length) {
+					return state; // 越界不猜
+				}
+				return state.setValue(shape, values[ordinal]);
+			}
+		};
 	}
 
 	private static void stateCodec(Class<? extends Block> type, PlacementCodec codec) {

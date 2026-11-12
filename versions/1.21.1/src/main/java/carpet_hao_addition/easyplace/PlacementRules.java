@@ -9,9 +9,12 @@ import net.minecraft.block.CandleBlock;
 import net.minecraft.block.SeaPickleBlock;
 import net.minecraft.block.SnowBlock;
 import net.minecraft.block.TurtleEggBlock;
+import net.minecraft.block.MultifaceGrowthBlock;
 import net.minecraft.block.VineBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.block.enums.RailShape;
 import net.minecraft.block.BulbBlock;
 import net.minecraft.block.CampfireBlock;
 import net.minecraft.block.ChiseledBookshelfBlock;
@@ -29,6 +32,7 @@ import net.minecraft.block.LeverBlock;
 import net.minecraft.block.LightBlock;
 import net.minecraft.block.MushroomBlock;
 import net.minecraft.block.NoteBlock;
+import net.minecraft.block.PoweredRailBlock;
 import net.minecraft.block.RailBlock;
 import net.minecraft.block.RedstoneLampBlock;
 import net.minecraft.block.RedstoneWireBlock;
@@ -299,8 +303,12 @@ public final class PlacementRules {
 		// 阳光探测器：反向 bit0
 		stateCodec(DaylightDetectorBlock.class, boolProp(DaylightDetectorBlock.INVERTED, 0));
 
-		// 探测铁轨：通电 bit0
-		stateCodec(DetectorRailBlock.class, boolProp(DetectorRailBlock.POWERED, 0));
+		// 探测铁轨：和其它铁轨同一套协议（形状占低 4 位 + bit4 标记）。
+		//
+		// 旧实现只写了 boolProp(POWERED, 0)：既完全没有形状位，bit0 又和形状的最低位撞车，
+		// 于是照投影铺探测铁轨时形状全部落成平轨（普通/动力/激活铁轨都正常，只有它不行）。
+		// 协议一共 5 位，已被形状和标记占满，通电位不在协议里 —— 放下后由红石决定。
+		stateCodec(DetectorRailBlock.class, railShapeCodec(DetectorRailBlock.SHAPE));
 
 		// 灯笼：悬挂 bit0
 		stateCodec(LanternBlock.class, boolProp(LanternBlock.HANGING, 0));
@@ -341,18 +349,14 @@ public final class PlacementRules {
 					return out;
 				}));
 
-		// 铁轨：形状低 4 位；bit4 标记「不要自动改形状」
-		stateCodec(RailBlock.class, stackOf(
-				enumProp(RailBlock.SHAPE, 0, 4, 0),
-				custom(state -> 0b0001_0000,
-						(bits, state, ctx) -> {
-							if ((bits & 0b0001_0000) != 0) {
-								ProjectionPlacement.noteFlag(
-										ProjectionPlacement.RAIL_KEEP_SHAPE);
-							}
-							return state;
-						})));
-
+		// 铁轨：形状低 4 位；bit4 标记「不要自动改形状」。
+		//
+		// 必须把**每一种**铁轨都登记上，不能只登记 RailBlock ——
+		// 动力铁轨的父类是 AbstractRailBlock，而不是 RailBlock，
+		// codec() 沿继承链向上找时够不到 RailBlock，于是查不到 codec、
+		// 整个协议位被丢掉：照投影铺动力铁轨时形状全落成平轨。
+		stateCodec(RailBlock.class, railShapeCodec(RailBlock.SHAPE));
+		stateCodec(PoweredRailBlock.class, railShapeCodec(PoweredRailBlock.SHAPE));
 		// ---------- 堆叠类（需要连续点几次才叠到目标） ----------
 
 		// 雪层：层数 1-8 占低 3 位；雪是「一层层加」的
@@ -462,6 +466,30 @@ public final class PlacementRules {
 					return index < need.size() ? need.get(index) & 0b0111 : 0b0111;
 				}));
 
+		// 发光地衣等「多面方块」：方向表是完整的 6 向（索引 0..5），一次铺一个面
+		stateCodec(MultifaceGrowthBlock.class, stepped(
+				(bits, state, ctx) -> {
+					int index = bits & 0b0111;
+					if (index >= VINE_DIRECTIONS.length + 1) {
+						return null;
+					}
+					Direction direction = Direction.values()[index];
+					BlockState at = ctx.getWorld().getBlockState(
+							PlacementBitTools.clickedPos(ctx));
+					BlockState base = state.getBlock() instanceof MultifaceGrowthBlock
+							? state
+							: at.getBlock() instanceof MultifaceGrowthBlock
+									? at
+									: net.minecraft.block.Blocks.GLOW_LICHEN.getDefaultState();
+					var prop = MultifaceGrowthBlock.getProperty(direction);
+					return prop == null || !base.contains(prop) ? null : base.with(prop, true);
+				},
+				(schem, client) -> missingDirections(schem, client, Direction.values(), PlacementRules::multifaceHas).size(),
+				(schem, client, index) -> {
+					List<Integer> need = missingDirections(schem, client, Direction.values(), PlacementRules::multifaceHas);
+					return index < need.size() ? need.get(index) & 0b0111 : 0b0111;
+				}));
+
 		// 信标本身没有可还原的方块状态（要还原的是手持物上的效果数据）
 		stateCodec(BeaconBlock.class, PlacementCodecs.none());
 	}
@@ -501,6 +529,32 @@ public final class PlacementRules {
 		return null;
 	}
 
+	private static PlacementCodec railShapeCodec(EnumProperty<RailShape> shape) {
+		return new PlacementCodec() {
+			@Override
+			public int pack(BlockState state, int bits) {
+				int shapeBits = state.contains(shape) ? (state.get(shape).ordinal() & 0b1111) : 0;
+				return bits | shapeBits | 0b0001_0000;
+			}
+
+			@Override
+			public BlockState unpack(int bits, BlockState state, ItemPlacementContext context) {
+				if ((bits & 0b0001_0000) != 0) {
+					ProjectionPlacement.noteFlag(ProjectionPlacement.RAIL_KEEP_SHAPE);
+				}
+				if (!state.contains(shape)) {
+					return state;
+				}
+				int ordinal = bits & 0b1111;
+				RailShape[] values = RailShape.values();
+				if (ordinal >= values.length) {
+					return state; // 越界不猜
+				}
+				return state.with(shape, values[ordinal]);
+			}
+		};
+	}
+
 	private static void stateCodec(Class<? extends Block> type, PlacementCodec codec) {
 		STATE_CODECS.put(type, codec);
 	}
@@ -535,6 +589,10 @@ public final class PlacementRules {
 		}
 		BooleanProperty prop = VineBlock.FACING_PROPERTIES.get(direction);
 		return prop != null && state.contains(prop) && state.get(prop);
+	}
+
+	private static boolean multifaceHas(BlockState state, Direction direction) {
+		return state.getBlock() instanceof MultifaceGrowthBlock && MultifaceGrowthBlock.hasDirection(state, direction);
 	}
 
 	/** 红石线是否为「不连任何方向」的孤立点。 */

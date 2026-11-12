@@ -88,4 +88,10 @@ public final class BeaconItemData implements ItemDataCodec {
 	private static CompoundTag blockEntityTag(ItemStack stack) {
 		return ItemDataCodec.unwrapBlockEntityData(stack.get(DataComponents.BLOCK_ENTITY_DATA));
 	}
+
+    /** 协议位就装得下，不必走「完整 NBT 通道」。 */
+    @Override
+    public boolean protocolCoversAll() {
+        return true;
+    }
 }

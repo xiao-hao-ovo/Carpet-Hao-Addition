@@ -63,6 +63,32 @@ public final class SignItemData implements ItemDataCodec {
 		return bits;
 	}
 
+	/**
+	 * 把 1.19 及以前的告示牌 NBT（{@code Text1}..{@code Text4} + {@code Color} +
+	 * {@code GlowingText}）转成 1.20+ 的 {@code front_text} / {@code back_text} 结构。
+	 * <p>
+	 * 投影文件可能是旧版本导出的；服务端 1.21.8 的 {@code SignBlockEntity.readNbt} 只认新结构，
+	 * 不转的话文字和颜色都会退回默认值（空文本 + 黑色）。
+	 * <p>
+	 * 已经是新结构（存在 {@code front_text}）或完全不是告示牌 NBT 时原样返回。
+	 */
+	public static NbtCompound normalizeSchematicNbt(NbtCompound tag) {
+		if (tag == null || tag.contains("front_text") || !tag.contains("Text1")) {
+			return tag;
+		}
+		NbtCompound out = tag.copy();
+		NbtCompound front = new NbtCompound();
+		NbtList messages = new NbtList();
+		for (int line = 1; line <= 4; ++line) {
+			messages.add(NbtString.of(tag.getString("Text" + line).orElse("\"\"")));
+		}
+		front.put("messages", messages);
+		front.putString(COLOR_KEY, tag.getString("Color").orElse("black"));
+		front.putBoolean(GLOWING_KEY, tag.getBoolean("GlowingText").orElse(false));
+		out.put(FRONT, front);
+		return out;
+	}
+
 	@Override
 	public int encodeBlockEntity(BlockEntity blockEntity) {
 		if (!(blockEntity instanceof SignBlockEntity sign)) {

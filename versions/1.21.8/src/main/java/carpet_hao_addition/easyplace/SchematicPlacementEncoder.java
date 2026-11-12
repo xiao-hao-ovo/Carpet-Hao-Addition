@@ -68,13 +68,16 @@ public class SchematicPlacementEncoder {
 	    * </p>
 	    */
 		private static int encodeItemData(ItemDataCodec codec, BlockPos pos, BlockState stateSchematic) {
+				// 告示牌的颜色/发光在投影世界的 SignBlockEntity 上经常是默认值（只还原了文字），
+				// 用它编码会把投影文件里的颜色覆盖成黑色。这类方块跳过 ①，直接走投影文件 NBT。
+				boolean preferSchematicNbt = codec instanceof SignItemData;
 				// ① 投影世界的方块实体
 				World world = SchematicWorldHandler.getSchematicWorld();
 				BlockEntity blockEntity = world == null ? null : world.getBlockEntity(pos);
 				if (HaoDebug.ENABLED) {
 						HaoDebug.log("[hao-easyplace]   投影方块实体=" + (blockEntity == null ? "null" : blockEntity.getClass().getSimpleName()));
 				}
-				if (blockEntity != null) {
+				if (!preferSchematicNbt && blockEntity != null) {
 						int fromEntity = ProjectionPlacement.encodeBlockEntityBits(blockEntity);
 						if (HaoDebug.ENABLED) {
 								HaoDebug.log("[hao-easyplace]   实体编码位=" + fromEntity);
@@ -86,6 +89,11 @@ public class SchematicPlacementEncoder {
 
 				// ② 投影文件里的完整 NBT
 				NbtCompound fullNbt = schematicBlockEntityNbt(pos, stateSchematic);
+				if (codec instanceof SignItemData signCodec) {
+						// 投影文件可能是 1.19 及以前导出的（Text1..Text4 + Color），服务端 1.21.8
+						// 只认 1.20+ 的 front_text/back_text；不转的话颜色/文字都会退回默认。
+						fullNbt = signCodec.normalizeSchematicNbt(fullNbt);
+				}
 				int fromNbt = codec.encodeNbt(fullNbt);
 				if (HaoDebug.ENABLED) {
 						HaoDebug.log("[hao-easyplace]   投影NBT=" + (fullNbt == null ? "null" : fullNbt)
@@ -134,6 +142,10 @@ public class SchematicPlacementEncoder {
 		}
 
 		private static NbtCompound schematicBlockEntityNbt(BlockPos pos, BlockState stateSchematic) {
+				// 告示牌的颜色/发光在投影世界的 SignBlockEntity 上经常是默认值（只还原了文字），
+				// 直查会把投影文件里的颜色覆盖成黑色；这类方块直接读投影文件里的原始方块实体 NBT。
+				boolean preferSchematicNbt = PlacementRules.itemData(stateSchematic.getBlock()) instanceof SignItemData;
+				if (!preferSchematicNbt) {
 				// 投影世界坐标与世界一致,直接查同一坐标即可 —— 坐标换算那条路会偏格,还会抓错方块实体。
 				try {
 						net.minecraft.world.World schematicWorld = SchematicWorldHandler.getSchematicWorld();
@@ -164,6 +176,7 @@ public class SchematicPlacementEncoder {
 				} catch (Exception e) {
 						// 异常不走调试开关:这条一旦静默,「方块实体数据偶尔不还原」就彻底没有线索。
 						HaoDebug.error("[hao-easyplace] 投影世界直查异常", e);
+				}
 				}
 				try {
 						List<SchematicPlacementManager.PlacementPart> parts = DataManager.getSchematicPlacementManager().getAllPlacementsTouchingChunk(pos);

@@ -48,4 +48,15 @@ public interface ItemDataCodec {
 	static NbtCompound unwrapBlockEntityData(net.minecraft.entity.TypedEntityData<?> data) {
 		return data == null ? null : data.copyNbtWithoutId();
 	}
+
+	/**
+	 * 协议位是否已经能**完整**表达这一处需要还原的方块实体数据。
+	 *
+	 * <p>能的话就不必再走「完整 NBT 通道」—— 那条通道是客户端按位置发包、服务端
+	 * 按位置缓存再取，密集放置时相邻位置的数据容易互相串（合成器锁定槽位、
+	 * 标牌文字都可能串到隔壁）。</p>
+	 */
+	default boolean protocolCoversAll() {
+		return false;
+	}
 }

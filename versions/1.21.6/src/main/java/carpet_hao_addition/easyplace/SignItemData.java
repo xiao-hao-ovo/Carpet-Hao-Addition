@@ -63,6 +63,25 @@ public final class SignItemData implements ItemDataCodec {
 		return bits;
 	}
 
+	/** 把旧版告示牌 NBT（Text1..Text4 + Color）转成 1.20+ 的 front_text/back_text。 */
+	public static NbtCompound normalizeSchematicNbt(NbtCompound tag) {
+		if (tag == null || tag.contains("front_text") || !tag.contains("Text1")) {
+			return tag;
+		}
+		NbtCompound out = tag.copy();
+		NbtCompound front = new NbtCompound();
+		NbtList messages = new NbtList();
+		for (int line = 1; line <= 4; ++line) {
+			messages.add(NbtString.of(tag.getString("Text" + line).orElse("\"\"")));
+		}
+		front.put("messages", messages);
+		front.putString(COLOR_KEY, tag.getString("Color").orElse("black"));
+		front.putBoolean(GLOWING_KEY, tag.getBoolean("GlowingText").orElse(false));
+		out.put(FRONT, front);
+		return out;
+	}
+
+
 	@Override
 	public int encodeBlockEntity(BlockEntity blockEntity) {
 		if (!(blockEntity instanceof SignBlockEntity sign)) {
