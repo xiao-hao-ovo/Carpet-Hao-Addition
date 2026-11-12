@@ -23,6 +23,14 @@ public final class BlockDataChannel {
 	private static boolean payloadRegistered = false;
 	private static boolean receiverRegistered = false;
 
+	/**
+	 * 单个玩家最多能屯多少条待用 NBT。
+	 * <p>
+	 * 这张表只在 take 消费与断线时清理，**没有 TTL**，而每条的 NBT 上限是 2MB
+	 * ——客户端一直发不同坐标就能把它撑成无界。正常一次放置只会留 0~1 条。
+	 */
+	private static final int MAX_PENDING_PER_PLAYER = 256;
+
 	/** 服务端缓存的一条数据:该位置的完整方块实体 NBT(可 null)。 */
 	public record PendingData(NbtCompound nbt) {
 	}
@@ -60,12 +68,41 @@ public final class BlockDataChannel {
 		ServerPlayNetworking.registerGlobalReceiver(BlockDataPayload.ID, (payload, context) -> {
 			ServerPlayerEntity player = context.player();
 			context.server().execute(() -> {
-				HaoDebug.log("[hao-easyplace] [服务端] 收到包: 位置=" + payload.pos()
-						+ " id=" + (payload.nbt() == null ? "null" : payload.nbt().getString("id")));
-				HAO_PENDING.computeIfAbsent(player.getUuid(), ignored -> new HashMap<>())
-						.put(payload.pos(), new PendingData(payload.nbt()));
+				if (HaoDebug.ENABLED) {
+					HaoDebug.log("[hao-easyplace] [服务端] 收到包: 位置=" + payload.pos()
+							+ " id=" + (payload.nbt() == null ? "null" : payload.nbt().getString("id")));
+				}
+				java.util.Map<BlockPos, PendingData> pending =
+						HAO_PENDING.computeIfAbsent(player.getUuid(), ignored -> new HashMap<>());
+				// 这个表只在 take() 消费和断线时清理,没有 TTL —— 客户端一直发**不同坐标**
+				// 就能把它撑成无界（每个条目的 NBT 最大 2MB）。正常一次放置只会有 0~1 条，
+				// 所以超限时直接丢新数据:代价是那一格不还原方块实体，比把服务端吃光好。
+				if (pending.size() >= MAX_PENDING_PER_PLAYER && !pending.containsKey(payload.pos())) {
+					if (HaoDebug.ENABLED) {
+						HaoDebug.log("[hao-easyplace] [服务端] 待用 NBT 已达上限 "
+								+ MAX_PENDING_PER_PLAYER + "，丢弃位置=" + payload.pos());
+					}
+					return;
+				}
+				pending.put(payload.pos(), new PendingData(payload.nbt()));
 			});
 		});
+
+		// 断线时清掉这个玩家还没被消费的条目。
+		// 否则玩家放了方块却没真正放置（取消、切物品、断线）时，这些完整 NBT 会一直
+		// 堆在静态表里；堆得越多，后面的放置越容易在宽容命中那一步被别的条目干扰。
+		net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.DISCONNECT.register(
+				(handler, server) -> {
+					if (handler.getPlayer() != null) {
+						java.util.Map<BlockPos, PendingData> dropped =
+								HAO_PENDING.remove(handler.getPlayer().getUuid());
+						if (dropped != null && !dropped.isEmpty()) {
+							if (HaoDebug.ENABLED) {
+								HaoDebug.log("[hao-easyplace] [断线清理] 丢掉 " + dropped.size() + " 条待用 NBT");
+							}
+						}
+					}
+				});
 	}
 
 	/** 客户端:把该位置的完整 NBT 发给服务端(同内容不重复发)。 */
@@ -74,8 +111,10 @@ public final class BlockDataChannel {
 		registerPayloadType();
 		// 不做节流:该函数只在真正放置时调用,节流会吞包导致文字错位。
 		boolean canSend = net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.canSend(BlockDataPayload.ID);
-		HaoDebug.log("[hao-easyplace] [客户端] 发包: 位置=" + pos + " canSend=" + canSend
-				+ " id=" + (nbt == null ? "null" : nbt.getString("id")));
+		if (HaoDebug.ENABLED) {
+			HaoDebug.log("[hao-easyplace] [客户端] 发包: 位置=" + pos + " canSend=" + canSend
+					+ " id=" + (nbt == null ? "null" : nbt.getString("id")));
+		}
 		if (canSend) {
 			net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(
 					new BlockDataPayload(pos, nbt));
