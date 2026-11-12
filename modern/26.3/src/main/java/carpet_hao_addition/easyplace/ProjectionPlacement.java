@@ -2,8 +2,12 @@ package carpet_hao_addition.easyplace;
 
 import carpet_hao_addition.ProjectionPlacementSettings;
 import carpet_hao_addition.HaoDebug;
+import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.RailShape;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.RedstoneLampBlock;
 import net.minecraft.world.level.block.SculkShriekerBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.core.component.DataComponents;
@@ -66,6 +70,42 @@ public final class ProjectionPlacement {
 
 	public static void assignPlaceTargetPos(BlockPos pos) {
 		PlacementWindow.setTargetPos(pos);
+	}
+
+	/**
+	 * 这次放置的铁轨是否要**保持投影给的形状**，而不是让原版重算弯曲。
+	 *
+	 * <p>投影协议在铁轨形状位上方留了一个 bit 表示「别自动改形状」（见
+	 * {@code PlacementRules} 的 RailBlock 解码器）。判据是「正好是这次的落点」。
+	 * 旁边的既有铁轨要按自己的情况更新 —— 它们若是投影放过的，会由 {@link RailShapeMemory}
+	 * 单独还原。</p>
+	 */
+	public static boolean keepRailShapeAt(BlockPos pos) {
+		return flagsContain(RAIL_KEEP_SHAPE) && placeTarget().equals(pos);
+	}
+
+	/**
+	 * 投影给的这个状态在当前位置**立得住**吗 —— 立不住就别放。
+	 *
+	 * <p>目前只校验坡轨：坡顶那一格必须有实心顶面（判据与原版 {@code BaseRailBlock}
+	 * 掉落判定用的 {@code Block.canSupportRigidBlock} 一致）。坡顶没方块时，原版会把坡轨
+	 * 重算成平轨 —— 那样放出来的就不是投影的样子了。与其放错，不如这一格直接放弃。</p>
+	 *
+	 * <p>非铁轨、非坡轨一律返回 {@code true}：直轨和弯轨只要求脚下有方块，
+	 * 那一条原版已在 {@code canSurvive} 里查过。</p>
+	 */
+	public static boolean stateCanExist(BlockState state, LevelReader world, BlockPos pos) {
+		if (!(state.getBlock() instanceof BaseRailBlock rail) || !state.hasProperty(rail.getShapeProperty())) {
+			return true;
+		}
+		Direction top = switch (state.getValue(rail.getShapeProperty())) {
+			case ASCENDING_EAST -> Direction.EAST;
+			case ASCENDING_WEST -> Direction.WEST;
+			case ASCENDING_NORTH -> Direction.NORTH;
+			case ASCENDING_SOUTH -> Direction.SOUTH;
+			default -> null;
+		};
+		return top == null || Block.canSupportRigidBlock(world, pos.relative(top));
 	}
 
 	public static Block placeTargetBlock() {
@@ -139,6 +179,10 @@ public final class ProjectionPlacement {
 		if (baseState.getBlock() instanceof SculkShriekerBlock) {
 			// 投影造出来的尖叫器不该因为被放下来就招出监守者
 			baseState = baseState.setValue(SculkShriekerBlock.CAN_SUMMON, false);
+		}
+		if (baseState.getBlock() instanceof RedstoneLampBlock) {
+			// 投影里记录的是当时世界的红石结果，不是投影要求；放下时先灭灯，交给红石更新决定。
+			baseState = baseState.setValue(RedstoneLampBlock.LIT, false);
 		}
 		return baseState;
 	}

@@ -5,6 +5,7 @@ import carpet_hao_addition.HaoDebug;
 import net.minecraft.block.AbstractRailBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.RedstoneLampBlock;
 import net.minecraft.block.SculkShriekerBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.component.DataComponentTypes;
@@ -154,6 +155,11 @@ public final class ProjectionPlacement {
 		if (baseState.getBlock() instanceof SculkShriekerBlock) {
 			// 投影造出来的尖叫器不该因为被放下来就招出监守者
 			baseState = baseState.with(SculkShriekerBlock.CAN_SUMMON, false);
+		}
+		if (baseState.getBlock() instanceof RedstoneLampBlock) {
+			// 投影里的红石灯很可能记录为「点亮」状态，但那是当时世界的红石结果，不是投影要求。
+			// 直接照投影放会凭空多出一盏亮着的灯；这里强制先灭，放置后由周围红石信号决定亮灭。
+			baseState = baseState.with(RedstoneLampBlock.LIT, false);
 		}
 		return baseState;
 	}

@@ -58,6 +58,11 @@ public abstract class ProjectionBlockItemMixin {
             }
         }
         level.updateListeners(pos, now, now, 3);
+        // 方块实体数据不会随 updateListeners 同步（Yarn 文档明确要求用 markForUpdate），
+        // 少了这一句：服务端写进去了，客户端却收不到，表现为"告示牌空白、右键一次才出现文字"。
+        if (level instanceof net.minecraft.server.world.ServerWorld serverWorld) {
+            serverWorld.getChunkManager().markForUpdate(pos);
+        }
     }
 
     @Inject(method = "getPlacementState", at = @At("HEAD"), cancellable = true)
@@ -84,26 +89,47 @@ public abstract class ProjectionBlockItemMixin {
             cir.setReturnValue(null);
             return;
         }
+        // 投影给的形状在当前位置立不住（例如坡轨坡顶没有方块）→ 这一格直接放弃。
+        // 若交给原版，它会把坡轨重算成平轨，放出来的就不是投影的样子了；
+        // 而如果强行保持投影形状，又会放出之后必然掉落的浮空坡轨。
+        if (!ProjectionPlacement.stateCanExist(state, context.getWorld(), context.getBlockPos())) {
+            HaoDebug.log("[hao-easyplace]   [放弃放置] 状态在当前环境立不住 state=" + state
+                    + " pos=" + context.getBlockPos());
+            cir.setReturnValue(null);
+            return;
+        }
         if (!this.canPlace(context, state)) return;
         cir.setReturnValue(state);
     }
 
     @WrapMethod(method = "place(Lnet/minecraft/item/ItemPlacementContext;)Lnet/minecraft/util/ActionResult;")
     private ActionResult hao$enterPlacementWindow(ItemPlacementContext context, Operation<ActionResult> original) {
-        if (ProjectionPlacement.ruleEnabled()
-                && isProtocolHit(hitOffsetX(context.getHitPos(), PlacementBitTools.clickedPos(context)))) {
+        boolean projected = ProjectionPlacement.ruleEnabled()
+                && isProtocolHit(hitOffsetX(context.getHitPos(), PlacementBitTools.clickedPos(context)));
+        if (projected) {
             ProjectionPlacement.markProjectedState(true);
             ProjectionPlacement.assignPlaceTargetPos(PlacementBitTools.clickedPos(context));
             ProjectionPlacement.assignPlaceTargetBlock(this.getBlock());
         }
+        ActionResult result;
         try {
-            return original.call(context);
+            result = original.call(context);
         } finally {
             ProjectionPlacement.markProjectedState(false);
             ProjectionPlacement.noteWindowFlags(0);
             ProjectionPlacement.assignPlaceTargetPos(BlockPos.ORIGIN);
             ProjectionPlacement.assignPlaceTargetBlock(Blocks.AIR);
         }
+        // 投影放置后让这一格自己重新检查一次红石状态：先放拉杆、后放铁轨时，
+        // 铁轨的 onBlockAdded 不一定重新计算 powered，需要主动邻居更新一次。
+        if (projected && result.isAccepted() && !context.getWorld().isClient()) {
+            BlockPos target = context.getBlockPos();
+            BlockState placed = context.getWorld().getBlockState(target);
+            if (!placed.isAir()) {
+                context.getWorld().updateNeighbor(target, placed.getBlock(), target);
+            }
+        }
+        return result;
     }
 
     @WrapOperation(
@@ -122,10 +148,13 @@ public abstract class ProjectionBlockItemMixin {
                         net.minecraft.component.type.NbtComponent.of(fullNbt));
                 HaoDebug.log("[hao-easyplace] [服务端] 应用完整 NBT: 位置=" + pos + " id=" + fullNbt.getString("id"));
                 boolean hao$ok = original.call(instance, pos, level, player, withFullNbt, state);
+                // postPlacement 不会把 ItemStack 的 BLOCK_ENTITY_DATA 写进方块实体，手动应用一次。
+                hao$applyBlockEntityData(level, pos, withFullNbt, state);
                 hao$notifyClient(level, pos);
                 return hao$ok;
             }
             boolean hao$ok2 = original.call(instance, pos, level, player, stack, state);
+            hao$applyBlockEntityData(level, pos, stack, state);
             hao$notifyClient(level, pos);
             return hao$ok2;
         }
@@ -134,11 +163,40 @@ public abstract class ProjectionBlockItemMixin {
                 + " 世界该处=" + level.getBlockState(pos));
         ItemStack newStack = ProjectionPlacement.applySchematicItemData(stack, context);
         if (newStack == null) {
-            return original.call(instance, pos, level, player, stack, state);
+            boolean hao$plain = original.call(instance, pos, level, player, stack, state);
+            hao$applyBlockEntityData(level, pos, stack, state);
+            // 写完必须主动广播：客户端预测放置用的是原始 stack，本地方块实体没有这份数据，
+            // 不广播就一直是空白，直到玩家右键触发一次方块实体同步。
+            hao$notifyClient(level, pos);
+            return hao$plain;
         }
         boolean result = original.call(instance, pos, level, player, newStack, state);
+        hao$applyBlockEntityData(level, pos, newStack, state);
+        hao$notifyClient(level, pos);
         double relativeHitZ = hitOffsetZ(context.getHitPos(), PlacementBitTools.clickedPos(context));
         int protocolValue = readBits(relativeHitZ);
         return result;
     }
+
+
+/** 把 {@code BLOCK_ENTITY_DATA} 组件写到刚放置的方块实体上（{@code postPlacement} 本身不会做这件事）。 */
+		@Unique
+		private static void hao$applyBlockEntityData(World level, BlockPos pos, ItemStack stack, BlockState state) {;
+				if (level.isClient()) {
+						return;
+				}
+				BlockEntity blockEntity = level.getBlockEntity(pos);
+				if (blockEntity == null) {
+						return;
+				}
+				net.minecraft.component.type.NbtComponent blockData =
+								stack.get(net.minecraft.component.DataComponentTypes.BLOCK_ENTITY_DATA);
+				if (blockData == null || blockData.isEmpty()) {
+						return;
+				}
+				if (blockData.applyToBlockEntity(blockEntity, level.getRegistryManager())) {
+						blockEntity.markDirty();
+						level.updateListeners(pos, state, state, 3);
+				}
+		}
 }

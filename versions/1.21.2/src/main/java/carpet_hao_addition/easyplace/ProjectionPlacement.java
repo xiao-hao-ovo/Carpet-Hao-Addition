@@ -2,8 +2,12 @@ package carpet_hao_addition.easyplace;
 
 import carpet_hao_addition.ProjectionPlacementSettings;
 import carpet_hao_addition.HaoDebug;
+import net.minecraft.block.AbstractRailBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.world.BlockView;
+import net.minecraft.block.enums.RailShape;
+import net.minecraft.block.RedstoneLampBlock;
 import net.minecraft.block.SculkShriekerBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.component.DataComponentTypes;
@@ -58,6 +62,37 @@ public final class ProjectionPlacement {
 
 	public static void noteFlag(long flag) {
 		PlacementWindow.raiseFlag(flag);
+	}
+
+	public static boolean keepRailShapeAt(BlockPos pos) {
+		return flagsContain(RAIL_KEEP_SHAPE) && placeTarget().equals(pos);
+	}
+
+	/**
+	 * 投影给的这个状态在当前位置**立得住**吗 —— 立不住就别放。
+	 *
+	 * <p>目前只校验坡轨：坡顶那一格必须有实心顶面（判据与原版
+	 * {@code AbstractRailBlock.shouldDropRail} 用的 {@code Block.hasTopRim} 一致）。
+	 * 坡顶没方块时，原版会把坡轨重算成平轨 —— 那样放出来的就不是投影的样子了。
+	 * 与其放错，不如这一格直接放弃，让玩家先把支撑方块补上。</p>
+	 *
+	 * <p>非铁轨、非坡轨一律返回 {@code true}：直轨和弯轨只要求脚下有方块，
+	 * 那一条原版已在 {@code canPlaceAt} 里查过。</p>
+	 */
+	public static boolean stateCanExist(BlockState state, BlockView world, BlockPos pos) {
+		if (!(state.getBlock() instanceof AbstractRailBlock rail)
+				|| !state.contains(rail.getShapeProperty())) {
+			// 不是铁轨，或是没声明 SHAPE 的第三方铁轨 —— 不归这里管
+			return true;
+		}
+		Direction top = switch (state.get(rail.getShapeProperty())) {
+			case ASCENDING_EAST -> Direction.EAST;
+			case ASCENDING_WEST -> Direction.WEST;
+			case ASCENDING_NORTH -> Direction.NORTH;
+			case ASCENDING_SOUTH -> Direction.SOUTH;
+			default -> null;
+		};
+		return top == null || Block.hasTopRim(world, pos.offset(top));
 	}
 
 	public static BlockPos placeTarget() {
@@ -139,6 +174,10 @@ public final class ProjectionPlacement {
 		if (baseState.getBlock() instanceof SculkShriekerBlock) {
 			// 投影造出来的尖叫器不该因为被放下来就招出监守者
 			baseState = baseState.with(SculkShriekerBlock.CAN_SUMMON, false);
+		}
+		if (baseState.getBlock() instanceof RedstoneLampBlock) {
+			// 投影里记录的是当时世界的红石结果，不是投影要求；放下时先灭灯，交给红石更新决定。
+			baseState = baseState.with(RedstoneLampBlock.LIT, false);
 		}
 		return baseState;
 	}

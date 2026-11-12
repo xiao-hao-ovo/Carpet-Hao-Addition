@@ -61,6 +61,11 @@ public abstract class ProjectionBlockItemMixin {
 						}
 				}
 				level.updateListeners(pos, now, now, 3);
+        // 方块实体数据不会随 updateListeners 同步（Yarn 文档明确要求用 markForUpdate），
+        // 少了这一句：服务端写进去了，客户端却收不到，表现为"告示牌空白、右键一次才出现文字"。
+        if (level instanceof net.minecraft.server.world.ServerWorld serverWorld) {
+            serverWorld.getChunkManager().markForUpdate(pos);
+        }
 		}
 
 		@Inject(method = "getPlacementState", at = @At("HEAD"), cancellable = true)
@@ -111,20 +116,38 @@ public abstract class ProjectionBlockItemMixin {
 				// 所以这里必须用 hitOffsetZ。早先误写成 hitOffsetX，而 x 偏移恒在 [0,1)、
 				// 阈值是 2.0 —— 条件恒假，整条放置窗口链路（铜灯不翻转、告示牌不弹编辑界面）
 				// 从来没有生效过。
-				if (ProjectionPlacement.ruleEnabled()
-								&& isProtocolHit(hitOffsetZ(context.getHitPos(), PlacementBitTools.clickedPos(context)))) {
+				boolean projected = ProjectionPlacement.ruleEnabled()
+								&& isProtocolHit(hitOffsetZ(context.getHitPos(), PlacementBitTools.clickedPos(context)));
+				if (projected) {
 						ProjectionPlacement.markProjectedState(true);
 						// 记落点而不是被点的方块:真正落下的位置是「被点的方块」沿点击面偏移一格
 						// (可替换方块则是它自己)。铁轨形状保护、告示牌判定都按落点算才准。
 						ProjectionPlacement.assignPlaceTargetPos(context.getBlockPos());
 				}
+				ActionResult result;
 				try {
-						return original.call(context);
+						result = original.call(context);
 				} finally {
 						ProjectionPlacement.markProjectedState(false);
 						ProjectionPlacement.noteWindowFlags(0);
 						ProjectionPlacement.assignPlaceTargetPos(BlockPos.ORIGIN);
 				}
+				// 投影放置后让这一格自己重新检查一次红石状态。
+				//
+				// 典型场景：投影里先放拉杆、后放铁轨。拉杆放下时周围还没有铁轨，它的 onPlaced
+				// 更新不到任何东西；等铁轨后放时，PoweredRailBlock 的 onBlockAdded 不一定会重新
+				// 计算 powered，于是铁轨一直是灭的 —— 反过来先放铁轨再放拉杆，拉杆的邻居更新
+				// 才会把铁轨点亮。这里补一次 neighborUpdate，让后放的这一格立即按周围红石信号
+				// 自检，两种放置顺序结果一致。
+				if (projected && result.isAccepted() && !context.getWorld().isClient()) {
+						BlockPos pos = context.getBlockPos();
+						BlockState placed = context.getWorld().getBlockState(pos);
+						if (!placed.isAir()) {
+								context.getWorld().updateNeighbor(placed, pos, placed.getBlock(),
+										(net.minecraft.world.block.WireOrientation) null, false);
+						}
+				}
+				return result;
 		}
 
 		@WrapOperation(
@@ -145,10 +168,15 @@ public abstract class ProjectionBlockItemMixin {
 										HaoDebug.log("[hao-easyplace] [服务端] 应用完整 NBT: 位置=" + pos + " id=" + fullNbt.getString("id"));
 								}
 								boolean hao$ok = original.call(instance, pos, level, player, withFullNbt, state);
+								// postPlacement 不会把 ItemStack 的 BLOCK_ENTITY_DATA 写进方块实体：
+								// BlockItem.place 里的 copyComponentsToBlockEntity 用的是它自己那份原始 stack。
+								// 这里手动应用一次，告示牌的颜色/文字、合成器槽位等才会真正落地。
+								hao$applyBlockEntityData(level, pos, withFullNbt, state);
 								hao$notifyClient(level, pos);
 								return hao$ok;
 						}
 						boolean hao$ok2 = original.call(instance, pos, level, player, stack, state);
+						hao$applyBlockEntityData(level, pos, stack, state);
 						hao$notifyClient(level, pos);
 						return hao$ok2;
 				}
@@ -159,9 +187,33 @@ public abstract class ProjectionBlockItemMixin {
 				}
 				ItemStack newStack = ProjectionPlacement.applySchematicItemData(stack, context);
 				if (newStack == null) {
-						return original.call(instance, pos, level, player, stack, state);
+						boolean hao$plain = original.call(instance, pos, level, player, stack, state);
+						hao$applyBlockEntityData(level, pos, stack, state);
+						return hao$plain;
 				}
 				boolean result = original.call(instance, pos, level, player, newStack, state);
+				hao$applyBlockEntityData(level, pos, newStack, state);
 				return result;
+		}
+
+		/** 把 {@code BLOCK_ENTITY_DATA} 组件写到刚放置的方块实体上（{@code postPlacement} 本身不会做这件事）。 */
+		@Unique
+		private static void hao$applyBlockEntityData(World level, BlockPos pos, ItemStack stack, BlockState state) {
+				if (level.isClient()) {
+						return;
+				}
+				BlockEntity blockEntity = level.getBlockEntity(pos);
+				if (blockEntity == null) {
+						return;
+				}
+				net.minecraft.component.type.NbtComponent blockData =
+								stack.get(net.minecraft.component.DataComponentTypes.BLOCK_ENTITY_DATA);
+				if (blockData == null || blockData.isEmpty()) {
+						return;
+				}
+				if (blockData.applyToBlockEntity(blockEntity, level.getRegistryManager())) {
+						blockEntity.markDirty();
+						level.updateListeners(pos, state, state, 3);
+				}
 		}
 }
