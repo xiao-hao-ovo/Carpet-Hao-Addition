@@ -90,8 +90,7 @@ public final class RecipeDeployHooks {
 				{
 				  "pack": {
 				    "pack_format": %d,
-				    "min_format": 81,
-				    "max_format": 9999,
+				    "supported_formats": [94, 94],
 				    "description": "Carpet Hao Addition - terracotta/glazed uncolor (stonecutter)"
 				  }
 				}

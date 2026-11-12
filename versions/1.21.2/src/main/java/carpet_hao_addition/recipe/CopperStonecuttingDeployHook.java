@@ -1,4 +1,4 @@
-package carpet_hao_addition;
+package carpet_hao_addition.recipe;
 
 import net.minecraft.resource.ResourcePackManager;
 import net.minecraft.server.MinecraftServer;
@@ -13,10 +13,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import carpet_hao_addition.CopperStonecuttingSettings;
 
 /**
  * 把"切石机切铜"配方自动部署到当前世界的数据包,并按 haoCopperStonecutting 规则启停。
- * 做法与 {@link RecipeDeployHooks}(陶瓦还原)一致。
+ * 做法与 {@link carpet_hao_addition.RecipeDeployHooks}(陶瓦还原)一致。
  * <p>
  * <b>核心原则:按"当量"转换,绝不产生套利。</b>
  * 每种铜形态有一个当量(取自原版配方,以 1 个铜块 = {@value #BLOCK_VALUE} 为单位):
@@ -45,7 +46,7 @@ public final class CopperStonecuttingDeployHook {
 	private static final Logger HAO_LOGGER = LoggerFactory.getLogger("carpet-hao-addition");
 	private static final String PACK_NAME = "hao-copper-cut";
 	private static final String PACK_ID = "file/" + PACK_NAME;
-	private static final int PACK_FORMAT = 94; // Minecraft 1.21.11 数据包格式
+	private static final int PACK_FORMAT = 57; // Minecraft 1.21.7-1.21.8 数据包格式
 
 	/**
 	 * 8 个铜变体的前缀:4 个氧化等级 × 未涂蜡 / 涂蜡。
@@ -63,41 +64,30 @@ public final class CopperStonecuttingDeployHook {
 	private static final String[] SHAPE_SUFFIXES = {
 			"cut_copper", "chiseled_copper", "copper_grate",
 			"cut_copper_slab", "cut_copper_stairs",
-			"copper_door", "copper_trapdoor", "copper_bulb",
-			// 1.21.9「铜时代」新增的铜方块(1.21.8 及更早没有,所以只在 1.21.9+ 的层里存在)
-			"copper_bars", "copper_chain", "copper_chest",
-			"copper_golem_statue", "copper_lantern"
+			"copper_door", "copper_trapdoor", "copper_bulb"
 	};
 
 	/** 铜块的当量(以"1 铜块 = 8"为单位,好让所有换算都是整数)。 */
-	/** 铜块的当量(以"1 铜块 = 24"为单位,好让所有换算都是整数 —— 含 1.21.9 新增的栏杆等)。 */
-	private static final int BLOCK_VALUE = 24;
+	private static final int BLOCK_VALUE = 8;
 	/** 二当量组的当量:一个铜块能切出 4 个。 */
-	private static final int MID_VALUE = 6;
+	private static final int MID_VALUE = 2;
 	/** 切制铜台阶的当量:一个铜块能切出 8 个。 */
-	private static final int SLAB_VALUE = 3;
-	/** 铜栏杆的当量:一个铜块能切出 24 个(对应原版 6 铜锭 → 16 栏杆)。 */
-	private static final int BARS_VALUE = 1;
-	/** 铜箱子的当量:一个铜块只出 1 个(原版要 8 铜锭 + 1 个箱子)。 */
-	private static final int CHEST_VALUE = 24;
-	/** 铜傀儡雕像的当量:一个铜块只出 1 个。 */
-	private static final int STATUE_VALUE = 24;
-	/** 铜灯笼的当量:一个铜块能切出 12 个(原版合成约 10 个;石切机不能比合成还亏)。 */
-	private static final int LANTERN_VALUE = 2;
+	private static final int SLAB_VALUE = 1;
 
 	/**
-	 * 各形态的当量,顺序与 {@link #shapeId} 的 {@code shape} 参数一致:
-	 * 铜块 / 切制 / 凿制 / 格栅 / 台阶 / 楼梯 / 门 / 活板门 / 灯 /
-	 * <b>栏杆 / 铜链 / 铜箱子 / 铜傀儡雕像 / 铜灯笼</b>(后 5 个是 1.21.9 新增)。
+	 * 9 种形态的当量,顺序与 {@link #shapeId} 的 {@code shape} 参数一致:
+	 * 铜块 / 切制 / 凿制 / 格栅 / 台阶 / 楼梯 / 门 / 活板门 / 灯。
+	 * <p>
+	 * 门、活板门、灯按"1 铜块 → 4 个"(与原版切石机对其它 2 当量形态一致)折算。
 	 */
 	private static final int[] SHAPE_VALUES = {
 			BLOCK_VALUE,
 			MID_VALUE, MID_VALUE, MID_VALUE,
 			SLAB_VALUE,
 			MID_VALUE, MID_VALUE, MID_VALUE, MID_VALUE,
-			BARS_VALUE, MID_VALUE, CHEST_VALUE, STATUE_VALUE, LANTERN_VALUE,
 	};
 
+	/** 形态总数(铜块 + {@link #SHAPE_SUFFIXES});形态索引 0 = 铜块。 */
 	private static final int SHAPE_COUNT = SHAPE_SUFFIXES.length + 1;
 
 	private CopperStonecuttingDeployHook() {
@@ -108,10 +98,12 @@ public final class CopperStonecuttingDeployHook {
 			Path packDir = server.getSavePath(WorldSavePath.DATAPACKS).resolve(PACK_NAME);
 			boolean changed = false;
 
-			// 必须"内容变了就重写":旧世界数据包里残留的旧格式 pack.mcmeta
-			// (例如 1.21.9 之前缺 min_format/max_format)不会被更新,数据包会一直加载失败。
-			Files.createDirectories(packDir.resolve("data/carpet-hao-addition/recipe"));
-			changed |= writeIfChanged(packDir.resolve("pack.mcmeta"), mcmetaContent());
+			Path mcmeta = packDir.resolve("pack.mcmeta");
+			if (!Files.exists(mcmeta)) {
+				Files.createDirectories(packDir.resolve("data/carpet-hao-addition/recipe"));
+				Files.writeString(mcmeta, mcmetaContent(), StandardCharsets.UTF_8);
+				changed = true;
+			}
 			Path dir = packDir.resolve("data/carpet-hao-addition/recipe");
 			Files.createDirectories(dir);
 
@@ -277,8 +269,6 @@ public final class CopperStonecuttingDeployHook {
 				{
 				  "pack": {
 				    "pack_format": %d,
-				    "min_format": 81,
-				    "max_format": 9999,
 				    "description": "Carpet Hao Addition - copper stonecutting (equal-value conversion)"
 				  }
 				}

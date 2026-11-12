@@ -29,7 +29,7 @@ public final class RecipeDeployHooks {
 	private static final Logger HAO_LOGGER = LoggerFactory.getLogger("carpet-hao-addition");
 	private static final String PACK_NAME = "carpet-hao-addition_terracotta_uncolor";
 	private static final String PACK_ID = "file/" + PACK_NAME;
-	private static final int PACK_FORMAT = 88; // Minecraft 1.21.9–1.21.10 数据包格式
+	private static final int PACK_FORMAT = 81; // Minecraft 1.21.7–1.21.10 数据包格式
 
 	private static final String[] COLORS = {
 			"white", "orange", "magenta", "light_blue", "yellow", "lime", "pink",
@@ -91,8 +91,7 @@ public final class RecipeDeployHooks {
 				{
 				  "pack": {
 				    "pack_format": %d,
-				    "min_format": 81,
-				    "max_format": 9999,
+				    "supported_formats": [81, 81],
 				    "description": "Carpet Hao Addition - terracotta/glazed uncolor (stonecutter)"
 				  }
 				}
