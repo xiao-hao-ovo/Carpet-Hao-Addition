@@ -1,5 +1,6 @@
 package carpet_hao_addition.mixin;
 
+import carpet_hao_addition.EnhancedWorldEaterSettings;
 import carpet_hao_addition.WorldEaterProMaxSettings;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.registry.tag.FluidTags;
@@ -22,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class FluidState_breakWaterloggedMixin {
 	@Inject(method = "getBlastResistance", at = @At("RETURN"), cancellable = true)
 	private void hao$ignoreWaterResistance(CallbackInfoReturnable<Float> cir) {
-		if (!WorldEaterProMaxSettings.isEnabled()) {
+		if (!WorldEaterProMaxSettings.isEnabled() && !EnhancedWorldEaterSettings.isWaterDestroyEnabled()) {
 			return;
 		}
 		if (cir.getReturnValue() <= 0.0F) {
