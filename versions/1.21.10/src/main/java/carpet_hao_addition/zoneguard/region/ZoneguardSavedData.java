@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.datafixer.DataFixTypes;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.server.world.ServerWorld;
@@ -12,7 +13,10 @@ import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateType;
 import net.minecraft.world.World;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -40,6 +44,10 @@ public class ZoneguardSavedData extends PersistentState {
 
 	private final Map<String, DetectorRegion> regions = new LinkedHashMap<>();
 	private final Map<String, String> operators = new LinkedHashMap<>();
+	/** 维度 -&gt; (chunk 键 -&gt; 区域)，惰性重建；set/remove 时置空。 */
+	private transient Map<RegistryKey<World>, Map<Long, List<DetectorRegion>>> regionIndex;
+	/** 太大而不进 chunk 索引的区域，逐条线性比对。 */
+	private transient List<DetectorRegion> largeRegions;
 
 	public ZoneguardSavedData() {
 	}
@@ -61,9 +69,11 @@ public class ZoneguardSavedData extends PersistentState {
 		return this.operators;
 	}
 
-	public DetectorRegion setRegion(int id, ServerWorld world, BlockPos first, BlockPos second) {
-		DetectorRegion newRegion = DetectorRegion.fromCorners(world.getRegistryKey(), first, second);
+	public DetectorRegion setRegion(int id, ServerWorld world, String name, BlockPos first, BlockPos second) {
+		DetectorRegion newRegion = DetectorRegion.fromCorners(world.getRegistryKey(), name, first, second);
 		this.regions.put(String.valueOf(id), newRegion);
+		this.regionIndex = null;
+		this.largeRegions = null;
 		this.markDirty();
 		return newRegion;
 	}
@@ -71,6 +81,8 @@ public class ZoneguardSavedData extends PersistentState {
 	public Optional<DetectorRegion> removeRegion(int id) {
 		DetectorRegion removed = this.regions.remove(String.valueOf(id));
 		if (removed != null) {
+			this.regionIndex = null;
+			this.largeRegions = null;
 			this.markDirty();
 		}
 		return Optional.ofNullable(removed);
@@ -119,6 +131,55 @@ public class ZoneguardSavedData extends PersistentState {
 	}
 
 	public boolean disablesObserver(World world, BlockPos pos) {
-		return this.regions.values().stream().anyMatch(region -> region.contains(world.getRegistryKey(), pos));
+		ensureRegionIndex();
+		RegistryKey<World> dimension = world.getRegistryKey();
+		Map<Long, List<DetectorRegion>> byChunk = this.regionIndex.get(dimension);
+		if (byChunk != null && containsAny(byChunk.get(chunkKey(pos.getX() >> 4, pos.getZ() >> 4)), dimension, pos)) {
+			return true;
+		}
+		return containsAny(this.largeRegions, dimension, pos);
+	}
+
+	private boolean containsAny(List<DetectorRegion> candidates, RegistryKey<World> dimension, BlockPos pos) {
+		if (candidates == null) {
+			return false;
+		}
+		for (DetectorRegion region : candidates) {
+			if (region.contains(dimension, pos)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private void ensureRegionIndex() {
+		if (this.regionIndex != null) {
+			return;
+		}
+		Map<RegistryKey<World>, Map<Long, List<DetectorRegion>>> index = new HashMap<>();
+		List<DetectorRegion> oversized = new ArrayList<>();
+		for (DetectorRegion region : this.regions.values()) {
+			int minChunkX = region.min().getX() >> 4;
+			int maxChunkX = region.max().getX() >> 4;
+			int minChunkZ = region.min().getZ() >> 4;
+			int maxChunkZ = region.max().getZ() >> 4;
+			long chunkCount = ((long) maxChunkX - minChunkX + 1L) * ((long) maxChunkZ - minChunkZ + 1L);
+			if (chunkCount > 4096L) {
+				oversized.add(region);
+				continue;
+			}
+			Map<Long, List<DetectorRegion>> byChunk = index.computeIfAbsent(region.dimension(), ignored -> new HashMap<>());
+			for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++) {
+				for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++) {
+					byChunk.computeIfAbsent(chunkKey(chunkX, chunkZ), ignored -> new ArrayList<>()).add(region);
+				}
+			}
+		}
+		this.regionIndex = index;
+		this.largeRegions = oversized;
+	}
+
+	private static long chunkKey(int chunkX, int chunkZ) {
+		return ((long) chunkX << 32) ^ (chunkZ & 0xffffffffL);
 	}
 }

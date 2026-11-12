@@ -8,6 +8,7 @@ import carpet_hao_addition.zoneguard.region.ZoneguardSavedData;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
@@ -48,15 +49,28 @@ public final class ZoneguardCommands {
 
 	private static final String MSG = "haoZoneguard.commands.";
 
+	/**
+	 * 单个区域最多覆盖多少个 chunk（水平投影）。
+	 * <p>
+	 * {@code RegionObserverRefresh} 是按 chunk 遍历区域的，不设上限时一个
+	 * {@code /haoZoneguard set 1 ~ ~ ~ 30000000 320 30000000} 就是上百万个 chunk，
+	 * 规则一关就卡死。4096 = 64×64 个 chunk（1024×1024 格），真实机器绰绰有余。
+	 */
+	private static final long MAX_REGION_CHUNKS = 4096L;
+
 	public static void registerCommand(CommandDispatcher<ServerCommandSource> dispatcher) {
 		dispatcher.register(literal("haoZoneguard")
 				.requires(ZoneguardPermissions::canUse)
 				.executes(ZoneguardCommands::viewRef)
 				.then(literal("set")
 						.then(argument("id", IntegerArgumentType.integer(0))
+								// 名称是可选末尾参数：set <编号> <起点> <终点> [名称]，支持中文与空格。
+								// 放在末尾可避免 Brigadier 在「起点坐标」与「名称」两个兄弟分支间的解析歧义。
 								.then(argument("from", BlockPosArgumentType.blockPos())
 										.then(argument("to", BlockPosArgumentType.blockPos())
-												.executes(ZoneguardCommands::setRegion)))))
+												.executes(ZoneguardCommands::setRegion)
+												.then(argument("name", StringArgumentType.greedyString())
+														.executes(ZoneguardCommands::setRegion))))))
 				.then(literal("view")
 						.executes(ZoneguardCommands::viewRef))
 				.then(literal("help")
@@ -85,12 +99,27 @@ public final class ZoneguardCommands {
 		ServerCommandSource source = context.getSource();
 		ServerWorld world = source.getWorld();
 		int id = IntegerArgumentType.getInteger(context, "id");
+		String name = context.getNodes().stream().anyMatch(node -> node.getNode().getName().equals("name")) ? StringArgumentType.getString(context, "name") : "";
 		BlockPos from = BlockPosArgumentType.getBlockPos(context, "from");
 		BlockPos to = BlockPosArgumentType.getBlockPos(context, "to");
 
-		DetectorRegion region = ZoneguardSavedData.getData(source.getServer()).setRegion(id, world, from, to);
+		// 区域大小必须挡一道。规则由开启切回关闭时会调 RegionObserverRefresh，它按 chunk
+		// 遍历整个区域；输入 /haoZoneguard set 1 ~ ~ ~ 30000000 320 30000000 这种范围
+		// 就是上百万个 chunk 坐标，一次切换直接把服务器卡死。真实机器几十格见方，
+		// 1024×1024（=64×64 个 chunk）已经宽松到不可能误伤。
+		long chunkSpanX = ((long) (Math.max(from.getX(), to.getX()) >> 4)
+				- (Math.min(from.getX(), to.getX()) >> 4) + 1L);
+		long chunkSpanZ = ((long) (Math.max(from.getZ(), to.getZ()) >> 4)
+				- (Math.min(from.getZ(), to.getZ()) >> 4) + 1L);
+		if (chunkSpanX * chunkSpanZ > MAX_REGION_CHUNKS) {
+			source.sendError(msg("set.tooLarge",
+					String.valueOf(chunkSpanX * chunkSpanZ), String.valueOf(MAX_REGION_CHUNKS)));
+			return 0;
+		}
+
+		DetectorRegion region = ZoneguardSavedData.getData(source.getServer()).setRegion(id, world, name, from, to);
 		source.sendFeedback(() -> msg("set.success",
-				String.valueOf(id), regionDimension(region), formatPos(region.min()), formatPos(region.max())), true);
+				String.valueOf(id), displayName(region), regionDimension(region), formatPos(region.min()), formatPos(region.max())), true);
 		return 1;
 	}
 
@@ -103,7 +132,7 @@ public final class ZoneguardCommands {
 
 		context.getSource().sendFeedback(() -> msg("view.header"), false);
 		data.regions().forEach((id, region) -> context.getSource().sendFeedback(
-				() -> msg("view.item", id, regionDimension(region), formatPos(region.min()), formatPos(region.max())),
+				() -> msg("view.item", id, displayName(region), regionDimension(region), formatPos(region.min()), formatPos(region.max())),
 				false
 		));
 		return data.regions().size();
@@ -211,6 +240,10 @@ public final class ZoneguardCommands {
 	private static Text msg(String key, String... args) {
 		String pattern = Translations.tr(MSG + key);
 		return Text.literal(args.length == 0 ? pattern : pattern.formatted((Object[]) args));
+	}
+
+	private static String displayName(DetectorRegion region) {
+		return region.name().isBlank() ? Translations.tr(MSG + "unnamed") : region.name();
 	}
 
 	private static String regionDimension(DetectorRegion region) {
