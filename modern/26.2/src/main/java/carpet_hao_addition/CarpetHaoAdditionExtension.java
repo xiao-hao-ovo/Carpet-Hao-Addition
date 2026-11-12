@@ -75,6 +75,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         CarpetServer.settingsManager.parseSettingsClass(BedrockCanBeMinedSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(WitherSkeletonDropReductionSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(DirectDropsSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(EnhancedWorldEaterSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(LavaDepthStriderSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(EasyPlaceWaterloggedSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(ProjectionPlacementSettings.class);

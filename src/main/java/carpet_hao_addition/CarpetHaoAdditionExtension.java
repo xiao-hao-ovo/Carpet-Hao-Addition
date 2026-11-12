@@ -95,6 +95,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
 				CarpetServer.settingsManager.parseSettingsClass(CraftableTrimTemplateSettings.class);
 				CarpetServer.settingsManager.parseSettingsClass(WorldEaterProMaxSettings.class);
 				CarpetServer.settingsManager.parseSettingsClass(WackoBeaconsSettings.class);
+				ensureEnhancedWorldEaterRule();
 
 				registerZoneguardRuleObserver();
 		}
@@ -317,6 +318,28 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
 				{
 						// 同 ensureTrimTemplates:非"类不存在"的失败必须留痕
 						HAO_LOGGER.error("Failed to deploy copper-stonecutting recipes", t);
+				}
+		}
+
+		/**
+	    * enhancedWorldEater 只在 1.21.8 层实现(完全移植自 Carpet-AMS-Addition),其他 1.21.x 层
+	    * 没有这个类。这里用反射注册:缺类时静默跳过,其他层照常编译;非"类不存在"的失败要留痕,
+	    * 否则规则没注册却毫无日志。
+	    */
+		private static void ensureEnhancedWorldEaterRule()
+		{
+				try
+				{
+						CarpetServer.settingsManager.parseSettingsClass(
+										Class.forName("carpet_hao_addition.EnhancedWorldEaterSettings"));
+				}
+				catch (ClassNotFoundException e)
+				{
+						// 本层没有这条规则 → 正常
+				}
+				catch (Throwable t)
+				{
+						HAO_LOGGER.error("Failed to register enhancedWorldEater rule", t);
 				}
 		}
 }
