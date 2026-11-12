@@ -79,6 +79,8 @@ public class EntityPlacementScreen extends Screen {
 	private final List<EntitySpawn> candidates;
 	private final List<ItemStack> icons = new ArrayList<>();
 	private final List<Text> names = new ArrayList<>();
+	/** 每个候选的「投影需要几个 / 世界里已有几个」,键是 EntitySpawn#key()。 */
+	private final java.util.Map<String, int[]> counts = new java.util.HashMap<>();
 	private final int rows;
 	private final int panelHeight;
 	/** 悬停项的所需材料(按当前 count 算一次后缓存)。 */
@@ -102,6 +104,55 @@ public class EntityPlacementScreen extends Screen {
 			this.icons.add(EntityPlacementMaterials.iconFor(spawn.type(), spawn.nbt()));
 			this.names.add(hao$nameOf(spawn.type()));
 		}
+		hao$refreshNames();
+	}
+
+
+	/**
+	 * 重新统计「世界里已经放了几个」并刷新每格文字。
+	 * 玩家常常是"界面开着、当场点几下放出来",只在构造时算一次的话,
+	 * 放完之后格子上还写着"缺1",会以为没放成,所以每 tick 重算。
+	 */
+	private void hao$refreshNames() {
+		this.counts.clear();
+		this.counts.putAll(carpet_hao_addition.entity.EntityPlacementCounter.totals(this.candidates));
+		for (int index = 0; index < this.candidates.size(); index++) {
+			EntitySpawn spawn = this.candidates.get(index);
+			this.names.set(index, hao$decorate(hao$nameOf(spawn.type()), this.counts.get(spawn.key())));
+		}
+	}
+
+	/**
+	 * 名字后面缀上「需要几个 / 已经放了几个 / 是否完成」。
+	 * 「已放」特意与「需要」不同色:两个数字同色时玩家得逐位对比才知道差多少。
+	 */
+	private static Text hao$decorate(Text name, int[] counts) {
+		if (counts == null) {
+			return name;
+		}
+		final int need = counts[0];
+		final int have = counts[1];
+		final int diff = need - have;
+		final Text tail;
+		final net.minecraft.util.Formatting color;
+
+		if (diff > 0) {
+			tail = Text.literal("缺" + diff);
+			color = net.minecraft.util.Formatting.RED;
+		} else if (diff == 0) {
+			tail = Text.literal("完成");
+			color = net.minecraft.util.Formatting.GREEN;
+		} else {
+			tail = Text.literal("多" + (-diff));
+			color = net.minecraft.util.Formatting.YELLOW;
+		}
+
+		return Text.empty().append(name)
+				.append(Text.literal("  需要 " + need).formatted(net.minecraft.util.Formatting.WHITE))
+				.append(Text.literal(" · ").formatted(net.minecraft.util.Formatting.DARK_GRAY))
+				.append(Text.literal("已放 " + have).formatted(color))
+				.append(Text.literal(" · ").formatted(net.minecraft.util.Formatting.DARK_GRAY))
+				.append(tail.copy().formatted(color));
 	}
 
 	@Override
@@ -115,6 +166,7 @@ public class EntityPlacementScreen extends Screen {
 		if (this.noticeTicks > 0) {
 			this.noticeTicks--;
 		}
+		hao$refreshNames();
 	}
 
 	@Override

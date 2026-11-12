@@ -108,6 +108,12 @@ public class EntityPlacementScreen extends Screen {
 		}
 	}
 
+	/** 重算每一处的「世界里已有几个 / 投影需要几个」,供右下角标显示。 */
+	private void hao$refreshCounts() {
+		this.counts.clear();
+		this.counts.putAll(carpet_hao_addition.entity.EntityPlacementCounter.totals(this.candidates));
+	}
+
 	@Override
 	public boolean shouldPause() {
 		return false;
@@ -119,6 +125,8 @@ public class EntityPlacementScreen extends Screen {
 		if (this.noticeTicks > 0) {
 			this.noticeTicks--;
 		}
+		// 玩家常常界面开着就当场放置,每 tick 重算,"已有/投影"角标才会实时更新
+		hao$refreshCounts();
 	}
 
 	@Override
