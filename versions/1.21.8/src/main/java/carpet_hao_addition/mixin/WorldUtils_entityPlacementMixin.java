@@ -70,7 +70,7 @@ import carpet_hao_addition.HaoDebug;
  * 且它有返回值 {@link ActionResult},所以要用 {@code CallbackInfoReturnable} 而不是 {@code CallbackInfo}
  * (写错的话编译期看不出来,只在运行时抛 InvalidInjectionException 把游戏崩掉)。
  */
-@Mixin(WorldUtils.class)
+@Mixin(value = WorldUtils.class, priority = 850)
 public abstract class WorldUtils_entityPlacementMixin {
 	/** 上次发包所在的客户端 tick,用于每 tick 限一次。 */
 	@Unique

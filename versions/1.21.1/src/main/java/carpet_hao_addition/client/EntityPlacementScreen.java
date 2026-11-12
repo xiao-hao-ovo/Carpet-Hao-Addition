@@ -20,6 +20,7 @@ import net.minecraft.util.Identifier;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -76,6 +77,8 @@ public class EntityPlacementScreen extends Screen {
 	 */
 	private final int count;
 	private final List<EntitySpawn> candidates;
+	/** 每个候选的「投影里几个 / 世界里已有几个」,键是 EntitySpawn#key()。 */
+	private final Map<String, int[]> counts;
 	private final List<ItemStack> icons = new ArrayList<>();
 	private final List<Text> names = new ArrayList<>();
 	private final int rows;
@@ -89,9 +92,11 @@ public class EntityPlacementScreen extends Screen {
 	/** 已经点过(已发给服务端)的候选下标 —— 标绿、不可重复点,但不关闭界面。 */
 	private final Set<Integer> placed = new LinkedHashSet<>();
 
-	public EntityPlacementScreen(List<EntitySpawn> candidates) {
+	public EntityPlacementScreen(List<EntitySpawn> candidates, Map<String, int[]> counts) {
 		super(Text.literal("昊藏小囊"));
 		this.candidates = candidates;
+		// 拷一份:界面开着时若又被触发一次收集,静态表会被清空重填,正在显示的这一份数字就被换掉了。
+		this.counts = new HashMap<>(counts);
 		this.count = hao$currentCount();
 		this.rows = Math.max(ROWS_MIN,
 				Math.min(ROWS_MAX, (candidates.size() + COLUMNS - 1) / COLUMNS));
@@ -216,6 +221,14 @@ public class EntityPlacementScreen extends Screen {
 				context.fill(slotX + 16, slotY, slotX + 17, slotY + 16, frame);
 			}
 			context.drawItem(this.icons.get(index), slotX, slotY);
+			// 右下角标「已有/投影」:玩家一眼看出这一处还差几个
+			int[] stat = this.counts.get(this.candidates.get(index).key());
+			if (stat != null) {
+				String label = stat[1] + "/" + stat[0];
+				context.drawText(this.textRenderer, label,
+						slotX + 16 - this.textRenderer.getWidth(label), slotY + 9,
+						stat[1] >= stat[0] ? 0xFF7FD67F : 0xFFFFFFFF, true);
+			}
 		}
 
 		// 信息文字画在**上方**那条里

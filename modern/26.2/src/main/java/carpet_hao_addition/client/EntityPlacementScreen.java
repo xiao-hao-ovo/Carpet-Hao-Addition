@@ -12,6 +12,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -20,6 +21,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -79,6 +81,8 @@ public class EntityPlacementScreen extends Screen {
 	 * 只会读到默认值,数量设置看起来就「无效」。所以这里先快照。
 	 */
 	private final int count;
+	/** 每个候选的「需要 / 已放」数量，键为 EntitySpawn#key()；来自 EntityPlacementCounter。 */
+	private final Map<String, int[]> counts;
 	private final List<EntitySpawn> candidates;
 	private final List<ItemStack> icons = new ArrayList<>();
 	private final List<Component> names = new ArrayList<>();
@@ -94,8 +98,13 @@ public class EntityPlacementScreen extends Screen {
 	private final Set<Integer> placed = new LinkedHashSet<>();
 
 	public EntityPlacementScreen(List<EntitySpawn> candidates) {
+		this(candidates, Map.of());
+	}
+
+	public EntityPlacementScreen(List<EntitySpawn> candidates, Map<String, int[]> counts) {
 		super(Component.literal("昊藏小囊"));
 		this.candidates = candidates;
+		this.counts = new HashMap<>(counts);
 		this.count = hao$currentCount();
 		this.rows = Math.max(ROWS_MIN,
 				Math.min(ROWS_MAX, (candidates.size() + COLUMNS - 1) / COLUMNS));
@@ -103,8 +112,38 @@ public class EntityPlacementScreen extends Screen {
 		this.panelHeight = PANEL_HEADER + this.rows * SLOT_SIZE + BOTTOM_BAR;
 		for (EntitySpawn spawn : candidates) {
 			this.icons.add(EntityPlacementMaterials.iconFor(spawn.type(), spawn.nbt()));
-			this.names.add(nameOf(spawn.type()));
+			this.names.add(hao$decorate(nameOf(spawn.type()), this.counts.get(spawn.key())));
 		}
+	}
+
+	/** 名称后面挂上「需要 N · 已放 M · 缺/完成/多」，与 1.21.8 的界面一致。 */
+	private static Component hao$decorate(Component name, int[] counts) {
+		if (counts == null) {
+			return name;
+		}
+		final int need = counts[0];
+		final int have = counts[1];
+		final int diff = need - have;
+		final Component tail;
+		final ChatFormatting color;
+
+		if (diff > 0) {
+			tail = Component.literal("缺" + diff);
+			color = ChatFormatting.RED;
+		} else if (diff == 0) {
+			tail = Component.literal("完成");
+			color = ChatFormatting.GREEN;
+		} else {
+			tail = Component.literal("多" + (-diff));
+			color = ChatFormatting.YELLOW;
+		}
+
+		return Component.empty().append(name)
+				.append(Component.literal("  需要 " + need).withStyle(ChatFormatting.WHITE))
+				.append(Component.literal(" · ").withStyle(ChatFormatting.DARK_GRAY))
+				.append(Component.literal("已放 " + have).withStyle(color))
+				.append(Component.literal(" · ").withStyle(ChatFormatting.DARK_GRAY))
+				.append(tail.copy().withStyle(color));
 	}
 
 	@Override

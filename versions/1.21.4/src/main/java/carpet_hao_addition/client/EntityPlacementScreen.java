@@ -1,9 +1,9 @@
 package carpet_hao_addition.client;
 
-import carpet_hao_addition.EntityPlacementHandler;
-import carpet_hao_addition.EntityPlacementPayload;
+import carpet_hao_addition.entity.EntityPlacementHandler;
+import carpet_hao_addition.entity.EntityPlacementPayload;
 import carpet_hao_addition.EasyPlaceEntitySettings;
-import carpet_hao_addition.EntitySpawn;
+import carpet_hao_addition.entity.EntitySpawn;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 

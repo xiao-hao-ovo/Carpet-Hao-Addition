@@ -39,4 +39,14 @@ public record EntitySpawn(Identifier type, String key, double x, double y, doubl
 							buf.readFloat(),
 							buf.readFloat(),
 							buf.readNbt()));
+
+	/**
+	 * 放置时写进实体的归属标签：投影坐标取整。
+	 * <p>并排的两处投影常常只差一格，而放出来的矿车会顺铁轨滑、船会漂、盔甲架会落地 ——
+	 * 光比世界坐标分不清某一台属于哪一处。放置那一刻把投影坐标写进标签，之后按标签精确匹配。</p>
+	 */
+	public static String placementTag(EntitySpawn spawn) {
+		return "hao:" + (int) Math.floor(spawn.x()) + "_" + (int) Math.floor(spawn.y())
+				+ "_" + (int) Math.floor(spawn.z());
+	}
 }

@@ -166,6 +166,9 @@ public final class EntityPlacementHandler {
 				break;
 			}
 			entity.refreshPositionAndAngles(spawn.x(), spawn.y(), spawn.z(), spawn.yaw(), spawn.pitch());
+			// 打归属标记:并排的两处投影只差一格,放出来之后光看世界坐标分不清这一台属于哪一处。
+			// 统计时按这个标记认,就不再靠距离猜(矿车会滑、船会漂,猜不准)。
+			entity.addCommandTag(EntitySpawn.placementTag(spawn));
 			boolean added = world.spawnNewEntityAndPassengers(entity);
 			HaoDebug.log("[hao-entity]   生成后 " + entity.getType() + " @ "
 					+ String.format("%.3f,%.3f,%.3f", entity.getX(), entity.getY(), entity.getZ())

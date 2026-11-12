@@ -1,11 +1,12 @@
 package carpet_hao_addition.mixin;
 
-import carpet_hao_addition.EntityPlacementHandler;
-import carpet_hao_addition.MalilibNbtConverter;
-import carpet_hao_addition.EntityPlacementPayload;
+import carpet_hao_addition.entity.EntityPlacementCounter;
+import carpet_hao_addition.entity.EntityPlacementHandler;
+import carpet_hao_addition.entity.EntityPlacementPayload;
 import carpet_hao_addition.EasyPlaceEntitySettings;
 import carpet_hao_addition.EntityPlacementTrigger;
-import carpet_hao_addition.EntitySpawn;
+import carpet_hao_addition.MalilibNbtConverter;
+import carpet_hao_addition.entity.EntitySpawn;
 import carpet_hao_addition.client.EntityPlacementScreen;
 
 import fi.dy.masa.litematica.data.DataManager;
@@ -19,8 +20,6 @@ import fi.dy.masa.litematica.util.WorldUtils;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -72,7 +71,7 @@ import carpet_hao_addition.HaoDebug;
  * 且它有返回值 {@link ActionResult},所以要用 {@code CallbackInfoReturnable} 而不是 {@code CallbackInfo}
  * (写错的话编译期看不出来,只在运行时抛 InvalidInjectionException 把游戏崩掉)。
  */
-@Mixin(WorldUtils.class)
+@Mixin(value = WorldUtils.class, priority = 850)
 public abstract class WorldUtils_entityPlacementMixin {
 	/** 上次发包所在的客户端 tick,用于每 tick 限一次。 */
 	@Unique
@@ -90,6 +89,30 @@ public abstract class WorldUtils_entityPlacementMixin {
 	/** 同一格在此期间内只生成一次(2 秒,与 haoProjectionWaterlogged 的请求 TTL 一致)。 */
 	@Unique
 	private static final long HAO_ENTITY_REQUEST_TTL = 40L;
+
+	/**
+	 * 射线到投影坐标的最短距离在多少以内算「瞄准了这一处」(单位:格的平方)。
+	 *
+	 * <p>取 1.2 格:实体出生盒本身不到一格宽,要求射线精确穿过太苛刻 —— 玩家看到的是投影渲染
+	 * 出来的虚影,鼠标压在虚影上时人眼误差折算到十来格外的射线末端会差一大截,差一点就判不中,
+	 * 表现就是"同一处有时能开界面、有时开不了"。放宽到 1.2 格后准星大致对着就能选中;
+	 * 再大就会把并排的相邻那一处也算进来。</p>
+	 */
+	@Unique
+	private static final double AIM_SQUARED = 1.44D;
+
+	/**
+	 * 每个候选的「投影里几个 / 世界里已有几个」,键是 {@code EntitySpawn#key()}。
+	 * <p>
+	 * 刻意**不**放进 {@link EntitySpawn}:那是个带 {@code PacketCodec} 的 record,加字段会改动
+	 * 跨 mod 协议(HaoMaSa 与 26.x 都按同一个 codec 收发)。这两个数只给客户端的选择器界面用,
+	 * 不需要发给服务端,所以单独放一份。
+	 * <p>
+	 * 用途有两个:① 界面能一直打开,玩家可以**继续加放**;② 界面上能看出**还缺几个**,
+	 * 用来核对投影是否放全了。
+	 */
+	@Unique
+	private static final java.util.Map<String, int[]> HAO_COUNTS = new java.util.HashMap<>();
 
 	@Inject(method = "doEasyPlaceAction", at = @At("HEAD"), cancellable = true)
 	private static void hao$spawnEntityOnEasyPlace(MinecraftClient minecraft, CallbackInfoReturnable<ActionResult> cir) {
@@ -112,36 +135,99 @@ public abstract class WorldUtils_entityPlacementMixin {
 			// 否则它会影响这次右键用的数量。
 			EntityPlacementTrigger.clearHotkeyCount();
 		}
-		if (player == null || !EasyPlaceEntitySettings.isTriggerEnabled(fromHotkey)
-				|| !(minecraft.crosshairTarget instanceof BlockHitResult hit)) {
+		if (player == null || !EasyPlaceEntitySettings.isTriggerEnabled(fromHotkey)) {
+			// 诊断(临时):区分"客户端读不到规则值"与"准星没对着方块"。
+			// 规则关着时每 tick 都会走到这里,所以先看开关再拼接。
+			if (HaoDebug.ENABLED) {
+				HaoDebug.log("[hao-entity] 未进入收集: player=" + (player != null)
+						+ " 取值=" + EasyPlaceEntitySettings.value() + " 快捷键=" + fromHotkey
+						+ " 准星是方块=" + (minecraft.crosshairTarget instanceof BlockHitResult));
+			}
+			// 快捷键是玩家主动按键,不给提示就完全看不出发生了什么(以前这里是静默返回,
+			// 表现就是"快捷键时灵时不灵")。右键路径保持安静,否则照着投影施工会刷屏。
+			if (fromHotkey && player != null) {
+				hao$notify(player, EasyPlaceEntitySettings.value() == EasyPlaceEntitySettings.Trigger.FALSE
+						? "carpet-hao-addition.entity.ruleOff"
+						: "carpet-hao-addition.entity.noBlock");
+			}
+			return;
+		}
+		// ⚠️ 右键路径才要求"准星对着方块"(右键本来就是对屏幕中央那个方块操作);
+		// 快捷键路径**不能**这样要求 —— 快捷键的判定在 hao$collectCandidates 里用视线射线自己做,
+		// 而 crosshairTarget 会命中**实体**:第一次放出的那个实体往往正好挡在准星上,
+		// 于是"在同一个地方再按一次"就会被误判成"准星没有指着方块"。
+		if (!fromHotkey && !(minecraft.crosshairTarget instanceof BlockHitResult)) {
+			HaoDebug.log("[hao-entity] 右键路径:准星没对着方块");
 			return;
 		}
 		long tick = player.getEntityWorld().getTime();
-		if (hao$lastEntityTick == tick) {
+		// 同 tick 去抖只对右键长按有意义:快捷键是人工单击,再抖就会"按第二下没反应"。
+		if (!fromHotkey && hao$lastEntityTick == tick) {
 			return;
 		}
 		List<EntitySpawn> candidates = hao$collectCandidates(minecraft);
 		if (candidates.isEmpty()) {
+			HaoDebug.log("[hao-entity] 候选为空(视线内没有可放的投影实体)");
+			if (fromHotkey) {
+				hao$notify(player, "carpet-hao-addition.entity.noTarget");
+			}
+			// 没收集到候选也把选择器弹出来:让玩家看到"确实是 0 个",
+			// 而不是按了没反应、也分不清是没瞄准还是功能没生效。
+			// 已经有别的界面开着时不抢。
+			if (minecraft.currentScreen == null) {
+				minecraft.setScreen(new EntityPlacementScreen(candidates, HAO_COUNTS));
+				cir.setReturnValue(ActionResult.SUCCESS);
+			}
 			return;
 		}
 		hao$lastEntityTick = tick;
 		if (candidates.size() > 1 || EasyPlaceEntitySettings.uiEnabled(player.getUuid())) {
 			// 多个候选时必须让玩家点(代码猜不出来"你指着谁");只命中一个时是否还弹界面,
 			// 由 /easyPlaceEntityUi 决定 —— 开着就总是弹界面,关掉就直接放置(更快)。
-			minecraft.setScreen(new EntityPlacementScreen(candidates));
+			minecraft.setScreen(new EntityPlacementScreen(candidates, HAO_COUNTS));
 			cir.setReturnValue(ActionResult.SUCCESS);
 			return;
 		}
-		// 单候选:同一格 2 秒内只放一次,否则按住右键会刷出一堆
-		BlockPos target = hit.getBlockPos();
+		// 单候选:同一格 2 秒内只放一次,否则按住右键会刷出一堆。快捷键不受此限。
+		// TTL 的键统一用"视线终点所在格":快捷键路径没有可靠的 crosshairTarget
+		// (可能被实体挡住),而这条射线两条路径都能拿到。
+		Vec3d eye = player.getCameraPosVec(1.0F);
+		Vec3d lookEnd = eye.add(player.getRotationVec(1.0F).multiply(Math.max(4.5D, Math.max(
+				WorldUtils.getValidBlockRange(minecraft), player.getBlockInteractionRange()))));
+		BlockPos target = BlockPos.ofFloored(lookEnd);
 		long key = target.asLong();
 		Long last = hao$recentEntityRequests.get(key);
-		if (last != null && tick - last <= HAO_ENTITY_REQUEST_TTL) {
+		if (!fromHotkey && last != null && tick - last <= HAO_ENTITY_REQUEST_TTL) {
+			HaoDebug.log("[hao-entity] 同格 2 秒内已放过,跳过");
 			return;
 		}
 		hao$recentEntityRequests.entrySet().removeIf(entry -> tick - entry.getValue() > HAO_ENTITY_REQUEST_TTL);
 		hao$recentEntityRequests.put(key, tick);
 		hao$dispatchPacket(candidates.getFirst(), player);
+	}
+
+	/** 给玩家一行动作栏提示(快捷键路径专用,右键路径保持安静)。 */
+	@Unique
+	private static void hao$notify(PlayerEntity player, String translationKey) {
+		player.sendMessage(net.minecraft.text.Text.translatable(translationKey), true);
+	}
+
+	/** 点到视线线段的最短距离,用来判断"准星更接近哪一处"。 */
+	@Unique
+	private static double hao$distanceToRay(Vec3d start, Vec3d end, double x, double y, double z) {
+		final Vec3d direction = end.subtract(start);
+		final double length = direction.length();
+
+		if (length <= 1.0E-4D) {
+			return Math.sqrt(start.squaredDistanceTo(x, y, z));
+		}
+
+		final Vec3d unit = direction.multiply(1.0D / length);
+		final Vec3d toTarget = new Vec3d(x - start.x, y - start.y, z - start.z);
+		final double along = Math.max(0.0D, Math.min(length, toTarget.dotProduct(unit)));
+		final Vec3d closest = start.add(unit.multiply(along));
+
+		return Math.sqrt(closest.squaredDistanceTo(x, y, z));
 	}
 
 	/** 视线射线命中的、还没放过的投影实体,由近到远。 */
@@ -153,7 +239,20 @@ public abstract class WorldUtils_entityPlacementMixin {
 		}
 		// 判定"指着哪个":视线射线。起点是眼睛,终点是眼睛 + 视线方向 × 交互距离。
 		Vec3d start = player.getCameraPosVec(1.0F);
-		Vec3d end = start.add(player.getRotationVec(1.0F).multiply(WorldUtils.getValidBlockRange(mc)));
+		// 交互距离取三者的最大值:Litematica 给的有效放置距离、玩家自身的方块交互距离、
+		// 以及原版 4.5 的下限。只取 Litematica 那个值时,某些设置下它只有两三格,
+		// 射线够不到稍远处那台实体 —— 玩家明明瞄准了却判成"没命中",界面打不开。
+		double range = Math.max(4.5D, Math.max(WorldUtils.getValidBlockRange(mc),
+				player.getBlockInteractionRange()));
+		Vec3d end = start.add(player.getRotationVec(1.0F).multiply(range));
+		// 诊断(临时):玩家眼睛位置 + 视线可达距离。
+		// 用来判断"没命中"到底是"离得太远"还是"litematica 给的有效距离是 0"。
+		// 这里每 tick 都会走到,而 String.format 是所有字符串操作里最慢的一档 ——
+		// 必须先看开关再拼,HaoDebug 的 ENABLED 是 static final,JIT 会把整块消掉。
+		if (HaoDebug.ENABLED) {
+			HaoDebug.log("[hao-entity] 玩家眼睛=" + String.format("%.2f,%.2f,%.2f", start.x, start.y, start.z)
+					+ " 视线距离=" + String.format("%.2f", range));
+		}
 		List<EntitySpawn> found = new ArrayList<>();
 		for (SchematicPlacement placement
 				: DataManager.getSchematicPlacementManager().getAllSchematicsPlacements()) {
@@ -164,28 +263,80 @@ public abstract class WorldUtils_entityPlacementMixin {
 		}
 		found.sort(Comparator.comparingDouble(spawn ->
 				new Vec3d(spawn.x(), spawn.y(), spawn.z()).squaredDistanceTo(start)));
-		// 按"位置 + 类型"计数过滤:同一处投影里有 N 个实体,世界里已有 M 个同类型实体,
-		// 只有 M >= N 才算"这一处已经放满"。
-		// 这样:① 叠在同一位置的多个实体能一个个放(而不是永远只认一个);
-		//      ② 把实体打掉之后 M 归零,候选会自动重新出现,可以重新放。
-		if (mc.world != null) {
-			Map<String, Integer> projected = new java.util.HashMap<>();
-			for (EntitySpawn spawn : found) {
-				projected.merge(hao$positionKey(spawn), 1, Integer::sum);
+		// 只留一处:并排的两处投影常常只差一格,射线是一整条线,会**连续穿过一串格子** ——
+		// 站在一处旁边往另一处看时,两处都会被判成"穿过",再比距离就会选回近的那一处,
+		// 表现就是"对着 17032 却弹出 17033"。所以判据按精确度分三档:
+		// ① 准星命中的那个方块位置(只有一个点,最接近"我盯着哪一格")
+		// ② 射线穿过实体出生盒的那些
+		// ③ 都没有才退回"离射线最近"
+		if (found.size() > 1) {
+			String keep = null;
+
+			if (mc.crosshairTarget instanceof net.minecraft.util.hit.BlockHitResult blockHit) {
+				final Vec3d hitPos = blockHit.getPos();
+				double best = Double.MAX_VALUE;
+
+				for (EntitySpawn spawn : found) {
+					final double distance = hitPos.squaredDistanceTo(spawn.x(), spawn.y(), spawn.z());
+
+					if (distance < best) {
+						best = distance;
+						keep = EntityPlacementCounter.positionKey(spawn);
+					}
+				}
 			}
-			found.removeIf(spawn -> {
-				int nearby = hao$countNearby(mc, spawn);
-				int need = projected.getOrDefault(hao$positionKey(spawn), 1);
-				boolean drop = nearby >= need;
-				HaoDebug.log("[hao-entity]   过滤 " + hao$positionKey(spawn)
-						+ " 世界已有=" + nearby + " 投影要求=" + need + (drop ? " -> 移除" : " -> 保留"));
-				return drop;
-			});
+
+			if (keep == null) {
+				final List<EntitySpawn> exactHits = new ArrayList<>();
+
+				for (EntitySpawn spawn : found) {
+					final EntityType<?> type = Registries.ENTITY_TYPE.get(spawn.type());
+
+					if (type == null) {
+						continue;
+					}
+
+					if (!type.getSpawnBox(spawn.x(), spawn.y(), spawn.z())
+							.raycast(start, end).isEmpty()) {
+						exactHits.add(spawn);
+					}
+				}
+
+				final List<EntitySpawn> pool = exactHits.isEmpty() ? found : exactHits;
+				double nearestAim = Double.MAX_VALUE;
+
+				for (EntitySpawn spawn : pool) {
+					final double aim = hao$distanceToRay(start, end, spawn.x(), spawn.y(), spawn.z());
+
+					if (aim < nearestAim) {
+						nearestAim = aim;
+						keep = EntityPlacementCounter.positionKey(spawn);
+					}
+				}
+			}
+
+			if (keep != null) {
+				final String chosen = keep;
+				found.removeIf(spawn -> !EntityPlacementCounter.positionKey(spawn).equals(chosen));
+			}
 		}
-		HaoDebug.log("[hao-entity] 候选 " + found.size() + " 个");
-		for (EntitySpawn spawn : found) {
-			HaoDebug.log("[hao-entity]   " + spawn.type() + " @ "
-					+ String.format("%.1f,%.1f,%.1f", spawn.x(), spawn.y(), spawn.z()));
+		// 按"位置 + 类型"计数:同一处投影里有 N 个实体,世界里已有 M 个。
+		// ⚠️ 这里**不再**把"已放满"的候选从列表里去掉 —— 选择器界面要能随时打开,玩家才能
+		// ①继续加放(比如投影 2 个只放了 1 个,或想多放几个)②核对投影到底缺不缺。
+		// 数量另存一份带进界面(见 HAO_COUNTS),候选本身原样保留。
+		HAO_COUNTS.clear();
+		if (mc.world != null) {
+			// 整处统计:同一位置有几个投影实体、世界里已有几个(与"一次放几个"无关)
+			HAO_COUNTS.putAll(EntityPlacementCounter.totals(mc.world, found));
+		}
+		if (HaoDebug.ENABLED) {
+			HaoDebug.log("[hao-entity] 候选 " + found.size() + " 个");
+			for (EntitySpawn spawn : found) {
+				int[] counts = HAO_COUNTS.get(spawn.key());
+				HaoDebug.log("[hao-entity]   " + spawn.type() + " @ "
+						+ String.format("%.1f,%.1f,%.1f", spawn.x(), spawn.y(), spawn.z())
+						+ (counts == null ? "" : "  投影=" + counts[0] + " 已有=" + counts[1]));
+			}
 		}
 		return found;
 	}
@@ -206,7 +357,9 @@ public abstract class WorldUtils_entityPlacementMixin {
 		if (regionNames.isEmpty()) {
 			regionNames.addAll(schematic.getAreaPositions().keySet());
 		}
-		HaoDebug.log("[hao-entity] 投影「" + placement.getName() + "」待查区域 " + regionNames);
+		if (HaoDebug.ENABLED) {
+			HaoDebug.log("[hao-entity] 投影「" + placement.getName() + "」待查区域 " + regionNames);
+		}
 		for (String regionName : regionNames) {
 			SubRegionPlacement sub = placement.getRelativeSubRegionPlacement(regionName);
 			// 子区域自己也可以勾"忽略实体",和投影级是两回事
@@ -232,15 +385,25 @@ public abstract class WorldUtils_entityPlacementMixin {
 	private static EntitySpawn hao$candidateFor(MinecraftClient mc, SchematicPlacement placement,
 			SubRegionPlacement sub, BlockPos origin, String regionName, int index, EntityInfo info,
 			Vec3d rayStart, Vec3d rayEnd) {
-		// litematica 0.26(1.21.11)起投影实体的 NBT 是 malilib 自研的 CompoundData,
-		// 与原版 NbtCompound 之间没有现成转换,先整体转一次,后面的处理就保持原版写法。
-		NbtCompound nbt = MalilibNbtConverter.toVanilla(info.nbt());
-		// 投影实体的身份 —— 去重只能靠它,不能靠坐标(投影里可能有几个实体坐标完全重合)
-		String key = regionName + "#" + index;
-		HaoDebug.log("[hao-entity]    区域 " + regionName + " 实体 "
-				+ nbt.getString("id").orElse("?") + " 局部=" + info.posVec());
-		HaoDebug.log("[hao-entity]      NBT=" + nbt);
-		String raw = nbt.getString("id").orElse("");
+		// 投影实体的身份 —— 去重只能靠它,不能靠坐标(投影里可能有几个实体坐标完全重合)。
+		// key 里必须带**这个投影自己的标识**:只用「子区域#序号」的话,同时显示两个投影、
+		// 而它们恰好有同名子区域(单区域投影常常都叫 main)且实体序号相同时,两边的 key 会
+		// 撞在一起 —— HAO_COUNTS 与 EntityPlacementCounter.totals 都拿 key 当分组键,
+		// 后写的覆盖先写的,界面上的「需要/已放」就串到另一个投影上去了。
+		// 用投影原点当标识:两个投影叠在同一位置时确实分不开,但那种情况玩家自己也分不清。
+		// 注意 key 会进网络包(buf.writeString(spawn.key(), 256)),子区域名过长必须截断,
+		// 否则序列化时直接抛异常。
+		String regionKey = regionName.length() > 96 ? regionName.substring(0, 96) : regionName;
+		String key = origin.asLong() + "/" + regionKey + "#" + index;
+		// ⚠️ 下面这段诊断里 MalilibNbtConverter.toVanilla(info.nbt()) 的 toString 会把整棵 NBT 树序列化一遍,
+		// 而 hao$candidateFor 是"每个投影实体 × 每 tick"都走的路径 —— 必须靠 ENABLED 短路,
+		// 否则玩家按住轻松放置键时这里会持续空转。
+		if (HaoDebug.ENABLED) {
+			HaoDebug.log("[hao-entity]    区域 " + regionName + " 实体 "
+					+ MalilibNbtConverter.toVanilla(info.nbt()).getString("id").orElse("?") + " 局部=" + info.posVec());
+			HaoDebug.log("[hao-entity]      NBT=" + MalilibNbtConverter.toVanilla(info.nbt()));
+		}
+		String raw = MalilibNbtConverter.toVanilla(info.nbt()).getString("id").orElse("");
 		Identifier identifier = raw.isEmpty() ? null : Identifier.tryParse(raw);
 		if (identifier == null) {
 			return null;
@@ -259,48 +422,90 @@ public abstract class WorldUtils_entityPlacementMixin {
 		double x = origin.getX() + regionPos.getX() + pos.x;
 		double y = origin.getY() + regionPos.getY() + pos.y;
 		double z = origin.getZ() + regionPos.getZ() + pos.z;
-		HaoDebug.log("[hao-entity]    坐标 局部=" + info.posVec()
-				+ " 区域=" + regionName + " 区域偏移=" + regionPos + " 投影原点=" + origin
-				+ " 变换后=" + String.format("%.3f,%.3f,%.3f", pos.x, pos.y, pos.z)
-				+ " 世界=" + String.format("%.3f,%.3f,%.3f", x, y, z));
+		if (HaoDebug.ENABLED) {
+			HaoDebug.log("[hao-entity]    坐标 局部=" + info.posVec()
+					+ " 区域=" + regionName + " 区域偏移=" + regionPos + " 投影原点=" + origin
+					+ " 变换后=" + String.format("%.3f,%.3f,%.3f", pos.x, pos.y, pos.z)
+					+ " 世界=" + String.format("%.3f,%.3f,%.3f", x, y, z));
+		}
 		// 诊断:这个位置在**投影世界**和**真实世界**分别是什么方块。
 		// 若投影那边是空气,说明我们算的位置根本不是投影里凋灵所在的那一格(位置算偏了)。
-		var schematicWorld = fi.dy.masa.litematica.world.SchematicWorldHandler.getSchematicWorld();
-		if (schematicWorld != null && mc.world != null) {
-			BlockPos at = BlockPos.ofFloored(x, y, z);
-			HaoDebug.log("[hao-entity]    位置方块 " + at + " 投影=" + schematicWorld.getBlockState(at)
-					+ " 世界=" + mc.world.getBlockState(at));
+		// getBlockState 是真实的世界查询,不在调试时一律不跑。
+		if (HaoDebug.ENABLED) {
+			var schematicWorld = fi.dy.masa.litematica.world.SchematicWorldHandler.getSchematicWorld();
+			if (schematicWorld != null && mc.world != null) {
+				BlockPos at = BlockPos.ofFloored(x, y, z);
+				HaoDebug.log("[hao-entity]    位置方块 " + at + " 投影=" + schematicWorld.getBlockState(at)
+						+ " 世界=" + mc.world.getBlockState(at));
+			}
 		}
 		// "我渲染出来的才放":渲染层范围比投影级渲染开关细一档,没渲染的层/位置不参与。
 		// 拿不到范围对象时不过滤(宁可多给候选,也别把能放的挡掉)。
 		var renderLayerRange = DataManager.getRenderLayerRange();
 		if (renderLayerRange != null
 				&& !renderLayerRange.isPositionWithinRange((int) x, (int) y, (int) z)) {
-			HaoDebug.log("[hao-entity]     × 在渲染层范围外 " + identifier + " @ "
-					+ String.format("%.1f,%.1f,%.1f", x, y, z));
+			if (HaoDebug.ENABLED) {
+				HaoDebug.log("[hao-entity]     × 在渲染层范围外 " + identifier + " @ "
+						+ String.format("%.1f,%.1f,%.1f", x, y, z));
+			}
 			return null;
 		}
-		// 视线射线与**生成盒**求交(不是碰撞箱:碰撞箱比实体小,俯视/侧看时容易漏)
-		if (type.getSpawnBox(x, y, z).raycast(rayStart, rayEnd).isEmpty()) {
-			HaoDebug.log("[hao-entity]     × 视线射线没命中 " + identifier + " @ "
-					+ String.format("%.1f,%.1f,%.1f", x, y, z));
+		// 视线判定:**生成盒**求交,或者**实体所在的那一整格**求交。
+		// 只判定生成盒太严 —— 矿车的盒子不到 1 格,站远一点、或从侧面/上方看就会擦过去,
+		// 表现就是"候选 0 个、点了没反应"。放宽成"准星指到实体所在格也算选中"。
+		boolean hitBox = !type.getSpawnBox(x, y, z).raycast(rayStart, rayEnd).isEmpty();
+		boolean hitCell = !new Box(BlockPos.ofFloored(x, y, z)).raycast(rayStart, rayEnd).isEmpty();
+		// 兜底:准星命中了世界里某个同类型实体。矿车会顺铁轨滚、船会漂、盔甲架会落地,
+		// 放出来之后常常离投影坐标一两格 —— 这时射线穿到的是**实体**,不是投影位置,
+		// 上面两条都判不中,玩家明明指着那台矿车却打不开界面。所以再看一眼准星命中物。
+		if (!hitBox && !hitCell
+				&& mc.crosshairTarget instanceof net.minecraft.util.hit.EntityHitResult entityHit
+				&& entityHit.getEntity().getType() == type
+				&& entityHit.getEntity().getEntityPos().squaredDistanceTo(x, y, z) <= 4.0D) {
+			hitBox = true;
+		}
+		// 再兜一层:射线到投影坐标的**最短距离**够近就算瞄准。
+		// 上面两条都要求射线精确穿过出生盒(不到一格宽),而玩家看到的是投影渲染出来的虚影 ——
+		// 鼠标压在虚影上时,人眼误差折算到十格外的射线末端就是一大截,差一点就判不中。
+		// 表现就是"同一个位置有时能开、有时开不了"。
+		if (!hitBox && !hitCell) {
+			final Vec3d direction = rayEnd.subtract(rayStart);
+			final double length = direction.length();
+
+			if (length > 1.0E-4D) {
+				final Vec3d unit = direction.multiply(1.0D / length);
+				final Vec3d toTarget = new Vec3d(x - rayStart.x, y - rayStart.y, z - rayStart.z);
+				final double along = Math.max(0.0D, Math.min(length, toTarget.dotProduct(unit)));
+				final Vec3d closest = rayStart.add(unit.multiply(along));
+
+				if (closest.squaredDistanceTo(x, y, z) <= AIM_SQUARED) {
+					hitBox = true;
+				}
+			}
+		}
+		if (!hitBox && !hitCell) {
+			if (HaoDebug.ENABLED) {
+				HaoDebug.log("[hao-entity]     × 视线射线没命中 " + identifier + " @ "
+						+ String.format("%.1f,%.1f,%.1f", x, y, z));
+			}
 			return null;
 		}
 		// 材料不足**不再**把候选藏起来 —— 藏起来玩家就不知道"还差什么",连材料清单都看不到。
 		// 改为照常出候选、界面上把缺的材料标红,点击时给出提示(见 EntityPlacementScreen)。
 		// 朝向:按投影的镜像/旋转变换(与位置同一套变换),不叠子区域那一层
-		float yaw = hao$rotateYaw(hao$rotation(nbt, 0),
+		float yaw = hao$rotateYaw(hao$rotation(MalilibNbtConverter.toVanilla(info.nbt()), 0),
 				placement.getMirror(), placement.getRotation());
-		float pitch = hao$rotation(nbt, 1);
+		float pitch = hao$rotation(MalilibNbtConverter.toVanilla(info.nbt()), 1);
 		// 把投影实体的 NBT 一起带上(Pos/Rotation 改写成世界坐标与新朝向):
 		// 这样服务端能**连同乘客一起**还原 —— "矿车镶在船里"就是船带矿车乘客。
+		NbtCompound nbt = MalilibNbtConverter.toVanilla(info.nbt()).copy();
 		// 去掉投影里的实体 UUID(含乘客):它常与世界里已有实体(之前粘贴出来的)撞车,
 		// 导致实体加不进世界、凭空消失。
 		hao$stripUuids(nbt);
 		nbt.put("Pos", hao$nbtDoubles(x, y, z));
 		nbt.put("Rotation", hao$nbtFloats(yaw, pitch));
-		if (nbt.contains("Item")) {
-			HaoDebug.log("[hao-entity]   框内物品=" + nbt.get("Item") + " @ " + identifier);
+		if (HaoDebug.ENABLED && MalilibNbtConverter.toVanilla(info.nbt()).contains("Item")) {
+			HaoDebug.log("[hao-entity]   框内物品=" + MalilibNbtConverter.toVanilla(info.nbt()).get("Item") + " @ " + identifier);
 		}
 		return new EntitySpawn(identifier, key, x, y, z, yaw, pitch, nbt);
 	}
@@ -309,37 +514,11 @@ public abstract class WorldUtils_entityPlacementMixin {
 	private static void hao$dispatchPacket(EntitySpawn spawn, PlayerEntity player) {
 		int count = EasyPlaceEntitySettings.count(player.getUuid());
 		EntityPlacementHandler.registerPayloadType();
-		EntityPlacementHandler.registerPayloadType();
 		ClientPlayNetworking.send(new EntityPlacementPayload(List.of(spawn), count));
-		HaoDebug.log("[hao-entity] 放置 " + spawn.type() + " @ "
-				+ String.format("%.1f,%.1f,%.1f", spawn.x(), spawn.y(), spawn.z()));
-	}
-
-	/** "位置 + 类型"的粗粒度键:同一处的多个同类实体算同一组。 */
-	@Unique
-	private static String hao$positionKey(EntitySpawn spawn) {
-		return spawn.type() + "@" + (int) Math.floor(spawn.x()) + "," + (int) Math.floor(spawn.y())
-				+ "," + (int) Math.floor(spawn.z());
-	}
-
-	/** 世界里"就在这个点上"已经有多少个同类型实体(用于判断这一处是否已经放满)。 */
-	@Unique
-	private static int hao$countNearby(MinecraftClient mc, EntitySpawn spawn) {
-		ClientWorld world = mc.world;
-		EntityType<?> type = Registries.ENTITY_TYPE.get(spawn.type());
-		if (world == null || type == null) {
-			return 0;
+		if (HaoDebug.ENABLED) {
+			HaoDebug.log("[hao-entity] 放置 " + spawn.type() + " @ "
+					+ String.format("%.1f,%.1f,%.1f", spawn.x(), spawn.y(), spawn.z()));
 		}
-		int count = 0;
-		for (Entity existing : world.getOtherEntities(null,
-				type.getSpawnBox(spawn.x(), spawn.y(), spawn.z()).expand(1.0D))) {
-			// 只数"几乎落在同一个点"的:并排/上下紧挨着的同类实体不算同一处
-			if (existing.getType() == type
-					&& existing.getEntityPos().squaredDistanceTo(spawn.x(), spawn.y(), spawn.z()) <= 0.36D) {
-				count++;
-			}
-		}
-		return count;
 	}
 
 	/**

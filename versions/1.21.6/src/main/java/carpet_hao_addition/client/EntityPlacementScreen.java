@@ -1,9 +1,9 @@
 package carpet_hao_addition.client;
 
-import carpet_hao_addition.EntityPlacementHandler;
-import carpet_hao_addition.EntityPlacementPayload;
+import carpet_hao_addition.entity.EntityPlacementHandler;
+import carpet_hao_addition.entity.EntityPlacementPayload;
 import carpet_hao_addition.EasyPlaceEntitySettings;
-import carpet_hao_addition.EntitySpawn;
+import carpet_hao_addition.entity.EntitySpawn;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 
@@ -75,8 +75,18 @@ public class EntityPlacementScreen extends Screen {
 	 * 本次放置返回后就被清掉了 —— 界面上是玩家**点选之后**才发包,那时再读
 	 * 只会读到默认值,数量设置看起来就「无效」。所以这里先快照。
 	 */
-	private final int count;
+	private int count;
+	/**
+	 * 本次快捷键带过来的「一次放几个」(0 = 没带,用 {@link #count})。
+	 * <p>
+	 * 配套客户端的数量只在"按快捷键那一次"有效({@code EntityPlacementTrigger} 的标记是一次性的),
+	 * 而弹了界面之后玩家要过一会儿才点格子 —— 那时标记早清了。所以在构造界面时把它抄下来,
+	 * 否则这个数量在"弹界面"这条路上会彻底丢失,玩家会觉得"改了数量没效果"。
+	 */
+	private int hotkeyCount;
 	private final List<EntitySpawn> candidates;
+	/** 每个候选的「投影需要几个 / 世界里已有几个」,键是 {@code EntitySpawn#key()}。 */
+	private final java.util.Map<String, int[]> counts;
 	private final List<ItemStack> icons = new ArrayList<>();
 	private final List<Text> names = new ArrayList<>();
 	private final int rows;
@@ -90,9 +100,14 @@ public class EntityPlacementScreen extends Screen {
 	/** 已经点过(已发给服务端)的候选下标 —— 标绿、不可重复点,但不关闭界面。 */
 	private final Set<Integer> placed = new LinkedHashSet<>();
 
-	public EntityPlacementScreen(List<EntitySpawn> candidates) {
+	public EntityPlacementScreen(List<EntitySpawn> candidates, java.util.Map<String, int[]> counts) {
 		super(Text.literal("昊藏小囊"));
 		this.candidates = candidates;
+		// 拷一份,不直接引用 mixin 那张静态表:界面开着时如果又被快捷键触发一次收集,
+		// 静态表会被清空重填,正在显示的这一份数字就被换掉了。
+		this.counts = new java.util.HashMap<>(counts);
+		// 快捷键带过来的数量必须**在这里**抄下来:标记是一次性的,等玩家点格子时早被清掉了
+		this.hotkeyCount = carpet_hao_addition.EntityPlacementTrigger.hotkeyCount();
 		this.count = hao$currentCount();
 		this.rows = Math.max(ROWS_MIN,
 				Math.min(ROWS_MAX, (candidates.size() + COLUMNS - 1) / COLUMNS));
@@ -102,6 +117,68 @@ public class EntityPlacementScreen extends Screen {
 			this.icons.add(EntityPlacementMaterials.iconFor(spawn.type(), spawn.nbt()));
 			this.names.add(hao$nameOf(spawn.type()));
 		}
+		hao$refreshNames();
+
+	}
+
+	/**
+	 * 重新统计「世界里已经放了几个」并刷新每格文字。
+	 * <p>
+	 * <b>为什么必须每 tick 刷一次:</b>玩家常常是"界面开着、当场点几下放出来"——如果只在构造时算一次,
+	 * 放完之后格子上还写着"缺1",玩家就会以为没放成。放置请求发出后实体要过一个网络来回才出现在
+	 * 世界里,所以这里每 tick 重算一次,放出来的那一刻界面就会跟着变成"完成"。
+	 */
+	private void hao$refreshNames() {
+		// 整体重算:位置上的「需要/已放」要按整处统计,逐条单独算做不到这件事。
+		// 先清空 —— 换投影或换位置后候选变了,旧键留着会让某个 key 拿到上一份的数字。
+		this.counts.clear();
+		this.counts.putAll(carpet_hao_addition.entity.EntityPlacementCounter.totals(this.candidates));
+
+		for (int index = 0; index < this.candidates.size(); index++) {
+			EntitySpawn spawn = this.candidates.get(index);
+			this.names.set(index, hao$decorate(hao$nameOf(spawn.type()), this.counts.get(spawn.key())));
+		}
+	}
+
+	/**
+	 * 名字后面缀上「需要几个 / 已经放了几个 / 是否完成」。
+	 * <p>
+	 * 玩家再次打开界面时,一眼就能核对投影到底放全了没有:
+	 * <ul>
+	 *   <li><b>需要 N</b> —— 投影里这一处要 N 个,用白色;</li>
+	 *   <li><b>已放 M</b> —— 世界里现在有 M 个,<b>颜色跟着状态走</b>:少了红、正好绿、多了黄;</li>
+	 *   <li><b>结论</b> —— 缺 K / 完成 / 多 K,与「已放」同色。</li>
+	 * </ul>
+	 * 「已放」特意与「需要」不同色:两个数字同色时,玩家得逐位对比才知道差多少;
+	 * 让「已放」自己变色,数量不对的那一刻就直接跳出来。
+	 */
+	private static Text hao$decorate(Text name, int[] counts) {
+		if (counts == null) {
+			return name;
+		}
+		final int need = counts[0];
+		final int have = counts[1];
+		final int diff = need - have;
+		final Text tail;
+		final net.minecraft.util.Formatting color;
+
+		if (diff > 0) {
+			tail = Text.literal("缺" + diff);
+			color = net.minecraft.util.Formatting.RED;
+		} else if (diff == 0) {
+			tail = Text.literal("完成");
+			color = net.minecraft.util.Formatting.GREEN;
+		} else {
+			tail = Text.literal("多" + (-diff));
+			color = net.minecraft.util.Formatting.YELLOW;
+		}
+
+		return Text.empty().append(name)
+				.append(Text.literal("  需要 " + need).formatted(net.minecraft.util.Formatting.WHITE))
+				.append(Text.literal(" · ").formatted(net.minecraft.util.Formatting.DARK_GRAY))
+				.append(Text.literal("已放 " + have).formatted(color))
+				.append(Text.literal(" · ").formatted(net.minecraft.util.Formatting.DARK_GRAY))
+				.append(tail.copy().formatted(color));
 	}
 
 	@Override
@@ -115,11 +192,20 @@ public class EntityPlacementScreen extends Screen {
 		if (this.noticeTicks > 0) {
 			this.noticeTicks--;
 		}
+		// 玩家常常在界面开着的时候当场放置,这里每 tick 重算一次,"已放几个"才会实时更新
+		hao$refreshNames();
+		// 「一次放几个」每 tick 重读:玩家会在界面开着时用 /easyPlaceEntityCount 改数量。
+		// 但如果本次是快捷键触发的、且它带来了自己的数量,就以它为准(那个值已在构造时抄下),
+		// 否则玩家在配套客户端里改的数量在"弹界面"这条路上会丢失。
+		this.count = this.hotkeyCount >= 1 ? this.hotkeyCount : hao$currentCount();
 	}
 
 	@Override
 	public void render(DrawContext context, int mouseX, int mouseY, float delta) {
 		super.render(context, mouseX, mouseY, delta);
+		// 每帧重建一次背包总账：下面每个可见格子都要判"材料够不够"，
+		// 若每格各自遍历一遍背包，54 格 × 41 槽 × 60fps 就是每秒二十多万次槽位访问。
+		hao$refreshOwnership();
 		int left = (this.width - PANEL_WIDTH) / 2;
 		int top = hao$panelTop();
 		int right = left + PANEL_WIDTH;
@@ -217,6 +303,22 @@ public class EntityPlacementScreen extends Screen {
 				context.fill(slotX + 16, slotY, slotX + 17, slotY + 16, frame);
 			}
 			context.drawItem(this.icons.get(index), slotX, slotY);
+
+			// 右下角小牌:显示「这一次会放几个」—— 也就是玩家设置的一次放置数量。
+			// 它跟着 /easyPlaceEntityCount 和配套客户端传过来的数量走(见 this.count),
+			// 与格子上「需要/已放」无关;后者是投影和世界实体数决定的。
+			if (this.count > 0) {
+				String badgeText = "x" + this.count;
+				var badgeMatrix = context.getMatrices();
+				badgeMatrix.pushMatrix();
+				badgeMatrix.translate(slotX + SLOT_SIZE, slotY + SLOT_SIZE);
+				badgeMatrix.scale(0.5F, 0.5F);
+				int badgeWidth = this.textRenderer.getWidth(badgeText);
+				// 现在 (0,0) 是格子右下角,往左上退:右留 1px、下留 1px
+				context.drawText(this.textRenderer, Text.literal(badgeText),
+						-badgeWidth - 1, -9, 0xFFE8E8F0, true);
+				badgeMatrix.popMatrix();
+			}
 		}
 
 		// 信息文字画在**上方**那条里
@@ -226,9 +328,17 @@ public class EntityPlacementScreen extends Screen {
 			hao$renderMaterials(context, hovered, mouseX, mouseY);
 		} else if (this.noticeTicks > 0 && this.notice != null) {
 			hao$centeredShadow(context, Text.literal(this.notice), this.width / 2, infoY, 0xFFFF8080);
+		} else if (this.candidates.isEmpty()) {
+			// 空列表也会被弹出来(视线内没收集到任何投影实体)。这里必须写清原因,
+			// 否则玩家只看到一块空面板,分不清是没瞄准、没渲染、还是功能没生效。
+			hao$centeredShadow(context, Text.literal("视线内没有可放的投影实体"), this.width / 2,
+					infoY, 0xFFFF8080);
 		} else {
+			// 把「一次放几个」也写出来:这个值来自 /easyPlaceEntityCount 或配套客户端的设置,
+			// 改了之后界面上必须能看到,否则玩家会以为设置没生效。
+			// 注意它和格子上的「需要/已放」无关 —— 那两数由投影和世界里的实体数决定。
 			hao$centeredShadow(context, Text.literal("点击要放的那一个 · 还剩 "
-					+ (this.candidates.size() - this.placed.size()) + " 个"),
+					+ (this.candidates.size() - this.placed.size()) + " 个 · 一次放 " + this.count + " 个"),
 					this.width / 2, infoY, 0xFFD8D8D8);
 		}
 	}
@@ -271,43 +381,27 @@ public class EntityPlacementScreen extends Screen {
 		return hao$texSize;
 	}
 
-	/** 用 fill 拼出一个**圆角矩形**(半径 r,四角按圆弧削平)。 */
-	private static void hao$roundedFill(DrawContext context, int x1, int y1, int x2, int y2,
-			int radius, int color) {
-		int r = Math.max(0, Math.min(radius, Math.min((x2 - x1) / 2, (y2 - y1) / 2)));
-		if (r == 0) {
-			context.fill(x1, y1, x2, y2, color);
-			return;
-		}
-		context.fill(x1 + r, y1, x2 - r, y2, color);   // 中间竖条
-		context.fill(x1, y1 + r, x2, y2 - r, color);   // 中间横条
-		for (int i = 0; i < r; i++) {                  // 四角按圆弧逐像素补齐
-			double dy = r - i - 0.5D;
-			int inset = r - (int) Math.round(Math.sqrt(Math.max(0.0D, r * r - dy * dy)));
-			context.fill(x1 + inset, y1 + i, x1 + r, y1 + i + 1, color);
-			context.fill(x2 - r, y1 + i, x2 - inset, y1 + i + 1, color);
-			context.fill(x1 + inset, y2 - i - 1, x1 + r, y2 - i, color);
-			context.fill(x2 - r, y2 - i - 1, x2 - inset, y2 - i, color);
-		}
-	}
-
-	/** 居中画一行文字,**不带阴影**。 */
-	private void hao$centered(DrawContext context, Text text, int centerX, int y, int color) {
-		context.drawText(this.textRenderer, text, centerX - this.textRenderer.getWidth(text) / 2,
-				y, color, false);
-	}
-
 	/** 居中画一行文字,带原版阴影(用于深色信息条上,浅色材质包下也读得清)。 */
 	private void hao$centeredShadow(DrawContext context, Text text, int centerX, int y, int color) {
 		context.drawText(this.textRenderer, text, centerX - this.textRenderer.getWidth(text) / 2,
 				y, color, true);
 	}
 
-	/** 这个候选**实体本身**需要的材料(不含内容物/乘客 —— 那些是"有就带"的可选项)。 */
+	/**
+	 * 这个候选**实体本身**需要的材料(不含内容物/乘客 —— 那些是"有就带"的可选项)。
+	 * <p>
+	 * 结果按「候选下标 + 当前数量」缓存：它每帧给每个可见格子都要用一次，
+	 * 而 {@code baseCostFor} 每次都会新建一个 Map 并做一次 registry 查找。
+	 */
 	private Map<Item, Integer> hao$baseCost(int index) {
-		EntitySpawn spawn = this.candidates.get(index);
-		int count = this.count;
-		return EntityPlacementCosts.baseCostFor(Registries.ENTITY_TYPE.get(spawn.type()), count);
+		if (this.baseCostCacheCount != this.count) {
+			this.baseCostCache.clear();
+			this.baseCostCacheCount = this.count;
+		}
+		return this.baseCostCache.computeIfAbsent(index, i -> {
+			EntitySpawn spawn = this.candidates.get(i);
+			return EntityPlacementCosts.baseCostFor(Registries.ENTITY_TYPE.get(spawn.type()), this.count);
+		});
 	}
 
 	/** 悬停项的所需材料(缓存,避免每帧重算)。 */
@@ -366,22 +460,40 @@ public class EntityPlacementScreen extends Screen {
 		}
 	}
 
+	/** 背包物品总账与创造模式标记，每帧由 {@link #hao$refreshOwnership()} 重建。 */
+	private Map<Item, Integer> ownershipCache;
+	private boolean ownershipCreative;
+	/** 「实体本身材料」的缓存，键是候选下标；{@link #baseCostCacheCount} 变化时整体作废。 */
+	private final Map<Integer, Map<Item, Integer>> baseCostCache = new java.util.HashMap<>();
+	private int baseCostCacheCount = -1;
+
 	/** 背包里该物品的总数(创造模式视为无限)。 */
 	private int hao$owned(Item item) {
-		if (this.client == null || this.client.player == null) {
-			return 0;
-		}
-		if (this.client.player.isCreative()) {
+		if (this.ownershipCreative) {
 			return Integer.MAX_VALUE;
 		}
-		int total = 0;
-		for (int slot = 0; slot < this.client.player.getInventory().size(); slot++) {
-			ItemStack stack = this.client.player.getInventory().getStack(slot);
-			if (stack.isOf(item)) {
-				total += stack.getCount();
+		// 点击路径(鼠标事件)可能早于本帧的 render，总账还没建就先建一次。
+		if (this.ownershipCache == null) {
+			hao$refreshOwnership();
+		}
+		return this.ownershipCache.getOrDefault(item, 0);
+	}
+
+	/** 重建背包总账：一次遍历，供本帧内所有 {@link #hao$owned} 查询。 */
+	private void hao$refreshOwnership() {
+		this.ownershipCache = new java.util.HashMap<>();
+		var player = this.client == null ? null : this.client.player;
+		this.ownershipCreative = player != null && player.isCreative();
+		if (player == null || this.ownershipCreative) {
+			return;
+		}
+		var inventory = player.getInventory();
+		for (int slot = 0; slot < inventory.size(); slot++) {
+			ItemStack stack = inventory.getStack(slot);
+			if (!stack.isEmpty()) {
+				this.ownershipCache.merge(stack.getItem(), stack.getCount(), Integer::sum);
 			}
 		}
-		return total;
 	}
 
 	/** 清单里的东西是否都够。 */
@@ -403,25 +515,6 @@ public class EntityPlacementScreen extends Screen {
 					: Text.literal("×" + amount + "(" + stacks + "组+" + rest + ")");
 		}
 		return Text.literal("×" + amount);
-	}
-
-	/** 画玩家自己的背包(主背包 3 行 + 快捷栏 1 行),位置与原版箱子界面一致。 */
-	private void hao$renderPlayerInventory(DrawContext context, int left, int invTop) {
-		if (this.client == null || this.client.player == null) {
-			return;
-		}
-		var inventory = this.client.player.getInventory();
-		for (int row = 0; row < 3; row++) {
-			for (int column = 0; column < 9; column++) {
-				context.drawItem(inventory.getStack(9 + row * 9 + column),
-						left + GRID_LEFT + column * SLOT_SIZE, invTop + row * SLOT_SIZE);
-			}
-		}
-		int hotbarY = invTop + 3 * SLOT_SIZE + 4;
-		for (int column = 0; column < 9; column++) {
-			context.drawItem(inventory.getStack(column),
-					left + GRID_LEFT + column * SLOT_SIZE, hotbarY);
-		}
 	}
 
 	/** 面板(纹理部分)左上角 y:整体垂直居中,并给上方的信息条留出位置。 */
@@ -483,8 +576,10 @@ public class EntityPlacementScreen extends Screen {
 		int count = this.count;
 		EntityPlacementHandler.registerPayloadType();
 		ClientPlayNetworking.send(new EntityPlacementPayload(List.of(spawn), count));
-		HaoDebug.log("[hao-entity] 选择器放置 " + spawn.type() + " @ "
-				+ String.format("%.1f,%.1f,%.1f", spawn.x(), spawn.y(), spawn.z()));
+		if (HaoDebug.ENABLED) {
+			HaoDebug.log("[hao-entity] 选择器放置 " + spawn.type() + " @ "
+					+ String.format("%.1f,%.1f,%.1f", spawn.x(), spawn.y(), spawn.z()));
+		}
 	}
 
 	/** 实体的显示名(跟随语言文件,中文客户端就是中文名)。 */
