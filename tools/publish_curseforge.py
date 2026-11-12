@@ -266,13 +266,16 @@ def cmd_versions(args):
         else:
             names = existing_file_names(key)
             if names is not None:
-                skip_names = set(names)
+                # CurseForge 会把 API 上传文件名里的 '+' 规范成 '-':本地 jar 名是
+                # 0.2.6+1.21.jar,项目里存的是 0.2.6-1.21.jar。不归一化就永远匹配不上,
+                # 曾在 CI 自动发布后再手动跑一次,同一版本被传了两份。
+                skip_names = {n.replace('+', '-') for n in names}
                 print(f"查重: 项目已有 {len(names)} 个文件({len(skip_names)} 个不同文件名)")
 
     fail = 0
     skipped = 0
     for mc, jar in jobs:
-        if jar.name in skip_names:
+        if jar.name.replace('+', '-') in skip_names:
             skipped += 1
             print(f"skip {mc:8s} {jar.name}(项目里已存在同名文件)")
             continue
@@ -297,8 +300,11 @@ def cmd_existing(args):
     names = existing_file_names(key)
     if names is None:
         sys.exit("读取 CurseForge 文件列表失败")
+    # API 上传的文件名被 CurseForge 存成 '-' 形式(0.2.6-1.21.jar),
+    # 而早期经网页/本地传的仍是 '+' 形式(0.2.6+1.21.jar),两种都要能匹配。
     pattern = f"-{args.prefix}+" if args.prefix else ""
-    matched = [n for n in names if not pattern or pattern in n]
+    pattern_dash = f"-{args.prefix}-" if args.prefix else ""
+    matched = [n for n in names if not pattern or pattern in n or (pattern_dash and pattern_dash in n)]
     counts = {}
     for n in matched:
         counts[n] = counts.get(n, 0) + 1
