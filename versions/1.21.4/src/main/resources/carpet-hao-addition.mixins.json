@@ -9,6 +9,7 @@
     "FluidBlock_snowyCalciteMixin",
     "FluidState_breakWaterloggedMixin",
 		"Block_explosionResistanceMixin",
+    "ExplosionImpl_keepWaterMixin",
     "EndPortalTeleportMixin",
     "StonecutterScreenHandlerMixin",
     "Block_bedrockCanBeMinedMixin",
@@ -30,6 +31,7 @@
     "easyplace.AttachableItemPlacementMixin",
     "easyplace.SignListenerInvoker",
     "easyplace.CopperBulbPlacementMixin",
+		"easyplace.AbstractRailBlock_keepShapeMixin",
     "CactusShulkerBoxWashMixin",
     "DyeItem_useDyeOnShulkerBoxMixin",
     "MinecraftServer_rocketShulkerMixin",
@@ -40,10 +42,13 @@
     "WackoBeacons_BeaconBlockEntityMixin",
     "ClientPlayerInteractionManager_bedrockMinesMixin",
     "WorldUtils_waterloggedFillMixin",
+    "ClientPlayerInteractionManager_waterloggedFillMixin",
+    "MinecraftClient_waterloggedFillMixin",
     "easyplace.SchematicHitVecMixin",
     "easyplace.SchematicUtilsInvoker",
-    "WorldUtils_entityPlacementMixin"
-  ],
+    "WorldUtils_entityPlacementMixin",
+    "ClientTickHandler_litematicaGuardMixin"
+	],
   "injectors": {
     "defaultRequire": 1
   },

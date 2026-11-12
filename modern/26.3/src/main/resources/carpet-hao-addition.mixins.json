@@ -25,11 +25,13 @@
     "MinecraftServer_waterloggedFillMixin",
     "FluidState_breakWaterloggedMixin",
 		"Block_explosionResistanceMixin",
+    "ServerExplosion_keepWaterMixin",
     "easyplace.BeaconEffectAccessor",
     "easyplace.ProjectionBlockItemMixin",
     "easyplace.AttachableItemPlacementMixin",
     "easyplace.SignListenerInvoker",
     "easyplace.CopperBulbPlacementMixin",
+    "easyplace.BaseRailBlock_keepShapeMixin",
     "DyeItem_useDyeOnShulkerBoxMixin",
     "CactusShulkerBoxWashMixin",
     "ServerPlayer_autoMendingMixin",
@@ -40,11 +42,13 @@
     "WackoBeacons_BeaconBlockEntityMixin",
     "MultiPlayerGameMode_bedrockMinesMixin",
     "WorldUtils_waterloggedFillMixin",
+    "MultiPlayerGameMode_waterloggedFillMixin",
+    "Minecraft_waterloggedFillMixin",
     "WorldUtils_entityPlacementMixin",
     "easyplace.SchematicHitVecMixin",
     "easyplace.WorldActionMixin",
     "easyplace.SchematicUtilsInvoker"
-  ],
+	],
   "injectors": {
     "defaultRequire": 1
   },

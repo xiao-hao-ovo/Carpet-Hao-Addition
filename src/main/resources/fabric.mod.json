@@ -10,7 +10,17 @@
   ],
   "contact": {
     "homepage": "https://github.com/xiao-hao-ovo/Carpet-Hao-Addition",
-    "sources": "https://github.com/xiao-hao-ovo/Carpet-Hao-Addition"
+    "sources": "https://github.com/xiao-hao-ovo/Carpet-Hao-Addition",
+    "issues": "https://github.com/xiao-hao-ovo/Carpet-Hao-Addition/issues"
+  },
+
+  "custom": {
+    "modmenu": {
+      "links": {
+        "modmenu.curseforge": "https://www.curseforge.com/minecraft/mc-mods/carpet-hao-addition",
+        "modmenu.modrinth": "https://modrinth.com/mod/carpet-hao-addition"
+      }
+    }
   },
 
   "license": "LGPL-3.0",
