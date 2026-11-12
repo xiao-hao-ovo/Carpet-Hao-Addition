@@ -48,7 +48,7 @@ CARPET_PROJECT_ID = 349239
 CARPET_SLUG = "carpet"
 USER_AGENT = "xiao-hao-ovo/Carpet-Hao-Addition GitHub-Actions"
 GAME_VERSIONS = ["1.21", "1.21.1", "1.21.2", "1.21.4", "1.21.6", "1.21.8",
-                 "1.21.10", "1.21.11", "26.1.2", "26.2"]
+                 "1.21.10", "1.21.11", "26.1.2", "26.2", "26.3"]
 CHANGELOG = ("通过 GitHub Actions 自动发布。需要 Fabric Loader >= 0.16.10(26.x 建议 >= 0.19)与对应版本的 Carpet。"
              "全部规则默认关闭,游戏内用 `/carpet <规则> <值>` 开启。")
 
@@ -208,7 +208,7 @@ def local_jars(directory=None, prefix=None, files=None):
         paths = sorted(pathlib.Path(directory).glob("*.jar"))
     else:
         paths = []
-        for pattern in ("build/libs/*.jar", "modern/*/build/libs/*.jar"):
+        for pattern in ("build/libs/*.jar", "versions/*/build/libs/*.jar", "modern/*/build/libs/*.jar"):
             paths += sorted(REPO.glob(pattern))
     out = []
     for p in paths:
