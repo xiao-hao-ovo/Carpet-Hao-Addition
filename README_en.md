@@ -42,6 +42,7 @@ In game, use `/carpet <rule> <value>` to view/toggle rules (or use Carpet's rule
 - [Modrinth](https://modrinth.com/mod/carpet-hao-addition)
 - [CurseForge](https://www.curseforge.com/minecraft/mc-mods/carpet-hao-addition)
 - [GitHub Releases](https://github.com/xiao-hao-ovo/Carpet-Hao-Addition/releases)
+- [MC百科 (MCMod.cn)](https://www.mcmod.cn/class/32481.html)
 
 > Each jar targets exactly one Minecraft version. Download the one matching your game version; a mismatch reports `Incompatible mods found!`.
 

@@ -102,9 +102,27 @@ When on, all 19 trim/upgrade smithing templates become craftable: 7 diamonds + 1
 - Options: `false`, `true`
 - Categories: `Hao`
 
+## Enhanced World Eater (enhancedWorldEater)
+
+Ported verbatim from Carpet-AMS-Addition's enhancedWorldEater (AMS removed it in v26.4). While enabled, blocks with blast resistance at least 17 (obsidian, ancient debris, respawn anchor, ...) use the configured resistance during explosions, so they no longer stop a world eater; bedrock, the three anvils, End portal frame, End portal and End gateway keep their vanilla resistance. Only -1 or 0~16 is accepted, -1 disables it. On its own it behaves exactly like AMS and does nothing to waterlogged blocks; only when it is enabled together with haoEnhancedWorldEaterProMax do waterlogged blocks get destroyed together with their water. 1.21.8+ and 26.x.
+
+- Type: `double`
+- Default: `-1`
+- Options: `-1`, `0` ~ `16`
+- Categories: `Hao`
+
 ## Enhanced World Eater ProMax (haoEnhancedWorldEaterProMax)
 
-Lets waterlogged blocks be destroyed by explosions. Vanilla takes max(block resistance, fluid resistance) and water has a fluid resistance of 100, so waterlogged slabs/coral fans etc. survive TNT; when on, water's fluid resistance counts as 0. Off by default.
+On its own: waterlogged blocks become destroyable, but only the block itself is destroyed and the water is kept (a cell blown into air gets a water source placed back). Blocks with blast resistance at least 17 also use the configured resistance during explosions. When enabled together with enhancedWorldEater, waterlogged blocks are destroyed along with their water instead of keeping it. The value is the blast-resistance cap; only -1 or 0~16 is accepted, -1 disables it.
+
+- Type: `double`
+- Default: `-1`
+- Options: `-1`, `0` ~ `16`
+- Categories: `Hao`
+
+## World Eater Destroys Water (haoEnhancedWorldEaterWater)
+
+When enabled, world-eater explosions can destroy water and water sources (both source and flowing water count), independently of enhancedWorldEater and haoEnhancedWorldEaterProMax: the water block's resistance counts as 0 and water's fluid resistance is zeroed, so the whole water cell is removed by the explosion. It only handles water cells themselves; water inside waterlogged blocks is still decided by the ProMax + enhancedWorldEater combination. Off by default, 1.21.8+ and 26.x.
 
 - Type: `boolean`
 - Default: `false`

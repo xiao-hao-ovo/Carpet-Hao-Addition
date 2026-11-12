@@ -42,6 +42,7 @@ Java 21+（26.x 需要 Java 25）。
 - [Modrinth](https://modrinth.com/mod/carpet-hao-addition)
 - [CurseForge](https://www.curseforge.com/minecraft/mc-mods/carpet-hao-addition)
 - [GitHub Releases](https://github.com/xiao-hao-ovo/Carpet-Hao-Addition/releases)
+- [MC 百科](https://www.mcmod.cn/class/32481.html)
 
 > 每个 jar 只对应一个 Minecraft 版本，请下载与你游戏版本完全一致的那个；装错会报 `Incompatible mods found!`。
 

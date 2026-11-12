@@ -66,6 +66,10 @@
   "carpet.rule.haoProjectionPlacement.name": "Projection Placement",
   "carpet.rule.haoProjectionPlacement.desc": "When building from a schematic, places blocks with complex states (facing, toggle, color, block-entity data...) exactly as the schematic specifies. Requires Litematica. For waterlogged blocks use haoProjectionWaterlogged. Values: false = off (default); true = on, but a composter's fill level is not restored; with_composter_level = on, restores a composter's fill level too.",
   "carpet.rule.haoEnhancedWorldEaterProMax.name": "Enhanced World Eater ProMax",
+  "carpet.rule.enhancedWorldEater.name": "Enhanced World Eater",
+  "carpet.rule.enhancedWorldEater.desc": "Ported verbatim from Carpet-AMS-Addition's enhancedWorldEater: blocks with blast resistance at least 17 use the configured resistance during explosions, so obsidian and other world-eater blockers can be destroyed; bedrock, anvils and End portal blocks stay protected. Only -1 or 0~16 is accepted, -1 disables it. 1.21.8+ and 26.x.",
+  "carpet.rule.haoEnhancedWorldEaterWater.name": "World Eater Destroys Water",
+  "carpet.rule.haoEnhancedWorldEaterWater.desc": "When enabled, world-eater explosions can destroy water and water sources (both source and flowing water count), independently of enhancedWorldEater and haoEnhancedWorldEaterProMax. It only handles water cells themselves; water inside waterlogged blocks is still decided by the ProMax + enhancedWorldEater combination. Off by default. 1.21.8+ and 26.x.",
   "carpet.rule.haoEnhancedWorldEaterProMax.desc": "Like Carpet-AMS-Addition's enhancedWorldEater: when enabled, blocks with blast resistance at least 17 such as obsidian use the configured resistance during explosions, while waterlogged blocks can also be destroyed. The value is the blast-resistance cap; -1 disables it. Bedrock, anvils, and End portal blocks remain protected.",
   "carpet.rule.haoCraftableTrimTemplates.name": "Craftable Trim Templates",
   "carpet.rule.haoCraftableTrimTemplates.desc": "When on, all 19 trim/upgrade smithing templates become craftable: 7 diamonds + 1 item representing where that template is found. Off by default.",
@@ -93,5 +97,10 @@
   "haoRocketShulker.commands.status": "Rocket shulker refill (your own setting): enabled=%s, target=%s",
   "haoRocketShulker.commands.status.slot": "main-hand hotbar slot %s",
   "haoRocketShulker.commands.notEnabled": "Note: the feature is not enabled yet; an operator must run /carpet haoRocketShulker true.",
-  "haoRocketShulker.commands.playerOnly": "This command must be run by a player (the setting is stored per player)."
+  "haoRocketShulker.commands.playerOnly": "This command must be run by a player (the setting is stored per player).",
+  "carpet-hao-addition.entity.noBlock": "Crosshair is not on a block: aim at the cell containing the projected entity",
+  "carpet-hao-addition.entity.noTarget": "No placeable projected entity here (not rendered, outside the render layer range, or out of sight)",
+  "carpet-hao-addition.entity.ruleOff": "Easy-place entities rule is off: set /carpet haoProjectionEntity to true or not_trigger",
+  "haoZoneguard.commands.unnamed": "(unnamed)",
+  "haoZoneguard.commands.set.tooLarge": "Region too large (%s chunks, limit %s): turning the rule off scans chunk by chunk, so a huge region can stall the server"
 }
