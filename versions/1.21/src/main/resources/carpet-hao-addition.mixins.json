@@ -35,8 +35,12 @@
     "CactusShulkerBoxWashMixin",
     "DyeItem_useDyeOnShulkerBoxMixin",
     "MinecraftServer_rocketShulkerMixin",
-    "ServerPlayerEntity_autoMendingMixin"
-  ],
+    "ServerPlayerEntity_autoMendingMixin",
+    "pickup.ItemEntity_pickupFilterMixin",
+    "pickup.ServerWorld_pickupFilterMixin",
+    "pickup.PlayerInventory_pickupFilterMixin",
+    "pickup.Block_pickupFilterDropsMixin"
+],
   "client": [
     "WackoBeacons_BeaconButtonWidgetMixin",
     "WackoBeacons_BeaconBlockEntityMixin",

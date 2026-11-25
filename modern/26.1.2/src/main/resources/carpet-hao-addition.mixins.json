@@ -36,8 +36,12 @@
     "easyplace.CopperBulbPlacementMixin",
     "easyplace.ProjectionBlockItemMixin",
     "easyplace.SignListenerInvoker",
-    "easyplace.SignPlacementMixin"
-  ],
+    "easyplace.SignPlacementMixin",
+    "pickup.ItemEntity_pickupFilterMixin",
+    "pickup.ServerLevel_pickupFilterMixin",
+    "pickup.Inventory_pickupFilterMixin",
+    "pickup.Block_pickupFilterDropsMixin"
+],
   "client": [
 		"ClientTickHandler_litematicaGuardMixin",
     "MultiPlayerGameMode_bedrockMinesMixin",

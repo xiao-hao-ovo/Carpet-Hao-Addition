@@ -89,6 +89,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
 				CarpetServer.settingsManager.parseSettingsClass(RocketShulkerSettings.class);
 				CarpetServer.settingsManager.parseSettingsClass(UseDyeOnShulkerBoxSettings.class);
 				CarpetServer.settingsManager.parseSettingsClass(CopperStonecuttingSettings.class);
+				CarpetServer.settingsManager.parseSettingsClass(PickupFilterSettings.class);
 				CarpetServer.settingsManager.parseSettingsClass(AutoMendingSettings.class);
 				CarpetServer.settingsManager.parseSettingsClass(EasyPlaceEntitySettings.class);
 				CarpetServer.settingsManager.parseSettingsClass(ProjectionPlacementSettings.class);

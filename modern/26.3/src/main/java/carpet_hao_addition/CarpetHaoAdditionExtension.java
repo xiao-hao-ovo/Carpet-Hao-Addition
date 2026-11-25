@@ -11,6 +11,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.commands.CommandSourceStack;
 
 import carpet_hao_addition.zoneguard.ZoneguardHooks;
+import carpet_hao_addition.gamerule.GameRuleHotReload;
 import carpet_hao_addition.zoneguard.ZoneguardSettings;
 import carpet_hao_addition.portal.PlayerNoEndPortalTeleportCommands;
 import carpet_hao_addition.zoneguard.command.ZoneguardCommands;
@@ -73,6 +74,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         CarpetServer.settingsManager.parseSettingsClass(SnowyCalciteSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(NoEndPortalTeleportSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(TerracottaUncolorSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(PickupFilterSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(BedrockCanBeMinedSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(WitherSkeletonDropReductionSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(DirectDropsSettings.class);
@@ -83,6 +85,7 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         CarpetServer.settingsManager.parseSettingsClass(WorldEaterProMaxSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(EasyPlaceEntitySettings.class);
         CarpetServer.settingsManager.parseSettingsClass(CopperStonecuttingSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(GameruleHotReloadSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(UseDyeOnShulkerBoxSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(AutoMendingSettings.class);
         CarpetServer.settingsManager.parseSettingsClass(RocketShulkerSettings.class);
@@ -94,6 +97,8 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
     public void onServerLoaded(MinecraftServer haoServer)
     {
         this.haoServer = haoServer;
+        // 清空生成规则基线，避免拿上一个存档的取值做变化比较。
+        GameRuleHotReload.reset();
         // Deploy & enable the terracotta-uncolor datapack right after startup (deferred to
         // the first tick so the level is fully loaded), so recipes work without /reload.
         haoServer.execute(() -> {
@@ -111,6 +116,17 @@ public class CarpetHaoAdditionExtension implements CarpetExtension, ModInitializ
         RecipeDeployHooks.ensureDeployed(haoServer);
         CopperStonecuttingDeployHook.ensureDeployed(haoServer);
         TrimTemplateRecipeDeployHook.ensureDeployed(haoServer);
+    }
+
+    /**
+     * Carpet 每 tick 回调：驱动「生成类游戏规则热生效」。
+     * <p>
+     * 规则关闭时 {@link GameRuleHotReload#tick} 首行即返回，无额外开销。
+     */
+    @Override
+    public void onTick(MinecraftServer haoServer)
+    {
+        GameRuleHotReload.tick(haoServer);
     }
 
     private void registerZoneguardRuleObserver()

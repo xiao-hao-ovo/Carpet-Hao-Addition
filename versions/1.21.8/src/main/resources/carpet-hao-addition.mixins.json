@@ -35,8 +35,12 @@
     "easyplace.AttachableItemPlacementMixin",
     "easyplace.SignListenerInvoker",
     "easyplace.CopperBulbPlacementMixin",
-    "easyplace.AbstractRailBlock_keepShapeMixin"
-	],
+    "easyplace.AbstractRailBlock_keepShapeMixin",
+		"pickup.ItemEntity_pickupFilterMixin",
+		"pickup.ServerWorld_pickupFilterMixin",
+		"pickup.PlayerInventory_pickupFilterMixin",
+		"pickup.Block_pickupFilterDropsMixin"
+],
 	"client": [
 		"WackoBeacons_BeaconButtonWidgetMixin",
 		"WackoBeacons_BeaconBlockEntityMixin",
