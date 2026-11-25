@@ -46,7 +46,12 @@ public class SchematicPlacementEncoder {
 				if (HaoDebug.ENABLED) {
 						HaoDebug.log("[hao-easyplace] 客户端编码 方块=" + block + " 协议位=" + bits);
 				}
-				return bits == 0 ? hitPos : PlacementBitTools.bitsToHitVec(bits, hitPos);
+				// 只有「协议位非 0」或「投影状态不是方块默认态」时才占用协议通道。
+				// 后者用于营火这类：熄灭+朝北恰好编码成 0，而原版放置会默认点亮，不送协议还原不出来。
+				// 反过来，投影就是默认态时（石头、普通楼梯等）不编码，服务端 getPlacementState 直接返回，零开销。
+				boolean needProtocol = bits != 0
+					|| (codec != null && !stateSchematic.equals(block.getDefaultState()));
+				return needProtocol ? PlacementBitTools.bitsToHitVec(bits, hitPos) : hitPos;
 		}
 
 		/**

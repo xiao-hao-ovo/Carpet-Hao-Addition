@@ -50,6 +50,11 @@ public abstract class ProjectionBlockItemMixin {
 				}
 				BlockState now = level.getBlockState(pos);
 				BlockEntity be = level.getBlockEntity(pos);
+				// 没有方块实体就没有 NBT 要同步；原版 setBlockState(flag=3) 已经发过包，
+				// 这里再 sendBlockUpdated + blockChanged 会让每次放置重复标记区块，密集放置时客户端显示滞后。
+				if (be == null) {
+					return;
+				}
 				if (be != null) {
 						be.markDirty();
 						// 标牌文字靠它自己的 updateListeners 同步,只调 World.updateListeners 不够。
@@ -116,8 +121,12 @@ public abstract class ProjectionBlockItemMixin {
 				// 所以这里必须用 hitOffsetZ。早先误写成 hitOffsetX，而 x 偏移恒在 [0,1)、
 				// 阈值是 2.0 —— 条件恒假，整条放置窗口链路（铜灯不翻转、告示牌不弹编辑界面）
 				// 从来没有生效过。
+				double projectedRelZ = hitOffsetZ(context.getHitPos(), PlacementBitTools.clickedPos(context));
+				// 只有协议位非 0 才算「真的按投影还原了状态」。bits=0 的方块（石头、朝北熄灭营火等）
+				// 原版 setBlockState(flag=3) 内部已经做过邻居更新，这里再补一次会让密集放置明显变慢。
 				boolean projected = ProjectionPlacement.ruleEnabled()
-								&& isProtocolHit(hitOffsetZ(context.getHitPos(), PlacementBitTools.clickedPos(context)));
+					&& isProtocolHit(projectedRelZ)
+					&& PlacementBitTools.readBits(projectedRelZ) != 0;
 				if (projected) {
 						ProjectionPlacement.markProjectedState(true);
 						// 记落点而不是被点的方块:真正落下的位置是「被点的方块」沿点击面偏移一格

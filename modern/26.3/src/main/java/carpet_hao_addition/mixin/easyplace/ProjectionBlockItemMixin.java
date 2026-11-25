@@ -55,12 +55,19 @@ public abstract class ProjectionBlockItemMixin {
         }
         BlockState now = level.getBlockState(pos);
         BlockEntity be = level.getBlockEntity(pos);
+        // 没有方块实体就没有 NBT 要同步；原版 setBlockState(flag=3) 已经发过包，
+        // 这里再 sendBlockUpdated + blockChanged 会让每次放置重复标记区块，密集放置时客户端显示滞后。
+        if (be == null) {
+            return;
+        }
         if (be != null) {
             be.setChanged();
             // 标牌文字靠它自己的更新广播同步,只调 Level.updateListeners 不够。
             if (be instanceof SignBlockEntity signBe) {
                 ((SignListenerInvoker) signBe).hao$callMarkUpdated();
-                HaoDebug.log("[hao-easyplace] [广播刷新] 标牌 updateListeners: " + pos);
+                if (HaoDebug.ENABLED) {
+                    HaoDebug.log("[hao-easyplace] [广播刷新] 标牌 updateListeners: " + pos);
+                }
             }
         }
         level.sendBlockUpdated(pos, now, now, 3);
@@ -107,9 +114,11 @@ public abstract class ProjectionBlockItemMixin {
             SignColorMemory.remember(level.isClientSide(), sign.getBlockPos(), slot.name(), want);
         }
         sign.setText(updated, slot);
-        HaoDebug.log("[hao-sign] set(" + (level.isClientSide() ? "CLIENT" : "SERVER") + ") " + key
-                + " color=" + colorName + "->" + sign.getText(slot).getColor().getName()
-                + " pos=" + sign.getBlockPos());
+        if (HaoDebug.ENABLED) {
+            HaoDebug.log("[hao-sign] set(" + (level.isClientSide() ? "CLIENT" : "SERVER") + ") " + key
+                    + " color=" + colorName + "->" + sign.getText(slot).getColor().getName()
+                    + " pos=" + sign.getBlockPos());
+        }
         if (!level.isClientSide() && level instanceof ServerLevel serverLevel) {
             // 标牌自身的数据包有时不触发,直接把这份 BE 数据强制广播出去。
             ClientboundBlockEntityDataPacket packet = sign.getUpdatePacket();
@@ -144,8 +153,10 @@ public abstract class ProjectionBlockItemMixin {
         SignText updated = sign.getText(slot).withColor(color).withGlowingText(glowing);
         sign.setText(updated, slot);
         SignColorMemory.remember(level.isClientSide(), sign.getBlockPos(), slot.name(), color);
-        HaoDebug.log("[hao-sign] set(" + (level.isClientSide() ? "CLIENT" : "SERVER") + ") " + slot
-                + " color->" + sign.getText(slot).getColor().getName() + " pos=" + sign.getBlockPos());
+        if (HaoDebug.ENABLED) {
+            HaoDebug.log("[hao-sign] set(" + (level.isClientSide() ? "CLIENT" : "SERVER") + ") " + slot
+                    + " color->" + sign.getText(slot).getColor().getName() + " pos=" + sign.getBlockPos());
+        }
         if (!level.isClientSide() && level instanceof ServerLevel serverLevel) {
             ClientboundBlockEntityDataPacket packet = sign.getUpdatePacket();
             if (packet != null) {
@@ -164,9 +175,11 @@ public abstract class ProjectionBlockItemMixin {
         if (!(level.getBlockEntity(pos) instanceof SignBlockEntity sign)) {
             return;
         }
-        HaoDebug.log("[hao-sign] fix pos=" + pos + " side=" + (level.isClientSide() ? "CLIENT" : "SERVER")
-                + " protocolValue=0b" + Integer.toBinaryString(protocolValue)
-                + " 带NBT=" + (fullNbt != null));
+        if (HaoDebug.ENABLED) {
+            HaoDebug.log("[hao-sign] fix pos=" + pos + " side=" + (level.isClientSide() ? "CLIENT" : "SERVER")
+                    + " protocolValue=0b" + Integer.toBinaryString(protocolValue)
+                    + " 带NBT=" + (fullNbt != null));
+        }
         if (fullNbt != null) {
             hao$applySignColors(level, pos, fullNbt);
         }
@@ -178,12 +191,14 @@ public abstract class ProjectionBlockItemMixin {
     @Inject(method = "getPlacementState", at = @At("HEAD"), cancellable = true)
     private void hao$restorePlacementState(BlockPlaceContext context, CallbackInfoReturnable<BlockState> cir) {
         double relativeHitZ = hitOffsetZ(context.getClickLocation(), PlacementBitTools.clickedPos(context));
-        HaoDebug.log("[hao-easyplace] [getPlacementState] 规则="
-                + ProjectionPlacement.ruleEnabled()
-                + " hitPos=" + context.getClickLocation() + " blockPos=" + PlacementBitTools.clickedPos(context)
-                + " relZ=" + String.format("%.3f", relativeHitZ)
-                + " isProtocol=" + isProtocolHit(relativeHitZ)
-                + " block=" + this.getBlock());
+        if (HaoDebug.ENABLED) {
+            HaoDebug.log("[hao-easyplace] [getPlacementState] 规则="
+                    + ProjectionPlacement.ruleEnabled()
+                    + " hitPos=" + context.getClickLocation() + " blockPos=" + PlacementBitTools.clickedPos(context)
+                    + " relZ=" + String.format("%.3f", relativeHitZ)
+                    + " isProtocol=" + isProtocolHit(relativeHitZ)
+                    + " block=" + this.getBlock());
+        }
         if (!ProjectionPlacement.ruleEnabled()) return;
         if (!isProtocolHit(relativeHitZ)) return;
 
@@ -192,9 +207,11 @@ public abstract class ProjectionBlockItemMixin {
             baseState = this.getBlock().getStateForPlacement(context);
         }
         BlockState state = ProjectionPlacement.decodeSchematicState(this.getBlock(), context, baseState);
-        HaoDebug.log("[hao-easyplace]   [放置解码] hitPos=" + context.getClickLocation()
-                + " blockPos=" + PlacementBitTools.clickedPos(context) + " side=" + context.getClickedFace()
-                + " 还原状态=" + state);
+        if (HaoDebug.ENABLED) {
+            HaoDebug.log("[hao-easyplace]   [放置解码] hitPos=" + context.getClickLocation()
+                    + " blockPos=" + PlacementBitTools.clickedPos(context) + " side=" + context.getClickedFace()
+                    + " 还原状态=" + state);
+        }
         if (state == null) {
             cir.setReturnValue(null);
             return;
@@ -203,8 +220,10 @@ public abstract class ProjectionBlockItemMixin {
         // 若交给原版，它会把坡轨重算成平轨，放出来的就不是投影的样子了；
         // 而如果强行保持投影形状，又会放出之后必然掉落的浮空坡轨。
         if (!ProjectionPlacement.stateCanExist(state, context.getLevel(), context.getClickedPos())) {
-            HaoDebug.log("[hao-easyplace]   [放弃放置] 状态在当前环境立不住 state=" + state
-                    + " pos=" + context.getClickedPos());
+            if (HaoDebug.ENABLED) {
+                HaoDebug.log("[hao-easyplace]   [放弃放置] 状态在当前环境立不住 state=" + state
+                        + " pos=" + context.getClickedPos());
+            }
             cir.setReturnValue(null);
             return;
         }
@@ -214,8 +233,12 @@ public abstract class ProjectionBlockItemMixin {
 
     @WrapMethod(method = "place(Lnet/minecraft/world/item/context/BlockPlaceContext;)Lnet/minecraft/world/InteractionResult;")
     private InteractionResult hao$enterPlacementWindow(BlockPlaceContext context, Operation<InteractionResult> original) {
+        double projectedRelZ = hitOffsetZ(context.getClickLocation(), PlacementBitTools.clickedPos(context));
+        // 只有协议位非 0 才算「真的按投影还原了状态」。bits=0 的方块（石头、朝北熄灭营火等）
+        // 原版 setBlockState(flag=3) 内部已经做过邻居更新，这里再补一次会让密集放置明显变慢。
         boolean projected = ProjectionPlacement.ruleEnabled()
-                && isProtocolHit(hitOffsetZ(context.getClickLocation(), PlacementBitTools.clickedPos(context)));
+            && isProtocolHit(projectedRelZ)
+            && PlacementBitTools.readBits(projectedRelZ) != 0;
         if (projected) {
             ProjectionPlacement.markProjectedState(true);
             ProjectionPlacement.assignPlaceTargetPos(PlacementBitTools.clickedPos(context));
@@ -232,7 +255,7 @@ public abstract class ProjectionBlockItemMixin {
         }
         // 投影放置后让这一格自己重新检查一次红石状态：先放拉杆、后放铁轨时，
         // 铁轨的 onBlockAdded 不一定重新计算 powered，需要主动邻居更新一次。
-        if (projected && result.consumesAction()) {
+        if (projected && result.consumesAction() && !context.getLevel().isClientSide()) {
             BlockPos target = context.getClickedPos();
             BlockState placed = context.getLevel().getBlockState(target);
             if (!placed.isAir()) {
@@ -265,26 +288,55 @@ public abstract class ProjectionBlockItemMixin {
                                         .map(net.minecraft.core.Holder.Reference::value)
                                         .orElse(null),
                                 fullNbt));
-                HaoDebug.log("[hao-easyplace] [服务端] 应用完整 NBT: 位置=" + pos + " id=" + fullNbt.getString("id").orElse(""));
+                if (HaoDebug.ENABLED) {
+                    HaoDebug.log("[hao-easyplace] [服务端] 应用完整 NBT: 位置=" + pos + " id=" + fullNbt.getString("id").orElse(""));
+                }
                 hao$ok = original.call(level, player, pos, withFullNbt);
+            hao$applyBlockEntityData(level, pos, withFullNbt);
             } else {
                 hao$ok = original.call(level, player, pos, stack);
+            hao$applyBlockEntityData(level, pos, stack);
             }
             // 先按投影 NBT 设标牌颜色/发光,再广播 —— 顺序反了客户端收到的还是旧状态。
             hao$fixSignColors(level, pos, protocolValue, data.nbt());
             hao$notifyClient(level, pos);
             return hao$ok;
         }
-        HaoDebug.log("[hao-easyplace] [方块实体数据] pos=" + pos
-                + " side=" + context.getClickedFace() + " state=" + level.getBlockState(pos));
+        if (HaoDebug.ENABLED) {
+            HaoDebug.log("[hao-easyplace] [方块实体数据] pos=" + pos
+                    + " side=" + context.getClickedFace() + " state=" + level.getBlockState(pos));
+        }
         ItemStack newStack = ProjectionPlacement.applySchematicItemData(stack, context);
         boolean result = newStack == null
                 ? original.call(level, player, pos, stack)
                 : original.call(level, player, pos, newStack);
+        hao$applyBlockEntityData(level, pos, newStack == null ? stack : newStack);
         hao$fixSignColors(level, pos, protocolValue, null);
         // 兜底分支同样要广播：客户端预测放置的方块实体没有投影数据，
         // 不回传就一直空白，直到右键触发一次同步。
         hao$notifyClient(level, pos);
         return result;
+    }
+
+    /** 把 BLOCK_ENTITY_DATA 组件写到刚放置的方块实体上（postPlacement 本身不会做这件事）。 */
+    @Unique
+    private static void hao$applyBlockEntityData(Level level, BlockPos pos, ItemStack stack) {
+        if (level.isClientSide()) {
+            return;
+        }
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        if (blockEntity == null) {
+            return;
+        }
+        net.minecraft.world.item.component.TypedEntityData<?> blockData =
+                stack.get(net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA);
+        if (blockData == null) {
+            return;
+        }
+        if (blockData.loadInto(blockEntity, level.registryAccess())) {
+            blockEntity.setChanged();
+            BlockState now = level.getBlockState(pos);
+            level.sendBlockUpdated(pos, now, now, 3);
+        }
     }
 }

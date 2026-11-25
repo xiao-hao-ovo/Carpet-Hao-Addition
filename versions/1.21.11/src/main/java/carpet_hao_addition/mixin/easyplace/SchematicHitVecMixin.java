@@ -39,7 +39,9 @@ public abstract class SchematicHitVecMixin {
     private static void hao$encodeProtocolBits(BlockPos pos, BlockState state, Vec3d hitVecIn, CallbackInfoReturnable<Vec3d> cir) {
         if (ProjectionPlacement.ruleEnabled()) {
             Vec3d out = SchematicPlacementEncoder.encodeSchematicItemData(cir.getReturnValue(), pos, state);
-            HaoDebug.log("[hao-easyplace] [CarpetVec] pos=" + pos + " in=" + cir.getReturnValue() + " out=" + out);
+            if (HaoDebug.ENABLED) {
+                HaoDebug.log("[hao-easyplace] [CarpetVec] pos=" + pos + " in=" + cir.getReturnValue() + " out=" + out);
+            }
             cir.setReturnValue(out);
         }
     }
@@ -62,8 +64,10 @@ public abstract class SchematicHitVecMixin {
             return;
         }
         Vec3d encoded = SchematicPlacementEncoder.encodeSchematicItemData(cir.getReturnValue(), pos, state);
-        HaoDebug.log("[hao-easyplace] [V3] pos=" + pos + " state=" + state
-                + " litematica返回=" + cir.getReturnValue() + " 我们编码后=" + encoded);
+        if (HaoDebug.ENABLED) {
+            HaoDebug.log("[hao-easyplace] [V3] pos=" + pos + " state=" + state
+                    + " litematica返回=" + cir.getReturnValue() + " 我们编码后=" + encoded);
+        }
         hao$msPos = pos;
         hao$msSchematic = state;
         hao$msHitVec = encoded;
@@ -107,8 +111,10 @@ public abstract class SchematicHitVecMixin {
         }
         if (loopCount > 0) {
             SchematicUtilsInvoker.hao$cachePlacement(pos);
-            HaoDebug.log("[hao-easyplace] [多阶段补放] " + pos + " 层数=" + loopCount
-                    + " 目标=" + stateSchematic);
+            if (HaoDebug.ENABLED) {
+                HaoDebug.log("[hao-easyplace] [多阶段补放] " + pos + " 层数=" + loopCount
+                        + " 目标=" + stateSchematic);
+            }
         }
     }
 }

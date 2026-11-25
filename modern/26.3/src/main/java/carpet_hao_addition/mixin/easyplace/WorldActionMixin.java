@@ -57,8 +57,10 @@ public abstract class WorldActionMixin {
         }
         if (loopCount > 0) {
             SchematicUtilsInvoker.hao$cachePlacement(pos);
-            HaoDebug.log("[hao-easyplace] [multi-stage-fill] " + pos + " steps=" + loopCount
-                    + " target=" + stateSchematic);
+            if (HaoDebug.ENABLED) {
+                HaoDebug.log("[hao-easyplace] [multi-stage-fill] " + pos + " steps=" + loopCount
+                        + " target=" + stateSchematic);
+            }
         }
     }
 }

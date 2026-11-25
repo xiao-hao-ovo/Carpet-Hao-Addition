@@ -44,10 +44,12 @@ public abstract class AttachableItemPlacementMixin {
             return;
         }
         BlockState state = ProjectionPlacement.decodeSchematicState(baseState.getBlock(), context, baseState);
-        HaoDebug.log("[hao-easyplace] [子类解码] block=" + hao$block()
-                + " 原=" + baseState + " 改=" + state
-                + " side=" + context.getClickedFace() + " hitPos=" + context.getClickLocation()
-                + " 世界该处=" + context.getLevel().getBlockState(context.getClickedPos()));
+        if (HaoDebug.ENABLED) {
+            HaoDebug.log("[hao-easyplace] [子类解码] block=" + hao$block()
+                    + " 原=" + baseState + " 改=" + state
+                    + " side=" + context.getClickedFace() + " hitPos=" + context.getClickLocation()
+                    + " 世界该处=" + context.getLevel().getBlockState(context.getClickedPos()));
+        }
         if (state == null) {
             cir.setReturnValue(null);
             return;

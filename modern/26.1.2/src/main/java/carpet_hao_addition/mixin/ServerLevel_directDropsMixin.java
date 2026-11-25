@@ -1,5 +1,7 @@
 package carpet_hao_addition.mixin;
 
+import carpet_hao_addition.pickup.PickupFilter;
+
 import carpet_hao_addition.directdrops.DirectDropContext;
 
 import net.minecraft.server.level.ServerLevel;
@@ -33,6 +35,11 @@ public abstract class ServerLevel_directDropsMixin {
 		ItemStack stack = itemEntity.getItem();
 		if (stack.isEmpty()) {
 			return;
+		}
+		// 拾取黑白名单优先：命中的物品不直接入包，让它照常以掉落物落地。
+		// 名单为空时 denies 立刻返回 false，对常开本规则的场景没有额外开销。
+		if (PickupFilter.denies(stack)) {
+		    return;
 		}
 		player.getInventory().add(stack);
 		if (stack.isEmpty()) {
