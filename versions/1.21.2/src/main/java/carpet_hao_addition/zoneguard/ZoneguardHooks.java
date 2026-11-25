@@ -24,6 +24,11 @@ public final class ZoneguardHooks {
 	 * @return 成功重启的侦测器对数
 	 */
 	public static int refreshAllRegions(MinecraftServer server) {
+		// Carpet 在 attachServer 期间会把规则重置为默认值并触发本方法,那时世界还没加载 ——
+		// getOverworld() 返回 null,继续执行会在 getData 里 NPE,服务端直接崩在启动阶段。
+		if (server.getOverworld() == null) {
+			return 0;
+		}
 		ZoneguardSavedData data = ZoneguardSavedData.getData(server);
 		int refreshed = 0;
 		for (DetectorRegion region : data.regions().values()) {
@@ -44,6 +49,10 @@ public final class ZoneguardHooks {
 	 * /haoZoneguard 会立即从客户端补全中移除(开启时则立即出现)。
 	 */
 	public static void refreshCommandTree(MinecraftServer server) {
+		// 与上面同理:启动早期命令管理器与玩家列表都还没就绪。
+		if (server.getCommandManager() == null || server.getPlayerManager() == null) {
+			return;
+		}
 		CommandManager commandManager = server.getCommandManager();
 		for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
 			commandManager.sendCommandTree(player);

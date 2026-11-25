@@ -8,6 +8,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 
 /**
  * 版本层钩子:共享层(CarpetHaoAdditionExtension 的规则观察者)通过它调用
@@ -24,6 +25,11 @@ public final class ZoneguardHooks {
 	 * @return 成功重启的侦测器对数
 	 */
 	public static int refreshAllRegions(MinecraftServer server) {
+		// Carpet 在 attachServer 期间会把规则重置为默认值并触发本方法,那时世界还没加载 ——
+		// getLevel(OVERWORLD) 返回 null,继续执行会在 getData 里 NPE,服务端直接崩在启动阶段。
+		if (server.getLevel(Level.OVERWORLD) == null) {
+			return 0;
+		}
 		ZoneguardSavedData data = ZoneguardSavedData.getData(server);
 		int refreshed = 0;
 		for (DetectorRegion region : data.regions().values()) {
@@ -44,6 +50,10 @@ public final class ZoneguardHooks {
 	 * /haoZoneguard 会立即从客户端补全中移除(开启时则立即出现)。
 	 */
 	public static void refreshCommandTree(MinecraftServer server) {
+		// 与上面同理:启动早期命令管理器与玩家列表都还没就绪。
+		if (server.getCommands() == null || server.getPlayerList() == null) {
+			return;
+		}
 		Commands commandManager = server.getCommands();
 		for (ServerPlayer player : server.getPlayerList().getPlayers()) {
 			commandManager.sendCommands(player);
